@@ -1,0 +1,376 @@
+#+TITLE: Krista Victorsen's Emacs configuration
+#+AUTHOR: Krista Victorsen
+#+PROPERTY: header-args :tangle yes
+#+OPTIONS: toc:2
+* Introduction
+* Das codes
+#+BEGIN_SRC emacs-lisp
+  ;; load-path
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (add-to-list 'load-path "~/.emacs.d/elisp/")
+  (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
+  (add-to-list 'load-path "~/.emacs.d/elpa/ac-emoji-20150823.11")
+  (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
+
+  ;; OS-specific hacks
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;; I prefer cmd key for meta
+  (setq mac-option-key-is-meta nil
+        mac-command-key-is-meta t
+        mac-command-modifier 'meta
+        mac-option-modifier 'super)
+
+  ;; YOU. YOU WITH THE FACE. YOU LIKE RAILWAYCAT's MACPORT OF THE EMACS GUI:...
+  ;; https://github.com/railwaycat/homebrew-emacsmacport
+  ;;
+  ;; AND YOU ALSO LIKE THIS SCRIPT TO OPEN THE GUI FROM THE COMMAND LINE:
+  ;; https://gist.github.com/railwaycat/4043945
+  ;; kthxbai
+
+  ;; Package management
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (require 'package)
+
+  ;; Melpa
+  ;; Installed according to the instructions posted at
+  ;; <http://www.emacswiki.org/emacs/MELPA>
+  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+  (package-initialize)
+  ;;; HOW TO ADD PACKAGES:
+  ;;;   (load-library "asdf") with asdf.el being an elisp file 
+  ;;;   someplace in load path (traditl'ly elisp dir)
+
+  ;; Packages
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  ;; Package: Slime
+  (load (expand-file-name "~/software/quicklisp/slime-helper.el"))
+  (setq inferior-lisp-program "/usr/local/bin/sbcl")
+
+  ;; Emacs/W3 Configuration
+  (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
+  (condition-case () (require 'w3-auto "w3-auto") (error nil))
+
+  ;; Problem: C-c C-c results in "org-babel-execute-src-block: No org-babel-execute function for LaTeX!"
+  ;; solution: this, apparently
+  (org-babel-do-load-languages 'org-babel-load-languages '((latex . t)))
+
+  ;; Slime!
+  ;; The SBCL binary and command-line arguments
+  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
+
+  ;; Helm!
+  (require 'helm-config)
+  (require 'helm)
+  (require 'helm-swoop)
+  (helm-mode 1)
+  (global-set-key (kbd "M-x") 'helm-M-x)
+  (global-set-key (kbd "C-x C-f") 'helm-find-files)
+  (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
+  (global-set-key (kbd "C-c s") 'helm-swoop)
+  ;; Make helm split the window vertically
+  (setq helm-swoop-split-direction 'split-window-vertically)
+  (setq helm-swoop-split-with-multiple-windows nil)
+
+  ;; Recently-opened files!
+  (require 'recentf)
+  (recentf-mode 1)
+  (setq recentf-max-menu-items 100)
+  (setq helm-recentf-max-menu-items 100)
+  ;;; Fast access to them recently-opened files
+  (global-set-key "\C-x\ \C-r" 'helm-recentf)
+
+  ;; pylint minor mode
+  (autoload 'pylint "pylint")
+  (add-hook 'python-mode-hook 'pylint-add-menu-items)
+  (add-hook 'python-mode-hook 'pylint-add-key-bindings)
+
+  ;;; Undo tree!
+  ;; Doc: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
+  (require 'undo-tree)
+  (global-undo-tree-mode)
+  (setq undo-tree-auto-save-history t)
+
+
+  ;; Cosmetics and aesthetics
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; theme via
+  ;; <https://emacsthemes.com/themes/sanityinc-tomorrow-themes.html>
+
+  ;; whitespace, gawddammit
+  (add-hook 'python-mode-hook 'whitespace-mode)
+  (setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
+  (setq whitespace-action '(auto-cleanup))
+  (setq-default indent-tabs-mode nil)
+
+  ;; When typing python, indent with a 4-space-wide tab
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (setq indent-tabs-mode nil)
+              (setq tab-width 4)
+              (setq python-indent 4)))
+
+  ;; Kill default startup message, text at the top of scratch buffers
+  (setq inhibit-startup-message t)
+  (setq initial-scratch-message "")
+
+  ;; Kill the default emacs toolbar (top of screen)
+  (tool-bar-mode -1)
+
+  ;; auctex
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq-default TeX-master nil)
+  (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-plug-into-AUCTeX t)
+  (setq TeX-PDF-mode t)
+  ;; make it so that in LaTeX-mode, C-c C-a compiles and then views the pdf document
+  ;; (define-key LaTeX-mode-map (kbd "C-c C-a") 'tex-compile)
+
+  ;; Org aesthetics
+  ;; Turn on org pretty entities by default
+  ;; source: <https://lists.gnu.org/archive/html/emacs-orgmode/2013-01/msg01173.html>
+  (setq org-pretty-entities t)
+
+  ;; make org-mode display with bullets instead of asterisks
+  (require 'org-bullets)
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
+  ;; Sprucetheme (TODO)
+  ;; (set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.2 :background "gray")
+  ;; (set-face-attribute 'org-level-2 nil :inherit 'outline-2 :height 1.0)
+  ;; (add-hook 'org-mode-hook (lambda () (setq line-spacing '0.25)))
+
+  ;; Highlight corresponding paren whenever you mouse over its pair
+  (show-paren-mode 1)
+
+  ;; Delete highlighted text if you start typing on top of it
+  (delete-selection-mode 1)
+
+  ;; Eat the scrollbar
+  (scroll-bar-mode -1)
+
+  ;; Organize autosaved backup files (put them someplace else!)
+  ;; via http://stackoverflow.com/questions/2680389/how-to-remove-all-files-ending-with-made-by-emacs
+  (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
+        backup-by-copying t    ; Don't delink hardlinks
+        version-control t      ; Use version numbers on backups
+        delete-old-versions t  ; Automatically delete excess backups
+        kept-new-versions 20   ; how many of the newest versions to keep
+        kept-old-versions 5    ; and how many of the old
+        )
+
+  ;; Org mode clean view
+  ;; <http://orgmode.org/manual/Clean-view.html>
+  (setq org-startup-indented t)
+
+  ;; Keybindings and accessibility
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; Toggle fullscreen with meta-return
+  (global-set-key (kbd "M-<return>") 'toggle-frame-fullscreen)
+  ;; Speedy-open .emacs 
+  (global-set-key (kbd "C-c e") (lambda() (interactive)
+                                  (find-file (or user-init-file ""))))
+  ;; Speedy-open .bashrc
+  (global-set-key (kbd "C-c e") (lambda() (interactive)
+                                  (find-file (or user-init-file ""))))
+  ;; Speedy eval-buffer
+  (global-set-key (kbd "C-c b") 'eval-buffer)
+  ;; Speedy-open magit
+  (global-set-key (kbd "C-c g") 'magit-status)
+
+  ;; count words in selected region
+  (global-set-key (kbd "C-c w") 'count-words)
+
+  ;; Speedy-open melpa
+  (global-set-key (kbd "\C-cp") 'package-list-packages)
+
+  ;; Speedy-open .bashrc / .profile
+  ;;(global-set-key (kbd "\C-cp"))
+
+  ;; Transpose line up or down
+  (defun move-line-up ()
+    "Move up the current line."
+    (interactive)
+    (transpose-lines 1)
+    (forward-line -2)
+    (indent-according-to-mode))
+  (defun move-line-down ()
+    "Move down the current line."
+    (interactive)
+    (forward-line 1)
+    (transpose-lines 1)
+    (forward-line -1)
+    (indent-according-to-mode))
+  (global-set-key [(meta p)]  'move-line-up)
+  (global-set-key [(meta n)]  'move-line-down)
+
+  ;; Don't add 2 spaces after my period, dammit!
+  (setq sentence-end-double-space nil)
+
+  ;; Enable "C-x u" for upcase-region, "C-x l" for downcase-region
+  (put 'upcase-region 'disabled nil)
+  (put 'downcase-region 'disabled nil)
+
+  ;; Comment line with M-;
+  ;; Source:
+  ;; <http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html>
+  (defun comment-dwim-line (&optional arg)
+    "Replacement for the comment-dwim command.
+     If no region is selected and current line is not blank and we are not at the end of the line,
+     then comment current line.
+     Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
+    (interactive "*P")
+    (comment-normalize-vars)
+    (if (and (not (region-active-p))
+             (not (looking-at "[ \t]*$")))
+        (comment-or-uncomment-region (line-beginning-position)
+                                     (line-end-position))
+      (comment-dwim arg)))
+  (global-set-key "\M-;" 'comment-dwim-line)
+
+  ;; Make C-K clear text AND newline
+  (setq kill-whole-line t)
+
+  ;;; Start & end recording new keyboard macro
+  (global-set-key (kbd "M-[") 'kmacro-start-macro)
+  (global-set-key (kbd "M-]") 'kmacro-end-macro)
+  ;;; (TODO https://www.emacswiki.org/emacs/KeyboardMacros)
+  (global-set-key (kbd "C-l") 'call-last-kbd-macro)
+
+
+  ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
+  ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
+  ;; Key-binding instructions via:
+  ;; <https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Commands.html>
+  ;; kbd presumably stands for Key Binding
+  (global-set-key (kbd "M-j") 'join-line)
+
+
+  ;; Spruce's Latex stuff: https://gist.github.com/spruceb/4209965bb7c335894b436002c720bf35
+  ;; latex
+  ;; TODO: fucks up prettify for some reason?
+  ;; (company-auctex-init)
+  ;; save buffer style info
+  (setq TeX-auto-save t)
+  ;; automatically parse style info
+  (setq TeX-parse-self t)
+  ;; no tabs
+  (setq TeX-auto-untabify t)
+  ;; TODO: unsure what this does
+  ;; (setq-default TeX-master 'dwim)
+
+  ;; (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-plug-into-AUCTeX t)
+  (setq TeX-PDF-mode t)
+  ;; better name for local variable
+  (setq TeX-auto-local ".auctex-auto")
+  ;; auto revert pdf buffer
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+  ;; show errors if there were any
+  (setq TeX-error-overview-open-after-TeX-run t)
+  ;; autocompletion
+  ;; don't confirm before cleaning files
+  (setq TeX-clean-confirm nil)
+  (defun tex-runall-clean ()
+    (interactive)
+    (TeX-command-run-all nil)
+    (TeX-clean))
+
+  (defun TeX-insert-pair (arg open-str close-str)
+    "Like TeX-insert-brackes but for any pair"
+    (interactive "P")
+    (if (TeX-active-mark)
+        (progn
+          (if (< (point) (mark)) (exchange-point-and-mark))
+          (insert close-str)
+          (save-excursion (goto-char (mark)) (insert open-str)))
+      (insert open-str)
+      (save-excursion
+        (if arg (forward-sexp (prefix-numeric-value arg)))
+        (insert close-str))))
+
+  (defun LaTeX-insert-inline-math (arg)
+    (interactive "P")
+    (TeX-insert-pair arg "\\( " " \\)"))
+  (defun LaTeX-insert-display-math (arg)
+    (interactive "P")
+    (TeX-insert-pair arg "\\[ " " \\]"))
+
+  (defun TeX-mode-keybindings ()
+    (local-set-key (kbd "C-c b") #'tex-runall-clean))
+  (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
+
+  (defun LaTeX-mode-keybindings ()
+    (local-set-key (kbd "H-C-j") #'LaTeX-insert-inline-math)
+    (local-set-key (kbd "H-C-k") #'LaTeX-insert-display-math))
+  (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
+
+  (setq TeX-save-query nil)
+
+  (setq latex-templates-directory "~/.emacs.d/templates/latex-templates/")
+  (defun latex-template ()
+    (interactive)
+    (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
+           (selection (completing-read "LaTeX Template: "
+                                       (mapcar #'file-name-base files))))
+      (insert-file-contents (concat latex-templates-directory selection ".tex"))))
+
+  (setq TeX-electric-sub-and-superscript t)
+  (setq LaTeX-math-menu-unicode t)
+  (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
+  (add-hook 'LaTeX-mode-hook
+            (lambda () (set-fill-column 90)))
+  (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+  (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
+
+  (put 'TeX-command-extra-options 'safe-local-variable
+       (lambda (x) (string-equal x "-shell-escape")))
+
+  ;; stuff added by Custom
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+  (custom-set-variables
+   ;; custom-set-variables was added by Custom.
+   ;; If you edit it by hand, you could mess it up, so be careful.
+   ;; Your init file should contain only one such instance.
+   ;; If there is more than one, they won't work right.
+   '(ansi-color-faces-vector
+     [default default default italic underline success warning error])
+   '(ansi-color-names-vector
+     ["#212526" "#ff4b4b" "#b4fa70" "#fce94f" "#729fcf" "#e090d7" "#8cc4ff" "#eeeeec"])
+   '(custom-enabled-themes (quote (sanityinc-tomorrow-eighties)))
+   '(custom-safe-themes
+     (quote
+      ("628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
+   '(gud-gdb-command-name "gdb --annotate=1")
+   '(inhibit-startup-screen t)
+   '(large-file-warning-threshold nil)
+   '(mac-command-modifier (quote meta))
+   '(org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
+   '(package-selected-packages
+     (quote
+      (undo-tree smartparens slime reveal-in-osx-finder pylint org-bullets magit helm-swoop color-theme-sanityinc-tomorrow auctex ac-emoji))))
+
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+  (custom-set-faces
+   ;; custom-set-faces was added by Custom.
+   ;; If you edit it by hand, you could mess it up, so be careful.
+   ;; Your init file should contain only one such instance.
+   ;; If there is more than one, they won't work right.
+   '(fringe ((t (:background "#2d2d2d" :foreground "#2d2d2d"))))
+   '(vertical-border ((t (:foreground "rosy brown")))))
+
+#+END_SRC
