@@ -561,6 +561,16 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (setq undo-tree-auto-save-history t)
   (global-undo-tree-mode)
 #+END_SRC
+*** Magit
+**** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][HALP MOM HOW DO I Magit]]
+**** Enter magit: C-c g
+**** The config
+#+BEGIN_SRC emacs-lisp
+(use-package magit)
+
+;; Speedy-open magit
+    (global-set-key (kbd "C-c g") 'magit-status)
+#+END_SRC
 ** Cosmetics
 *** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
@@ -647,9 +657,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
     (global-set-key (kbd "H-<return>") 'toggle-frame-fullscreen)
     ;; Speedy eval-buffer
     (global-set-key (kbd "C-c b") 'eval-buffer)
-    ;; Speedy-open magit
-    (global-set-key (kbd "C-c g") 'magit-status)
-
+   
     ;; count words in selected region
     (global-set-key (kbd "C-c w") 'count-words)
 
