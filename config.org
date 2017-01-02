@@ -521,6 +521,17 @@ Note: I used "brew install gnutls" instead of "sudo port install gnutls"
   ;; (unless (boundp 'helm-swoop-last-query)
   ;;     (set (make-local-variable 'helm-swoop-last-query) ""))
 #+END_SRC
+* Magit
+** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][HALP MOM HOW DO I Magit]]
+** Enter magit: C-c g
+** The config
+#+BEGIN_SRC emacs-lisp
+(use-package magit)
+
+;; Speedy-open magit
+    (global-set-key (kbd "C-c g") 'magit-status)
+#+END_SRC
+
 * Unfiled
 ** Packages
 *** Slime
@@ -560,16 +571,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (require 'undo-tree)
   (setq undo-tree-auto-save-history t)
   (global-undo-tree-mode)
-#+END_SRC
-*** Magit
-**** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][HALP MOM HOW DO I Magit]]
-**** Enter magit: C-c g
-**** The config
-#+BEGIN_SRC emacs-lisp
-(use-package magit)
-
-;; Speedy-open magit
-    (global-set-key (kbd "C-c g") 'magit-status)
 #+END_SRC
 ** Cosmetics
 *** Whitespace preferences
