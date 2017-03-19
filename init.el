@@ -31,6 +31,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(LaTeX-math-menu-unicode t)
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
@@ -42,16 +43,21 @@
    (quote
     ("5008a5c8985fda9803ff9d02bc2a56b45407ccc251ff85a817e9dfe7f345ffe5" "82d2cac368ccdec2fcc7573f24c3f79654b78bf133096f9b40c20d97ec1d8016" "cedd3b4295ac0a41ef48376e16b4745c25fa8e7b4f706173083f16d5792bb379" "bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
  '(fci-rule-color "#515151")
+ '(global-auto-complete-mode t)
+ '(global-company-mode t)
  '(gud-gdb-command-name "gdb --annotate=1")
  '(inhibit-startup-screen t)
  '(large-file-warning-threshold nil)
+ '(list-colors-sort (quote luminance))
  '(mac-command-modifier (quote meta))
  '(mac-control-modifier (quote control))
  '(mac-function-modifier (quote super))
+ '(mac-option-modifier (quote hyper))
  '(org-bullets-bullet-list (quote ("⊕" "⊗" "⦷" "⊜")))
  '(package-selected-packages
    (quote
-    (cheatsheet highlight-indent-guides tronesque-theme yasnippet fireplace multiple-cursors use-package undo-tree smartparens slime reveal-in-osx-finder pylint org-bullets magit helm-swoop color-theme-sanityinc-tomorrow auctex ac-emoji)))
+    (ac-c-headers ac-math ac-helm achievements helm-ag helm-projectile projectile cheatsheet highlight-indent-guides yasnippet fireplace multiple-cursors use-package undo-tree smartparens slime reveal-in-osx-finder pylint org-bullets magit helm-swoop color-theme-sanityinc-tomorrow auctex ac-emoji)))
+ '(suggest-key-bindings t)
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
    (quote
@@ -73,7 +79,8 @@
      (320 . "#f99157")
      (340 . "#ffcc66")
      (360 . "#99cc99"))))
- '(vc-annotate-very-old-color nil))
+ '(vc-annotate-very-old-color nil)
+ '(visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow))))
 ;; (custom-set-faces
 ;; ;;  ;; custom-set-faces was added by Custom.
 ;; ;;  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -93,5 +100,18 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(bold ((t (:weight extra-bold))))
+ '(bold-italic ((t (:slant oblique :weight bold))))
+ '(font-lock-doc-face ((t (:foreground "#58615a" :family "Fira Code"))))
  '(fringe ((t (:background "#001519"))))
+ '(mode-line ((t (:background "#000d0f" :foreground "cyan" :box (:line-width 1 :color "dark slate gray") :family "Fira"))))
+ '(org-code ((t (:inherit shadow :foreground "dark sea green" :family "Courier"))))
+ '(org-verbatim ((t (:inherit shadow :stipple nil :foreground "AntiqueWhite4" :family "Andale Mono"))))
+ '(popup-face ((t (:background "#19343D" :foreground "#a0ffff" :weight light :family "Fira code"))))
+ '(popup-menu-face ((t (:inherit popup-face :family "Fira code"))))
+ '(popup-menu-selection-face ((t (:inherit default :background "#033021" :foreground "#3fffff" :weight light :family "Fira Code"))))
+ '(popup-scroll-bar-foreground-face ((t (:background "#19343D"))))
+ '(popup-summary-face ((t (:inherit popup-face :foreground "slate blue"))))
+ '(popup-tip-face ((t (:background "dark slate gray" :foreground "aquamarine" :family "Fira Code"))))
+ '(region ((t (:background "#032929"))))
  '(vertical-border ((t (:foreground "#00d4d4")))))

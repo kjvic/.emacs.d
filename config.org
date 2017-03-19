@@ -1,6 +1,7 @@
 #+TITLE: Krista Victorsen's Emacs configuration
 #+AUTHOR: Krista Victorsen
 #+PROPERTY: header-args :tangle yes
+#+OPTIONS: tex: t
 #+OPTIONS: toc:2
 * Introduction
 * Cleanup plan
@@ -12,7 +13,7 @@
 *** Split up large invocations into sub-bullets
 How to: see spruce's config. Something something angle brackets source block titles
 * Bootstrap
-Get emacs off the ground!
+ Get emacs off the ground!
 ** Tangling external files
 *** Tangling helpers
 #+BEGIN_SRC emacs-lisp
@@ -45,14 +46,15 @@ Get emacs off the ground!
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "~/.emacs.d/elisp/")
   (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
-  (add-to-list 'load-path "~/.emacs.d/elpa/ac-emoji-20150823.11")
+;; WTF why do i have ac-emoji. MOM!!!!!
+  ;(add-to-list 'load-path "~/.emacs.d/elpa/ac-emoji-20150823.11")
   (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
   (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs") 
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
 #+END_SRC
 ** Package management management
 [[https://github.com/jwiegley/use-package][use-package github]]
-#+BEGIN_SRC emacs-lisp 
+#+BEGIN_SRC emacs-lisp
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
@@ -72,46 +74,134 @@ This is where I put things that help me modify my emacs install more efficiently
 (bind-key "H-e" 'krista/eval-config)
 (bind-key "C-c e" 'krista/open-config)
 #+END_SRC
-* Buffer aesthetics
-** Mode line
-*** Display time and column number
+** Emacs-achievements!
+*** [[https://bitbucket.org/gvol/emacs-achievements/src/5b4b7b6816aaf105cd493f51b3860bd2f0c014a6/README.md?at=default&fileviewer=file-view-default][Bitbucket]]
 #+BEGIN_SRC emacs-lisp
-(display-time-mode t)
+  (use-package achievements
+:diminish achievements-mode)
+  (setq achievements-mode t)
+#+END_SRC
+* Emacs proper
+** Turn off alarm sounds
+Source: https://www.emacswiki.org/emacs/AlarmBell#toc3
+#+BEGIN_SRC emacs-lisp
+ (setq ring-bell-function 'ignore)
+#+END_SRC
+** Buffer aesthetics
+*** Cursor
+Note: changing the cursor-type does not take effect until emacs is restarted,
+because it only sets the /default/ cursor type. I have not yet figured
+out how to set it immediately, but this should suffice as startup config.
+#+BEGIN_SRC emacs-lisp
+(setq-default cursor-type 'bar)
+(setq-default cursor-in-non-selected-windows 'hollow)
+#+END_SRC
+*** Fringe wrap indicators
+Replace the (fugly!) arrows that serve to indicate line continuiation
+#+BEGIN_SRC emacs-lisp
+  (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0]) 
+  (define-fringe-bitmap 'right-curly-arrow
+    [#b00000000
+     #b00000000
+     #b00000000
+     #b00000000
+     #b00000000
+     #b10010010
+     #b10010010
+     #b00000000])
+
+  (define-fringe-bitmap 'left-curly-arrow
+    [#b00000000
+     #b00000000
+     #b00000000
+     #b00000000
+     #b00000000
+     #b10010010
+     #b10010010
+     #b00000000])
+#+END_SRC
+*** Mode line
+**** Display column number, do not display time
+#+BEGIN_SRC emacs-lisp
+(setq display-time-mode nil)
 (column-number-mode t)
 (setq display-time-default-load-average nil)
 #+END_SRC
-*** Display wordcount
+**** Display wordcount
 #+BEGIN_SRC emacs-lisp
     (setq mode-line-position
       (append
        mode-line-position
        '((wc-mode
-	  (6 (:eval (if (use-region-p)
-			(format " %d,%d,%d"
-				(abs (- (point) (mark)))
-				(count-words-region (point) (mark))
-				(abs (- (line-number-at-pos (point))
-					(line-number-at-pos (mark)))))
-		      (format " %d,%d,%d"
-			      (- (point-max) (point-min))
-			      (count-words-region (point-min) (point-max))
-			      (line-number-at-pos (point-max))))))
-	  nil))))
+          (6 (:eval (if (use-region-p)
+                        (format " %d,%d,%d"
+                                (abs (- (point) (mark)))
+                                (count-words-region (point) (mark))
+                                (abs (- (line-number-at-pos (point))
+                                        (line-number-at-pos (mark)))))
+                      (format " %d,%d,%d"
+                              (- (point-max) (point-min))
+                              (count-words-region (point-min) (point-max))
+                              (line-number-at-pos (point-max))))))
+          nil))))
 #+END_SRC
-** Indentation depth guidelines
+**** Diminish!
+Get the names of your minor-modes out of my mode line, dammit!
+Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
+#+BEGIN_SRC emacs-lisp
+(when (require 'diminish nil 'noerror)
+;; Minor modes:
+  (eval-after-load "auto-complete"
+      '(diminish 'auto-complete-mode ""))
+  (eval-after-load "undo-tree"
+    '(diminish 'undo-tree-mode ""))
+  (eval-after-load "DocView"
+    '(diminish 'DocView-mode "PDF"))
+)
+#+END_SRC
+*** (Deprecated) Indentation depth guidelines
 [[https://github.com/DarthFennec/highlight-indent-guides][github page for highlight-indent-guides]]
 #+BEGIN_SRC emacs-lisp
-(use-package highlight-indent-guides
-:init
-(add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
-:config
-;; That's [[http://www.fileformat.info/info/unicode/char/23b9/index.htm][Unicode Character 'RIGHT VERTICAL BOX LINE' (U+23B9)]]
-(setq highlight-indent-guides-method 'character)
-(setq highlight-indent-guides-character ?\⎹) 
-;(setq highlight-indent-guides-method 'fill)
-;(set-face-background 'highlight-indent-guides-odd-face "#002128")
-;(set-face-background 'highlight-indent-guides-even-face "#002128")
-)
+  ;; (use-package highlight-indent-guides
+  ;; :init
+  ;; (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
+  ;; :config
+  ;; ;; That's [[http://www.fileformat.info/info/unicode/char/23b9/index.htm][Unicode Character 'RIGHT VERTICAL BOX LINE' (U+23B9)]]
+  ;; (setq highlight-indent-guides-method 'character)
+  ;; (setq highlight-indent-guides-character ?\⎹)
+  ;; ;(setq highlight-indent-guides-method 'fill)
+  ;; ;(set-face-background 'highlight-indent-guides-odd-face "#002128")
+  ;; ;(set-face-background 'highlight-indent-guides-even-face "#002128")
+  ;; )
+#+END_SRC
+*** Font
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'default nil :font "Fira Code-13")
+(set-frame-font "Fira Code-13")
+#+END_SRC
+*** Line numbers -- on by default
+#+BEGIN_SRC emacs-lisp
+(setq global-linum-mode t)
+#+END_SRC
+*** TODO Hide the ugly title bar
+http://stackoverflow.com/questions/20405433/how-to-force-emacs-not-use-mountain-lions-full-screen-style
+doesn't seem to work for me :(
+#+BEGIN_SRC emacs-lisp
+(setq ns-auto-hide-menu-bar t)
+#+END_SRC
+** Getting around
+#+BEGIN_SRC emacs-lisp
+; Cycle backwards through buffers
+; ..."C-x o", meet your new friend "C-c o"!
+(global-set-key (kbd "C-c o") 'previous-multiframe-window)
+
+; Backwards kill-line. It's the backwards version of C-k
+; Source: https://www.emacswiki.org/emacs/BackwardKillLine
+(defun backward-kill-line (arg)
+  "Kill ARG lines backward."
+  (interactive "p")
+  (kill-line (- 1 arg)))
+(global-set-key (kbd "C-c k") 'backward-kill-line)
 #+END_SRC
 * cheatsheet
 ** Intro
@@ -132,7 +222,7 @@ Here's an example cheat. Follow this format in your config
 #+END_SRC
 ** Krista's cheatsheet entries
 #+BEGIN_SRC emacs-lisp :noweb tangle
-  (use-package cheatsheet 
+  (use-package cheatsheet
     :config
     <<common-cheats>>
     <<LaTeX-cheats>>
@@ -247,13 +337,13 @@ Much thanks goes to the AUCTeX Reference Card for version 11.89
                     :key "` E"
                     :description "\\exists")
     (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                    :key "` i" 
+                    :key "` i"
                     :description "\\in")
     (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
                     :key "` |"
                     :description "\\vee")
     (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                    :key "` &" 
+                    :key "` &"
                     :description "\\wedge")
 
     (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
@@ -332,6 +422,22 @@ Much thanks goes to the AUCTeX Reference Card for version 11.89
 *** Org-mode cheats
 #+BEGIN_SRC emacs-lisp :noweb-ref org-cheats :tangle no
 #+END_SRC
+*** Magit cheats
+**** [[*Magit][Magit use-package entry]]
+**** Config
+#+BEGIN_SRC emacs-lisp
+  (cheatsheet-add :group 'magit
+                  :key "C-c g"
+                  :description "Enter magit menu")
+  (cheatsheet-add :group 'magit
+                  :key "(from status menu) h"
+                  :description "HALP")
+  (cheatsheet-add :group 'magit
+                  :key "c c; [type message]; C-c C-c"
+                  :description "Commit staged changes; add commit msg; save commit msg and finish")
+
+
+#+END_SRC
 ** TODO use popwin to make it so that
 *** the cheatsheet pops up in a sensible place (just like helm), i.e.
 the cheatsheet does not occupy the adjacent buffer
@@ -349,27 +455,44 @@ the display until you restart Emacs.
 ** Configuration
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet
+    :diminish yas-minor-mode
     :config
-    (yas-global-mode t)
-    )
+    (yas-global-mode t))
 #+END_SRC
 * Org
 Note: Use shift+meta-<right> to get lateral shifts (demotion/promotion) that apply to the whole subtree!
 #+BEGIN_SRC emacs-lisp :noweb tangle
-      (use-package org
-        :diminish org-indent-mode
-        :config
-        (setq org-agenda-files (list "~/school/W17/at_a_glance.org"))
-        <<org-aesthetics>>
-        <<org-capture>>
-        <<org-inline-images>>
-        <<org-tree-behavior>>
-        <<org-convenience>>
-        <<org-hacks>>
-        :bind (("C-c c" . org-capture) 
-               ("C-c l" . org-store-link) ;; Note: C-c C-l will insert link, C-c C-o will open at point
-               ("C-c a a" . org-agenda-list)
-        ))
+        (use-package org
+          :diminish org-indent-mode
+          :config
+          (setq org-agenda-files (list "~/school/W17/at_a_glance.org"))
+          <<org-aesthetics>>
+          <<org-capture>>
+          <<org-inline-images>>
+          <<org-tree-behavior>>
+          <<org-convenience>>
+          <<org-hacks>>
+          :bind (
+                 ;; For use with my capture templates
+                 ("C-c c" . org-capture)
+                 
+                 ;; More of the org ecosystem!
+                 ("C-c a a" . org-agenda-list)
+                 
+                 ;; C-c C-l will insert link,
+                 ;; C-c C-o will open the link at the point
+                 ("C-c l" . org-store-link)
+
+                 ;; Keybindings that insert inline / display math
+                 ;; into org docs, s.t. everything will export to
+                 ;; LaTeX nicely
+                 ;; NOTE: These shortcuts match up with my shortcuts
+                 ;;       for inserting inline / display math into
+                 ;;       regular LaTeX docs. This is to provide as
+                 ;;       seamless an experience as I can muster.
+                 ("H-C-j" . LaTeX-insert-inline-math)
+                 ("H-C-k" . LaTeX-insert-display-math)
+          ))
 #+END_SRC
 ** Aesthetics
 #+BEGIN_SRC emacs-lisp :noweb-ref org-aesthetics :tangle no
@@ -377,13 +500,22 @@ Note: Use shift+meta-<right> to get lateral shifts (demotion/promotion) that app
   (require 'org-bullets)
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
 
-  ;; Render LaTeX special characters, if possible/sensible
+  ;; Setting this to `t' will automatically render LaTeX special
+  ;; characters, if possible/sensible
   ;; E.g. "\" + "alpha" becomes a lowercase alpha
-  (setq org-pretty-entities t)
+  ;; I have it turned off, but it's here
+  (setq org-pretty-entities nil)
 
-  ;; Use {} to render sub/super-scripts
+  ;; Setting this to `t' will use {} to render sub/super-scripts
   ;; e.g. asdf_{123} is rendered as "asdf sub 123"
+  ;; I have it turned off, but it's here
   (setq org-use-sub-superscripts "{}")
+
+  ;; Hide org markup elements
+  ;; See http://stackoverflow.com/questions/10969617/hiding-markup-elements-in-org-mode
+  ;; Note: This change may not take effect until you restart emacs:
+  ;; See http://orgmode.org/manual/Emphasis-and-monospace.html
+  (setq org-hide-emphasis-markers t)
 
   ;; Make top-level headings larger, and lower-level headings progressively smaller
   (set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.2)
@@ -397,41 +529,115 @@ Note: Use shift+meta-<right> to get lateral shifts (demotion/promotion) that app
   ;; <http://orgmode.org/manual/Clean-view.html>
   (setq org-startup-indented t)
 #+END_SRC
+** Exporting to LaTeX
+#+BEGIN_SRC emacs-lisp
+  ;; Put newlines around my images, please!
+  ;; http://emacs.stackexchange.com/questions/5363/centered-figures-in-org-mode-latex-export?rq=1
+  (advice-add 'org-latex--inline-image :around
+              (lambda (orig link info)
+                (concat
+                 "\\begin{center}"
+                 (funcall orig link info)
+                 "\\end{center}")))
+#+END_SRC
 ** Org-capture
 #+BEGIN_SRC emacs-lisp :noweb-ref org-capture :tangle no
-    ;; Org capture
-    (setq org-default-notes-file (concat org-directory "/notes.org"))
-    ;; To see what goes into an org-capture template, see
-    ;; http://orgmode.org/manual/Template-elements.html#Template-elements
-    (setq org-capture-templates
-          ;; '(("t" "Todo" entry (file+olp "~/dev/org_capture_example/gtd.org" "%^{heading|Org Tree Heading 1}")
-          ;;    "* TODO %?\n %i\n %a")
-          ;;   ("j" "Journal asdf" entry (file+datetree "~/dev/org_capture_example/journal.org")
-          ;;    "* %?\nEntered on %U\n %i\n %a")))
-          '(("t" "todo" entry (file+olp "~/lists/todo.org" "todo")
-             "* TODO %?\n %i\n")
-            ("a" "annoy" entry (file+olp "~/lists/annoy.org" "annoy")
-             "* %?\n %i\n")
-            ("p" "projects" entry (file+olp "~/lists/projects.org" "projects")
-             "* %?\n %i\n")
-            ("s" "shopping" entry (file+olp "~/lists/shopping.org" "shopping")
-             "* %?\n %i\n")
-             ("q" "quotes" entry (file+olp "~/lists/quotes.org" "quotes")
-             "* %?\n %i\n")
-            ("m" "magpie" entry (file+olp "~/lists/magpie.org" "magpie")
-             "* %?\n %i\n")))
+  ;; Org capture
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
+  ;; To see what goes into an org-capture template, see
+  ;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
+  (setq org-capture-templates
+        ;; '(("t" "Todo" entry (file+olp "~/dev/org_capture_example/gtd.org" "%^{heading|Org Tree Heading 1}")
+        ;;    "* TODO %?\n %i\n %a")
+        ;;   ("j" "Journal asdf" entry (file+datetree "~/dev/org_capture_example/journal.org")
+        ;;    "* %?\nEntered on %U\n %i\n %a")))
+        '(("t" "todo" entry (file+olp "~/lists/todo.org" "todo")
+           "* TODO %?\n %i\n")
+          ("a" "annoy" entry (file+olp "~/lists/annoy.org" "annoy")
+           "* %?\n %i\n")
+          ("p" "projects" entry (file+olp "~/lists/projects.org" "projects")
+           "* %?\n %i\n")
+          ("s" "shopping" entry (file+olp "~/lists/shopping.org" "shopping")
+           "* %?\n %i\n")
+          ("q" "quotes" entry (file+olp "~/lists/quotes.org" "quotes")
+           "* %?\n %i\n")
+         ;;  ("r" "Meeting Schedule" entry
+         ;;   (file+headline "~/lists/things.org" "HEADING") 
+         ;;   "* TODO Meeting - %?
+         ;; %i
+         ;; Room: %^{Place}
+         ;; Subject of the Meeting: %^{Subject}
+         ;; Who will Atend: %^{Atendees}
+
+         ;;        %a ")
+
+          ("g" "grammar feud" entry 
+           (file+headline "~/dev/spruce/grammar_feud.org" "Disagreements") 
+           "* Summary: %?
+         Disagreed-upon snippet: %^{snippet}
+         Link to source: %^{link}")
+          ("m" "magpie" entry (file+olp "~/lists/magpie.org" "magpie")
+           "* %?\n %i\n")))
 
 #+END_SRC
 ** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
-;; Let me resize them plz!
-(setq org-image-actual-width '(500)) 
-;; => if there is a #+ATTR.*: width="200", resize to 200,
-;;     otherwise resize to 500 pixels wide
-;; link credit: http://lists.gnu.org/archive/html/emacs-orgmode/2012-08/msg01388.html
+  ;; Let me resize them plz!
+  (setq org-image-actual-width '(500))
+  ;; => if there is a #+ATTR.*: width="200", resize to 200,
+  ;;     otherwise resize to 500 pixels wide
+  ;; link credit: http://lists.gnu.org/archive/html/emacs-orgmode/2012-08/msg01388.html
 
-;; By default, *do* display inline images
-(setq org-startup-with-inline-images t)
+  ;; By default, *do* display inline images
+  (setq org-startup-with-inline-images t)
+
+  ;; Let me automagically display PDFs as inline images!
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; - Solution via http://emacs.stackexchange.com/questions/390/display-pdf-images-in-org-mode
+  ;; - NOTE: This solution requires imagemagick and ghostscript
+  ;;   To install these on macOS, run:
+  ;;       brew install ghostscript
+  ;;       brew install imagemagick
+  ;;   Source for install instructions: http://stackoverflow.com/a/37457373
+
+  ;; ;; Execute the `org-include-img-from-pdf' function just before saving the file
+  ;; (add-hook 'before-save-hook #'org-include-img-from-pdf)
+  ;; ;; Execute the `org-include-img-from-pdf' function before processing the
+  ;; ;; file for export
+  ;; (add-hook 'org-export-before-processing-hook #'org-include-img-from-pdf)
+  ;; (defun org-include-img-from-pdf (&rest ignore)
+  ;;   "Convert the pdf files to image files.
+
+  ;; Only looks at #HEADER: lines that have \":convertfrompdf t\".
+  ;; This function does nothing if not in org-mode, so you can safely
+  ;; add it to `before-save-hook'."
+  ;;   (interactive)
+  ;;   (when (derived-mode-p 'org-mode)
+  ;;     (save-excursion
+  ;;       (goto-char (point-min))
+  ;;       (while (search-forward-regexp
+  ;;               "^\\s-*#\\+HEADER:.*\\s-:convertfrompdf\\s-+t"
+  ;;               nil 'noerror)
+  ;;         (let* (filenoext imgext imgfile pdffile cmd)
+  ;;           ;; Keep on going on to the next line till it finds a line with
+  ;;           ;; `[[FILE]]'
+  ;;           (while (progn
+  ;;                    (forward-line 1)
+  ;;                    (not (looking-at "\\[\\[\\(.*\\)\\.\\(.*\\)\\]\\]"))))
+  ;;           (when (looking-at "\\[\\[\\(.*\\)\\.\\(.*\\)\\]\\]")
+  ;;             (setq filenoext (match-string-no-properties 1))
+  ;;             (setq imgext (match-string-no-properties 2))
+  ;;             (setq imgfile (expand-file-name (concat filenoext "." imgext)))
+  ;;             (setq pdffile (expand-file-name (concat filenoext "." "pdf")))
+  ;;             (message "imgfile: %s" imgfile)
+  ;;             (setq cmd (concat "convert -density 96 -quality 85 "
+  ;;                               pdffile " " imgfile))
+  ;;             (when (file-newer-than-file-p pdffile imgfile)
+  ;;               ;; This block is executed only if pdffile is newer than imgfile
+  ;;               ;; or if imgfile does not exist
+  ;;               ;; Source: https://www.gnu.org/software/emacs/manual/html_node/elisp/Testing-Accessibility.html
+  ;;               (message "%s" cmd)
+  ;;               (shell-command cmd))))))))
 #+END_SRC
 ** Tweaks to tree behavior
 (Todo)
@@ -440,49 +646,58 @@ Note: Use shift+meta-<right> to get lateral shifts (demotion/promotion) that app
 (setq org-yank-folded-subtrees t)
 #+END_SRC
 ** Convenience functions
+Org source blocks
 #+BEGIN_SRC emacs-lisp :noweb-ref org-convenience :tangle no
     ;; Start a new elisp block in org mode by typing <el and then pressing TAB
     (add-to-list 'org-structure-template-alist
                  '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
+    (add-to-list 'org-structure-template-alist
+                 '("c" "#+BEGIN_SRC C\n?\n#+END_SRC" ""))
+    (add-to-list 'org-structure-template-alist
+                 '("cpp" "#+BEGIN_SRC C++\n?\n#+END_SRC" ""))
+    (add-to-list 'org-structure-template-alist
+                 '("p" "#+BEGIN_SRC python\n?\n#+END_SRC" ""))
 
     ;; Start a new elisp block in org mode by typing <el and then pressing TAB
     (add-to-list 'org-structure-template-alist
-                 '("ex" "#+BEGIN_SRC example\n?\n#+END_SRC" ""))
+                 '("ex" "#+BEGIN_EXAMPLE \n?\n#+END_EXAMPLE" ""))
 #+END_SRC
 ** Hacky shit
 It works, okay?
 #+BEGIN_SRC emacs-lisp :noweb-ref org-hacks :tangle no
-  ;; Problem: When editing a TeX file, C-c C-c results in 
-  ;; "org-babel-execute-src-block: No org-babel-execute function for LaTeX!"
-  ;; Solution: This, apparently
-  (org-babel-do-load-languages 
-   'org-babel-load-languages
-   '((latex . t)
-     (python . t)
-     (emacs-lisp . t)
-     (lisp . t)
-     ))
+    ;; Problem: When editing a TeX file, C-c C-c results in
+    ;; "org-babel-execute-src-block: No org-babel-execute function for LaTeX!"
+    ;; Solution: This, apparently
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((latex . t)
+       (python . t)
+       (emacs-lisp . t)
+       (C . t)
+       ;(C++ . t)
+       (lisp . t)
+       ))
 
-    ;; Org link workflow:
-    ;; 1. Save link to current location with C-c l
-    ;; 2. *move to spot where i'd like to insert the link*
-    ;; 3. C-c C-l to insert link
-    ;; 4. ((here's the annoying bit!)) delete the default string, because I
-    ;;    basically never use the file path as the link description
-    ;; 5. type in my own description
-    ;; 6. carry on with my life
-    (defun org-link-describe (link desc) 
-      (if (file-exists-p link)
-          desc
-        (read-string "Description: " nil)))
+      ;; Org link workflow:
+      ;; 1. Save link to current location with C-c l
+      ;; 2. *move to spot where i'd like to insert the link*
+      ;; 3. C-c C-l to insert link
+      ;; 4. ((here's the annoying bit!)) delete the default string, because I
+      ;;    basically never use the file path as the link description
+      ;; 5. type in my own description
+      ;; 6. carry on with my life
+      (defun org-link-describe (link desc)
+        (if (file-exists-p link)
+            desc
+          (read-string "Description: " nil)))
 
-    (setf org-make-link-description-function #'org-link-describe)
+      (setf org-make-link-description-function #'org-link-describe)
 #+END_SRC
 * Mail
-[[https://elliottucker.net/working-setup-for-sending-email-via-gmail-from-emacs-on-osx.html][The link that finally worked]]
+[[https://elliottucker.net/working-setup-for-sending-email-via-gmail-from-emacs-on-osx.html]The link that finally worked]]
 Note: I used "brew install gnutls" instead of "sudo port install gnutls"
 #+BEGIN_SRC emacs-lisp
-(setq 
+(setq
  send-mail-function 'smtpmail-send-it
  message-send-mail-function 'smtpmail-send-it
  user-mail-address "victorsenkrista@gmail.com"
@@ -511,6 +726,7 @@ Note: I used "brew install gnutls" instead of "sudo port install gnutls"
   ;; helm swoop bookmarks
   (global-set-key (kbd "C-x r l") 'helm-bookmarks)
 
+;; Helm company
   ;; Make helm split the window vertically
   (setq helm-swoop-split-direction 'split-window-vertically)
   (setq helm-swoop-split-with-multiple-windows nil)
@@ -521,6 +737,45 @@ Note: I used "brew install gnutls" instead of "sudo port install gnutls"
   ;; (unless (boundp 'helm-swoop-last-query)
   ;;     (set (make-local-variable 'helm-swoop-last-query) ""))
 #+END_SRC
+* Auto-complete
+** TODO fix the width issues :P
+[[http://stackoverflow.com/questions/27474936/color-schema-of-emacs-auto-complete-mode][color scheme]]
+#+BEGIN_SRC emacs-lisp
+(require 'auto-complete)
+  (ac-config-default)
+  (global-auto-complete-mode t)
+  (defun auto-complete-mode-maybe ()
+    "No maybe for you. Only AC!"
+    (unless (minibufferp (current-buffer))
+      (auto-complete-mode t))) 
+  (global-set-key (kbd "C-;") 'auto-complete)
+    (diminish auto-complete-mode)
+#+END_SRC
+* Projectile
+** Projectile proper
+#+BEGIN_SRC emacs-lisp
+  ;; Absolute necessity
+  (use-package projectile
+    :diminish
+    :config
+    (setq projectile-completion-system 'helm)
+    (projectile-global-mode)
+    )
+#+END_SRC
+** Helm projectile
+#+BEGIN_SRC emacs-lisp
+  (use-package helm-projectile
+    :config
+    (with-eval-after-load 'projectile (helm-projectile-on))
+    )
+#+END_SRC
+*** Hints
+**** C-c p s s :: Projectile - search - silver searcher
+**** C-c p r :: souped-up find-replace
+**** C-c p f :: souped-up file-find
+**** C-c p k :: kill buffers within the project
+**** C-c p a :: switch to related file
+***** e.g. if you're in Collection.c, C-c p a will switch to Collection.h
 * Magit
 ** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][HALP MOM HOW DO I Magit]]
 ** Enter magit: C-c g
@@ -532,6 +787,25 @@ Note: I used "brew install gnutls" instead of "sudo port install gnutls"
     (global-set-key (kbd "C-c g") 'magit-status)
 #+END_SRC
 
+* Programming
+** C / C++
+#+BEGIN_SRC emacs-lisp
+      (use-package cc-mode
+        :bind (:map
+               c-mode-base-map
+               ("C-c b" . compile)
+               ("M-j" . join-line))
+        :config
+    )
+  ;; Give me preconfigured autocompletions for C and C++!
+  ;; (add-hook 'c-mode-hook
+  ;;             (lambda ()
+  ;;               (add-to-list 'ac-sources 'ac-source-c-headers)
+  ;;               (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
+  ; Secret: I really use Ratliffe, but this does the trick
+  (setq c-default-style "whitesmith")
+  (setq-default c-basic-offset 4)
+#+END_SRC
 * Unfiled
 ** Packages
 *** Slime
@@ -553,7 +827,7 @@ Note: I used "brew install gnutls" instead of "sudo port install gnutls"
 *** Recently-opened files
 #+BEGIN_SRC emacs-lisp
     (require 'recentf)
-    (recentf-mode 1)
+    (recentf-mode t)
     (setq recentf-max-menu-items 100)
     (setq helm-recentf-max-menu-items 100)
     ;;; Fast access to them recently-opened files
@@ -571,14 +845,18 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (require 'undo-tree)
   (setq undo-tree-auto-save-history t)
   (global-undo-tree-mode)
+  (add-to-list 'undo-tree-history-directory-alist
+               '("." . "~/.emacs.d/cache/undo"))
 #+END_SRC
 ** Cosmetics
 *** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
-    (add-hook 'python-mode-hook 'whitespace-mode)
-    (setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
-    (setq whitespace-action '(auto-cleanup))
-    (setq-default indent-tabs-mode nil)
+  (add-hook 'python-mode-hook 'whitespace-mode)
+  (setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
+  (setq whitespace-action '(auto-cleanup))
+  (setq-default indent-tabs-mode nil)
+  (setq tab-width 8)
+  ;(defvaralias 'c-basic-offset 'tab-width)
 #+END_SRC
 *** Python: indent with a 4-space-wide tab
 #+BEGIN_SRC emacs-lisp
@@ -622,7 +900,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
       :ensure nil
       :config
       (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-      (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+      ; (add-hook 'LaTeX-mode-hook 'flyspell-mode)
       (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
       (add-hook 'LaTeX-mode-hook 'turn-on-reftex))
     (setq reftex-plug-into-AUCTeX t))
@@ -658,12 +936,12 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
     (global-set-key (kbd "H-<return>") 'toggle-frame-fullscreen)
     ;; Speedy eval-buffer
     (global-set-key (kbd "C-c b") 'eval-buffer)
-   
+
     ;; count words in selected region
     (global-set-key (kbd "C-c w") 'count-words)
 
     ;; Speedy-open melpa
-    (global-set-key (kbd "\C-cp") 'package-list-packages)
+    (global-set-key (kbd "H-p") 'package-list-packages)
 
     ;; Transpose line up or down
     (defun move-line-up ()
@@ -704,7 +982,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
           (comment-or-uncomment-region (line-beginning-position)
                                        (line-end-position))
         (comment-dwim arg)))
-    (global-set-key "\M-;" 'comment-dwim-line)
+    (global-set-key (kbd "M-;") 'comment-dwim-line)
 
     ;; Make C-K clear text AND newline
     (setq kill-whole-line t)
@@ -730,8 +1008,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
     (setq TeX-parse-self t)
     ;; no tabs
     (setq TeX-auto-untabify t)
-    ;; TODO: unsure what this does
-    ;; (setq-default TeX-master 'dwim)
 
     ;; (add-hook 'LaTeX-mode-hook 'visual-line-mode)
     (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
@@ -765,24 +1041,25 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
           (if arg (forward-sexp (prefix-numeric-value arg)))
           (insert close-str))))
 
+;; Make it so that I can insert inline/display math quickly
     (defun LaTeX-insert-inline-math (arg)
       (interactive "P")
       (TeX-insert-pair arg "\\( " " \\)"))
     (defun LaTeX-insert-display-math (arg)
       (interactive "P")
       (TeX-insert-pair arg "\\[ " " \\]"))
-
-    (defun TeX-mode-keybindings ()
-      (local-set-key (kbd "C-c b") #'tex-runall-clean))
-    (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
-
     (defun LaTeX-mode-keybindings ()
       (local-set-key (kbd "H-C-j") #'LaTeX-insert-inline-math)
       (local-set-key (kbd "H-C-k") #'LaTeX-insert-display-math))
     (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
 
+    (defun TeX-mode-keybindings ()
+      (local-set-key (kbd "C-c b") #'tex-runall-clean))
+    (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
+
     (setq TeX-save-query nil)
 
+;; TODO: wtf is this
     (setq latex-templates-directory "~/.emacs.d/templates/latex-templates/")
     (defun latex-template ()
       (interactive)
@@ -794,9 +1071,14 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
     (setq TeX-electric-sub-and-superscript t)
     (setq LaTeX-math-menu-unicode t)
     (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
+
+;; Wrap lines at n characters
     (add-hook 'LaTeX-mode-hook
-              (lambda () (set-fill-column 90)))
+              (lambda () (set-fill-column 70)))
+;; Automatically wrap lines when I go past n characters
     (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+
+;; Automatically turn \ + alpha into the unicode equivalent \alpha
     (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
 
     (put 'TeX-command-extra-options 'safe-local-variable
@@ -843,11 +1125,11 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 * Emacs help
 ** [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Commands.html][Keybinding instructions]]
 ** How to edit source code in org-mode file:
-*** New code block: 
+*** New code block:
 **** New source block (lang unspecified): <s [TAB]
 **** New elisp block: <el [TAB]
 *** Edit code block: C-c'
-** embed image in org 
+** embed image in org
 #+BEGIN_SRC emacs-lisp
   ;; P.s.: you can embed an image in org as follows:
   ;; * Picture:
@@ -855,7 +1137,24 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   ;; #+attr_html: :width="50px"
   ;; #+NAME:   figure
   ;; [[file:./my_image.png]]
-;; To view: 
+;; To view:
 #+END_SRC
 ** Select all: C-xh
-asdlfkjasd lasjdflk asdlkja sdfkj asdkj 
+
+asdlfkjasd lasjdflk asdlkja sdfkj asdkj
+* Kinesis-specific keyboard issues
+  My hands were hurting after long typing sessions. As a computer
+  science student, I forsaw this as being a potentially-huge problem
+  later on in life. So I decided to get a Kinesis Advantage 2 while I
+  was still young, springy, and stupid enough to consider adapting my
+  muscle memory to a new keyboard style. (...but fuck Dvorak. I ain't
+  crazy enough for Dvorak.)  2 weeks later, my new Kinesis arrived. I
+  plugged her into my Mac, and with a perverse glee, I started up
+  Emacs to see what was broken. Here, I shall document those things.
+
+  - First, I live in the U.S. This keyboard therefore shipped with a
+    P.C. layout. I followed the instructions for "Mac Mode", as per
+    the quickstart guide. It should be noted that before switching, my
+    layout was modified from the stock OS X layout as follows:
+    - Global modifications:
+    - 
