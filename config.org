@@ -78,8 +78,9 @@ This is where I put things that help me modify my emacs install more efficiently
 *** [[https://bitbucket.org/gvol/emacs-achievements/src/5b4b7b6816aaf105cd493f51b3860bd2f0c014a6/README.md?at=default&fileviewer=file-view-default][Bitbucket]]
 #+BEGIN_SRC emacs-lisp
   (use-package achievements
-:diminish achievements-mode)
-  (setq achievements-mode t)
+    :diminish achievements-mode
+    :config (achievements-mode t))
+     
 #+END_SRC
 * Emacs proper
 ** Turn off alarm sounds
@@ -181,7 +182,7 @@ Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
 #+END_SRC
 *** Line numbers -- on by default
 #+BEGIN_SRC emacs-lisp
-(setq global-linum-mode t)
+global-linum-mode
 #+END_SRC
 *** TODO Hide the ugly title bar
 http://stackoverflow.com/questions/20405433/how-to-force-emacs-not-use-mountain-lions-full-screen-style
@@ -227,6 +228,8 @@ Here's an example cheat. Follow this format in your config
     <<common-cheats>>
     <<LaTeX-cheats>>
     <<org-cheats>>
+    <<magit-cheats>>
+    <<projectile-cheats>>
     :bind (("H-c" . cheatsheet-show)))
 #+END_SRC
 *** Common cheats for use throughout Emacs
@@ -421,11 +424,17 @@ Much thanks goes to the AUCTeX Reference Card for version 11.89
 #+END_SRC
 *** Org-mode cheats
 #+BEGIN_SRC emacs-lisp :noweb-ref org-cheats :tangle no
+    (cheatsheet-add :group 'org
+                    :key "
+#+attr_org: :width 300 
+#+attr_latex :width 3in :placement [H] 
+[[file:./my_image.png]]"
+                    :description "Add image inline")
 #+END_SRC
 *** Magit cheats
 **** [[*Magit][Magit use-package entry]]
 **** Config
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :noweb-ref magit-cheats :tangle no
   (cheatsheet-add :group 'magit
                   :key "C-c g"
                   :description "Enter magit menu")
@@ -435,8 +444,24 @@ Much thanks goes to the AUCTeX Reference Card for version 11.89
   (cheatsheet-add :group 'magit
                   :key "c c; [type message]; C-c C-c"
                   :description "Commit staged changes; add commit msg; save commit msg and finish")
-
-
+#+END_SRC
+*** Projectile cheats
+#+BEGIN_SRC emacs-lisp :noweb-ref projectile-cheats :tangle no
+  (cheatsheet-add :group 'projectile
+                  :key "C-c p s s"
+                  :description "search")
+  (cheatsheet-add :group 'projectile
+                  :key "C-c p r"
+                  :description "find-replace")
+  (cheatsheet-add :group 'projectile
+                  :key "C-c p f"
+                  :description "file-find")
+  (cheatsheet-add :group 'projectile
+                  :key "C-c p k"
+                  :description "kill all buffers for current project")
+  (cheatsheet-add :group 'projectile
+                  :key "C-c p a"
+                  :description "switch to related file (e.g. header)")
 #+END_SRC
 ** TODO use popwin to make it so that
 *** the cheatsheet pops up in a sensible place (just like helm), i.e.
@@ -547,39 +572,39 @@ Note: Use shift+meta-<right> to get lateral shifts (demotion/promotion) that app
   ;; To see what goes into an org-capture template, see
   ;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
   (setq org-capture-templates
-        ;; '(("t" "Todo" entry (file+olp "~/dev/org_capture_example/gtd.org" "%^{heading|Org Tree Heading 1}")
-        ;;    "* TODO %?\n %i\n %a")
-        ;;   ("j" "Journal asdf" entry (file+datetree "~/dev/org_capture_example/journal.org")
-        ;;    "* %?\nEntered on %U\n %i\n %a")))
-        '(("t" "todo" entry (file+olp "~/lists/todo.org" "todo")
+        '(("t" "todo" entry (file+olp "~/lists/todo.org" "todo-queue")
            "* TODO %?\n %i\n")
           ("a" "annoy" entry (file+olp "~/lists/annoy.org" "annoy")
            "* %?\n %i\n")
-          ("p" "projects" entry (file+olp "~/lists/projects.org" "projects")
-           "* %?\n %i\n")
-          ("s" "shopping" entry (file+olp "~/lists/shopping.org" "shopping")
+          ("p" "project" entry (file+olp "~/lists/todo.org" "projects")
+             "* %?\n %i\n")
+          ("s" "shopping" entry (file+olp "~/lists/todo.org" "shopping")
            "* %?\n %i\n")
           ("q" "quotes" entry (file+olp "~/lists/quotes.org" "quotes")
            "* %?\n %i\n")
-         ;;  ("r" "Meeting Schedule" entry
-         ;;   (file+headline "~/lists/things.org" "HEADING") 
-         ;;   "* TODO Meeting - %?
-         ;; %i
-         ;; Room: %^{Place}
-         ;; Subject of the Meeting: %^{Subject}
-         ;; Who will Atend: %^{Atendees}
-
-         ;;        %a ")
-
+  
           ("g" "grammar feud" entry 
            (file+headline "~/dev/spruce/grammar_feud.org" "Disagreements") 
            "* Summary: %?
          Disagreed-upon snippet: %^{snippet}
-         Link to source: %^{link}")
-          ("m" "magpie" entry (file+olp "~/lists/magpie.org" "magpie")
-           "* %?\n %i\n")))
-
+         Link to source: %^{link}")))
 #+END_SRC
+*** Examples:
+#+BEGIN_EXAMPLE 
+;;  ("r" "Meeting Schedule" entry
+;;   (file+headline "~/lists/things.org" "HEADING") 
+;;   "* TODO Meeting - %?
+;; %i
+;; Room: %^{Place}
+;; Subject of the Meeting: %^{Subject}
+;; Who will Atend: %^{Atendees}
+;;        %a ")
+;; '(("t" "Todo" entry (file+olp "~/dev/org_capture_example/gtd.org" "%^{heading|Org Tree Heading 1}")
+;;    "* TODO %?\n %i\n %a")
+;;   ("j" "Journal asdf" entry (file+datetree "~/dev/org_capture_example/journal.org")
+;;    "* %?\nEntered on %U\n %i\n %a")))
+#+END_EXAMPLE
+
 ** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
   ;; Let me resize them plz!
@@ -693,25 +718,25 @@ It works, okay?
 
       (setf org-make-link-description-function #'org-link-describe)
 #+END_SRC
-* Mail
-[[https://elliottucker.net/working-setup-for-sending-email-via-gmail-from-emacs-on-osx.html]The link that finally worked]]
-Note: I used "brew install gnutls" instead of "sudo port install gnutls"
+* (in progress) Mail
+# [[https://elliottucker.net/working-setup-for-sending-email-via-gmail-from-emacs-on-osx.html][The link that finally worked]]
+# Note: I used "brew install gnutls" instead of "sudo port install gnutls"
 #+BEGIN_SRC emacs-lisp
-(setq
- send-mail-function 'smtpmail-send-it
- message-send-mail-function 'smtpmail-send-it
- user-mail-address "victorsenkrista@gmail.com"
- smtpmail-starttls-credentials '(("smtp.gmail.com" "587" nil nil))
- smtpmail-auth-credentials  (expand-file-name "~/.authinfo")
- smtpmail-default-smtp-server "smtp.gmail.com"
- smtpmail-smtp-server "smtp.gmail.com"
- smtpmail-smtp-service 587
- smtpmail-debug-info t
- starttls-extra-arguments nil
- starttls-gnutls-program "/usr/local/bin/gnutls-cli"
- starttls-extra-arguments nil
- starttls-use-gnutls t
-)
+  ;; (setq
+  ;;  send-mail-function 'smtpmail-send-it
+  ;;  message-send-mail-function 'smtpmail-send-it
+  ;;  user-mail-address "victorsenkrista@gmail.com"
+  ;;  smtpmail-starttls-credentials '(("smtp.gmail.com" "587" nil nil))
+  ;;  smtpmail-auth-credentials  (expand-file-name "~/.authinfo")
+  ;;  smtpmail-default-smtp-server "smtp.gmail.com"
+  ;;  smtpmail-smtp-server "smtp.gmail.com"
+  ;;  smtpmail-smtp-service 587
+  ;;  smtpmail-debug-info t
+  ;;  starttls-extra-arguments nil
+  ;;  starttls-gnutls-program "/usr/local/bin/gnutls-cli"
+  ;;  starttls-extra-arguments nil
+  ;;  starttls-use-gnutls t
+  ;; )
 #+END_SRC
 * Helm
 #+BEGIN_SRC emacs-lisp
@@ -769,13 +794,6 @@ Note: I used "brew install gnutls" instead of "sudo port install gnutls"
     (with-eval-after-load 'projectile (helm-projectile-on))
     )
 #+END_SRC
-*** Hints
-**** C-c p s s :: Projectile - search - silver searcher
-**** C-c p r :: souped-up find-replace
-**** C-c p f :: souped-up file-find
-**** C-c p k :: kill buffers within the project
-**** C-c p a :: switch to related file
-***** e.g. if you're in Collection.c, C-c p a will switch to Collection.h
 * Magit
 ** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][HALP MOM HOW DO I Magit]]
 ** Enter magit: C-c g
@@ -806,6 +824,39 @@ Note: I used "brew install gnutls" instead of "sudo port install gnutls"
   (setq c-default-style "whitesmith")
   (setq-default c-basic-offset 4)
 #+END_SRC
+* LaTeX
+#+BEGIN_SRC emacs-lisp
+  ;; auctex provides package tex
+  (use-package tex
+    :ensure auctex
+    :config
+    (setq TeX-auto-save t)
+    (setq TeX-PDF-mode t)
+    (defun krista/TeX-open-output-buffer ()
+      (interactive)
+      (let ((output-file (with-current-buffer TeX-command-buffer
+                           (expand-file-name
+                            (TeX-active-master (TeX-output-extension))))))
+        (find-file output-file)))
+    (add-to-list 'TeX-view-program-list
+                 (list "Emacs" #'krista/TeX-open-output-buffer))
+    (setq TeX-view-program-selection '((output-pdf "Emacs")))
+    (setq TeX-parse-self t)
+    (setq-default TeX-master nil)
+    (use-package latex
+      :ensure nil
+      :config
+      (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+      (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+      (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+      :bind (           
+             ;("`_" . LaTeX-math-bar)
+             )
+      )
+    (setq reftex-plug-into-AUCTeX t)
+    )
+#+END_SRC
+
 * Unfiled
 ** Packages
 *** Slime
@@ -874,36 +925,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 *** Kill the default emacs toolbar (top of screen)
 #+BEGIN_SRC emacs-lisp
     (tool-bar-mode -1)
-#+END_SRC
-*** auctex
-#+BEGIN_SRC emacs-lisp
-  ;; THANK YOU FOR SPRUCE YOU DA TSAR BoMBa
-
-  ;; auctex provides package tex
-  (use-package tex
-    :ensure auctex
-    :config
-    (setq TeX-auto-save t)
-    (setq TeX-PDF-mode t)
-    (defun krista/TeX-open-output-buffer ()
-      (interactive)
-      (let ((output-file (with-current-buffer TeX-command-buffer
-                           (expand-file-name
-                            (TeX-active-master (TeX-output-extension))))))
-        (find-file output-file)))
-    (add-to-list 'TeX-view-program-list
-                 (list "Emacs" #'krista/TeX-open-output-buffer))
-    (setq TeX-view-program-selection '((output-pdf "Emacs")))
-    (setq TeX-parse-self t)
-    (setq-default TeX-master nil)
-    (use-package latex
-      :ensure nil
-      :config
-      (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-      ; (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-      (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-      (add-hook 'LaTeX-mode-hook 'turn-on-reftex))
-    (setq reftex-plug-into-AUCTeX t))
 #+END_SRC
 *** Highlight corresponding paren whenever you mouse over its pair
 #+BEGIN_SRC emacs-lisp
@@ -1028,6 +1049,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
       (TeX-command-run-all nil)
       (TeX-clean))
 
+
     (defun TeX-insert-pair (arg open-str close-str)
       "Like TeX-insert-brackes but for any pair"
       (interactive "P")
@@ -1054,7 +1076,8 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
     (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
 
     (defun TeX-mode-keybindings ()
-      (local-set-key (kbd "C-c b") #'tex-runall-clean))
+      (local-set-key (kbd "C-c b") #'tex-runall-clean)
+      (local-set-key (kbd "H b") #'LaTeX-math-bar))
     (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
 
     (setq TeX-save-query nil)
@@ -1134,14 +1157,12 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   ;; P.s.: you can embed an image in org as follows:
   ;; * Picture:
   ;; #+CAPTION: This is the caption for the next figure link (or table)
-  ;; #+attr_html: :width="50px"
+  ;; #+attr_org: :width="50px"
   ;; #+NAME:   figure
   ;; [[file:./my_image.png]]
 ;; To view:
 #+END_SRC
 ** Select all: C-xh
-
-asdlfkjasd lasjdflk asdlkja sdfkj asdkj
 * Kinesis-specific keyboard issues
   My hands were hurting after long typing sessions. As a computer
   science student, I forsaw this as being a potentially-huge problem
@@ -1157,4 +1178,3 @@ asdlfkjasd lasjdflk asdlkja sdfkj asdkj
     the quickstart guide. It should be noted that before switching, my
     layout was modified from the stock OS X layout as follows:
     - Global modifications:
-    - 
