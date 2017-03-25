@@ -502,14 +502,13 @@ the display until you restart Emacs.
     (yas-global-mode t))
 #+END_SRC
 * Org
-Note: Use shift+meta-<right> to get lateral shifts (demotion/promotion) that apply to the whole subtree!
 #+BEGIN_SRC emacs-lisp :noweb tangle
         (use-package org
           :diminish org-indent-mode
           :config
-          (setq org-agenda-files (list "~/school/W17/at_a_glance.org"))
           <<org-aesthetics>>
           <<org-capture>>
+          <<org-agenda>>
           <<org-inline-images>>
           <<org-tree-behavior>>
           <<org-convenience>>
@@ -536,6 +535,19 @@ Note: Use shift+meta-<right> to get lateral shifts (demotion/promotion) that app
                  ("H-C-k" . LaTeX-insert-display-math)
           ))
 #+END_SRC
+** Help! Tips from http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html
+*** todo / schedule / deadline
+**** C-c C-t :: org-todo
+**** C-c C-s :: org-schedule
+**** C-c C-d :: org-deadline
+**** M-shift-RET :: org-insert-todo-heading
+- Adds newline
+- Adds bullet at same indentation level
+- Bullet automatically has a `TODO' header
+*** agenda view:
+**** hit `t' to mark an item DONE
+**** hit `l' to enter log display
+*** shift-TAB :: OVERVIEW vs. normal mode
 ** Aesthetics
 #+BEGIN_SRC emacs-lisp :noweb-ref org-aesthetics :tangle no
   ;; Display bullets instead of asterisks
@@ -606,7 +618,7 @@ Note: Use shift+meta-<right> to get lateral shifts (demotion/promotion) that app
          Disagreed-upon snippet: %^{snippet}
          Link to source: %^{link}")))
 #+END_SRC
-*** Examples:
+*** Example capture entries:
 #+BEGIN_EXAMPLE 
 ;;  ("r" "Meeting Schedule" entry
 ;;   (file+headline "~/lists/things.org" "HEADING") 
@@ -621,7 +633,15 @@ Note: Use shift+meta-<right> to get lateral shifts (demotion/promotion) that app
 ;;   ("j" "Journal asdf" entry (file+datetree "~/dev/org_capture_example/journal.org")
 ;;    "* %?\nEntered on %U\n %i\n %a")))
 #+END_EXAMPLE
+** Org agenda
+#+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
+  ;; Add a timestamp to record when a TODO item is closed
+  (setq org-log-done t)
 
+  ;; Places to sniff when compiling a list of TODO items
+  (setq org-agenda-files (list "~/school/W17/at_a_glance.org"
+                               "~/lists/todo.org"))
+#+END_SRC
 ** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
   ;; Let me resize them plz!
@@ -682,7 +702,7 @@ Note: Use shift+meta-<right> to get lateral shifts (demotion/promotion) that app
   ;;               (shell-command cmd))))))))
 #+END_SRC
 ** Tweaks to tree behavior
-(Todo)
+Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to the whole subtree!
 #+BEGIN_SRC emacs-lisp :noweb-ref org-tree-behavior :tangle no
 (setq org-yank-adjusted-subtrees t)
 (setq org-yank-folded-subtrees t)
