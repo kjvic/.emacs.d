@@ -226,6 +226,7 @@ Here's an example cheat. Follow this format in your config
   (use-package cheatsheet
     :config
     <<common-cheats>>
+    <<builtin-cheats>>
     <<LaTeX-cheats>>
     <<org-cheats>>
     <<magit-cheats>>
@@ -252,6 +253,22 @@ Here's an example cheat. Follow this format in your config
   (cheatsheet-add :group 'Getting_around
                   :key "M-t"
                   :description "Swap the word at the mark w/the word before it")
+#+END_SRC
+*** Built-in emacs help
+[[http://stackoverflow.com/questions/965263/given-an-emacs-command-name-how-would-you-find-key-bindings-and-vice-versa][Source]]
+#+BEGIN_SRC emacs-lisp :noweb-ref builtin-cheats :tangle yes
+  (cheatsheet-add :group 'builtin_help
+                  :key "C-h c [command-name]"
+                  :description "Look up the keybinding for a given command")
+  (cheatsheet-add :group 'builtin_help
+                  :key "C-h k [key-sequence]"
+                  :description "Look up the command for a given keybinding")
+  (cheatsheet-add :group 'builtin_help
+                  :key "C-h f [function-name]"
+                  :description "Look up the docs for a command")
+  (cheatsheet-add :group 'builtin_help
+                  :key "C-h ?"
+                  :description "Help for getting more help")
 #+END_SRC
 *** LaTeX cheats
 Much thanks goes to the AUCTeX Reference Card for version 11.89
