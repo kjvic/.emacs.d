@@ -62,25 +62,41 @@ How to: see spruce's config. Something something angle brackets source block tit
   (setq use-package-always-ensure t)
 #+END_SRC
 * Evolution
-This is where I put things that help me modify my emacs install more efficiently
+** This is where I put things that help me modify my emacs install more efficiently
 #+BEGIN_SRC emacs-lisp
-(defun krista/open-config ()
-  (interactive)
-  (find-file (or "~/.emacs.d/config.org"
-                 user-init-file "")))
-(defun krista/eval-config ()
-  (interactive)
-  (load-file user-init-file))
-(bind-key "H-e" 'krista/eval-config)
-(bind-key "C-c e" 'krista/open-config)
+  (defun krista/open-config ()
+    (interactive)
+    (find-file (or "~/.emacs.d/config.org"
+                   user-init-file "")))
+  (defun krista/eval-config ()
+    (interactive)
+    (load-file user-init-file))
+
+  ; Let me eval either a region or a buffer at a time
+  (defun eval-region-or-buffer ()
+    (interactive)
+    (let ((debug-on-error t))
+      (cond
+       (mark-active
+        (call-interactively 'eval-region)
+        (message "Region evaluated!")
+        (setq deactivate-mark t))
+       (t
+        (eval-buffer)
+        (message "Buffer evaluated!")))))
+
+  (add-hook 'emacs-lisp-mode-hook
+            (lambda ()
+              (global-set-key (kbd "C-c C-b") 'eval-region-or-buffer)))
+  (bind-key "H-e" 'krista/eval-config)
+  (bind-key "C-c e" 'krista/open-config)
 #+END_SRC
-** Emacs-achievements!
+** achievements mode
 *** [[https://bitbucket.org/gvol/emacs-achievements/src/5b4b7b6816aaf105cd493f51b3860bd2f0c014a6/README.md?at=default&fileviewer=file-view-default][Bitbucket]]
 #+BEGIN_SRC emacs-lisp
   (use-package achievements
     :diminish achievements-mode
     :config (achievements-mode t))
-     
 #+END_SRC
 * Emacs proper
 ** Turn off alarm sounds
@@ -98,7 +114,7 @@ out how to set it immediately, but this should suffice as startup config.
 (setq-default cursor-in-non-selected-windows 'hollow)
 #+END_SRC
 *** Fringe wrap indicators
-Replace the (fugly!) arrows that serve to indicate line continuiation
+Replace the (fugly!) arrows that serve to indicate line continuation
 #+BEGIN_SRC emacs-lisp
   (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0]) 
   (define-fringe-bitmap 'right-curly-arrow
@@ -150,15 +166,19 @@ Replace the (fugly!) arrows that serve to indicate line continuiation
 Get the names of your minor-modes out of my mode line, dammit!
 Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
 #+BEGIN_SRC emacs-lisp
-(when (require 'diminish nil 'noerror)
-;; Minor modes:
-  (eval-after-load "auto-complete"
+  ;; Silence the minor modes!!!
+  (when (require 'diminish nil 'noerror)
+    (eval-after-load "auto-complete"
       '(diminish 'auto-complete-mode ""))
-  (eval-after-load "undo-tree"
-    '(diminish 'undo-tree-mode ""))
-  (eval-after-load "DocView"
-    '(diminish 'DocView-mode "PDF"))
-)
+    (eval-after-load "undo-tree"
+      '(diminish 'undo-tree-mode ""))
+    (eval-after-load "Helm"
+      '(diminish 'helm-mode ""))
+    (eval-after-load "DocView"
+      '(diminish 'DocView-mode "PDF"))
+    (diminish 'auto-revert-mode "")
+    (diminish 'c++-mode "C++")
+    )
 #+END_SRC
 *** (Deprecated) Indentation depth guidelines
 [[https://github.com/DarthFennec/highlight-indent-guides][github page for highlight-indent-guides]]
@@ -182,16 +202,19 @@ Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
 #+END_SRC
 *** Line numbers -- on by default
 #+BEGIN_SRC emacs-lisp
-global-linum-mode
+(setq global-linum-mode t)
 #+END_SRC
 *** TODO Hide the ugly title bar
 http://stackoverflow.com/questions/20405433/how-to-force-emacs-not-use-mountain-lions-full-screen-style
-doesn't seem to work for me :(
+hrm. doesn't seem to work for me :P
 #+BEGIN_SRC emacs-lisp
 (setq ns-auto-hide-menu-bar t)
 #+END_SRC
 ** Getting around
 #+BEGIN_SRC emacs-lisp
+;; Where to land when we start up
+(setq initial-buffer-choice "~/core/scratch")
+
 ; Cycle backwards through buffers
 ; ..."C-x o", meet your new friend "C-c o"!
 (global-set-key (kbd "C-c o") 'previous-multiframe-window)
@@ -226,11 +249,11 @@ Here's an example cheat. Follow this format in your config
   (use-package cheatsheet
     :config
     <<common-cheats>>
-    <<builtin-cheats>>
     <<LaTeX-cheats>>
     <<org-cheats>>
     <<magit-cheats>>
     <<projectile-cheats>>
+    <<builtin-cheats>>
     :bind (("H-c" . cheatsheet-show)))
 #+END_SRC
 *** Common cheats for use throughout Emacs
@@ -254,199 +277,181 @@ Here's an example cheat. Follow this format in your config
                   :key "M-t"
                   :description "Swap the word at the mark w/the word before it")
 #+END_SRC
-*** Built-in emacs help
-[[http://stackoverflow.com/questions/965263/given-an-emacs-command-name-how-would-you-find-key-bindings-and-vice-versa][Source]]
-#+BEGIN_SRC emacs-lisp :noweb-ref builtin-cheats :tangle yes
-  (cheatsheet-add :group 'builtin_help
-                  :key "C-h c [command-name]"
-                  :description "Look up the keybinding for a given command")
-  (cheatsheet-add :group 'builtin_help
-                  :key "C-h k [key-sequence]"
-                  :description "Look up the command for a given keybinding")
-  (cheatsheet-add :group 'builtin_help
-                  :key "C-h f [function-name]"
-                  :description "Look up the docs for a command")
-  (cheatsheet-add :group 'builtin_help
-                  :key "C-h ?"
-                  :description "Help for getting more help")
-#+END_SRC
 *** LaTeX cheats
 Much thanks goes to the AUCTeX Reference Card for version 11.89
 #+BEGIN_SRC emacs-lisp :noweb-ref LaTeX-cheats :tangle no
-    (cheatsheet-add :group 'LaTeX:document_structure ; see "Command Insertion" in the AUCTeX sheet
-                    :key "C-c C-s"
-                    :description "Insert section")
-    (cheatsheet-add :group 'LaTeX:document_structure
-                    :key "M-RET"
-                    :description "Insert item")
-    (cheatsheet-add :group 'LaTeX:document_structure
-                    :key "C-c ]"
-                    :description "Close LaTeX environment")
+  (cheatsheet-add :group 'LaTeX:document_structure ; see "Command Insertion" in the AUCTeX sheet
+                  :key "C-c C-s"
+                  :description "Insert section")
+  (cheatsheet-add :group 'LaTeX:document_structure
+                  :key "M-RET"
+                  :description "Insert item")
+  (cheatsheet-add :group 'LaTeX:document_structure
+                  :key "C-c ]"
+                  :description "Close LaTeX environment")
 
-    ; Typeface commands: C-c C-f C-[whatever]
-    (cheatsheet-add :group 'LaTeX:typeface
-                    :key "C-c C-f C-b"
-                    :description "Bold")
-    (cheatsheet-add :group 'LaTeX:typeface
-                    :key "C-c C-f C-i"
-                    :description "Italics")
-    (cheatsheet-add :group 'LaTeX:typeface
-                    :key "C-c C-f C-r"
-                    :description "\\text{} in math mode")
-    (cheatsheet-add :group 'LaTeX:typeface
-                    :key "C-c C-f C-e"
-                    :description "\\emph{}")
-    (cheatsheet-add :group 'LaTeX:typeface
-                    :key "C-c C-f C-t"
-                    :description "typewriter-style text")
-    (cheatsheet-add :group 'LaTeX:typeface
-                    :key "C-c C-f C-s"
-                    :description "(forward-) slanted text")
-    (cheatsheet-add :group 'LaTeX:typeface
-                    :key "C-c C-f C-c"
-                    :description "smallcaps")
+                                          ; Typeface commands: C-c C-f C-[whatever]
+  (cheatsheet-add :group 'LaTeX:typeface
+                  :key "C-c C-f C-b"
+                  :description "Bold")
+  (cheatsheet-add :group 'LaTeX:typeface
+                  :key "C-c C-f C-i"
+                  :description "Italics")
+  (cheatsheet-add :group 'LaTeX:typeface
+                  :key "C-c C-f C-r"
+                  :description "\\text{} in math mode")
+  (cheatsheet-add :group 'LaTeX:typeface
+                  :key "C-c C-f C-e"
+                  :description "\\emph{}")
+  (cheatsheet-add :group 'LaTeX:typeface
+                  :key "C-c C-f C-t"
+                  :description "typewriter-style text")
+  (cheatsheet-add :group 'LaTeX:typeface
+                  :key "C-c C-f C-s"
+                  :description "(forward-) slanted text")
+  (cheatsheet-add :group 'LaTeX:typeface
+                  :key "C-c C-f C-c"
+                  :description "smallcaps")
 
-    ; Source formatting commands: C-c C-q C-[whatever]
-    (cheatsheet-add :group 'LaTeX:source_formatting
-                    :key "C-c C-q C-s"
-                    :description "Align section")
-    (cheatsheet-add :group 'LaTeX:source_formatting
-                    :key "C-c C-q C-s"
-                    :description "Align environment")
-    (cheatsheet-add :group 'LaTeX:source_formatting
-                    :key "M-q"
-                    :description "Align paragraph")
-    (cheatsheet-add :group 'LaTeX:source_formatting
-                    :key "C-c *"
-                    :description "Mark section")
-    (cheatsheet-add :group 'LaTeX:source_formatting
-                    :key "C-c ."
-                    :description "Mark environment")
+                                          ; Source formatting commands: C-c C-q C-[whatever]
+  (cheatsheet-add :group 'LaTeX:source_formatting
+                  :key "C-c C-q C-s"
+                  :description "Align section")
+  (cheatsheet-add :group 'LaTeX:source_formatting
+                  :key "C-c C-q C-s"
+                  :description "Align environment")
+  (cheatsheet-add :group 'LaTeX:source_formatting
+                  :key "M-q"
+                  :description "Align paragraph")
+  (cheatsheet-add :group 'LaTeX:source_formatting
+                  :key "C-c *"
+                  :description "Mark section")
+  (cheatsheet-add :group 'LaTeX:source_formatting
+                  :key "C-c ."
+                  :description "Mark environment")
 
-    ; Math abbreviations: `[whatever]
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
-                    :key "` c"
-                    :description "\\mathcal{}")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
-                    :key "` ~"
-                    :description "\\tilde{}")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
-                    :key "` ^"
-                    :description "\\hat{}")
+                                          ; Math abbreviations: `[whatever]
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
+                  :key "` c"
+                  :description "\\mathcal{}")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
+                  :key "` ~"
+                  :description "\\tilde{}")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
+                  :key "` ^"
+                  :description "\\hat{}")
 
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                    :key "` C-f"
-                    :description "\\rightarrow")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                    :key "` C-b"
-                    :description "\\leftarrow")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                    :key "` C-p"
-                    :description "\\uparrow")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                    :key "` C-n]"
-                    :description "\\downarrow")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
+                  :key "` C-f"
+                  :description "\\rightarrow")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
+                  :key "` C-b"
+                  :description "\\leftarrow")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
+                  :key "` C-p"
+                  :description "\\uparrow")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
+                  :key "` C-n]"
+                  :description "\\downarrow")
 
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                    :key "` I"
-                    :description "\\infty")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                    :key "` A"
-                    :description "\\forall")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                    :key "` E"
-                    :description "\\exists")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                    :key "` i"
-                    :description "\\in")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                    :key "` |"
-                    :description "\\vee")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                    :key "` &"
-                    :description "\\wedge")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                  :key "` I"
+                  :description "\\infty")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                  :key "` A"
+                  :description "\\forall")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                  :key "` E"
+                  :description "\\exists")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                  :key "` i"
+                  :description "\\in")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                  :key "` |"
+                  :description "\\vee")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                  :key "` &"
+                  :description "\\wedge")
 
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                    :key "` 0"
-                    :description "\\emptyset")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                    :key "` \\"
-                    :description "\\setminus")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                    :key "` +"
-                    :description "\\cup")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                    :key "` -"
-                    :description "\\cap")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                  :key "` 0"
+                  :description "\\emptyset")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                  :key "` \\"
+                  :description "\\setminus")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                  :key "` +"
+                  :description "\\cup")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                  :key "` -"
+                  :description "\\cap")
 
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                    :key "` {"
-                    :description "\\subset")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                    :key "` }"
-                    :description "\\supset")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                    :key "` ["
-                    :description "\\subseteq")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                    :key "` ]"
-                    :description "\\supseteq")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                  :key "` {"
+                  :description "\\subset")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                  :key "` }"
+                  :description "\\supset")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                  :key "` ["
+                  :description "\\subseteq")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                  :key "` ]"
+                  :description "\\supseteq")
 
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                    :key "` <"
-                    :description "\\leq")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                    :key "` >"
-                    :description "\\geq")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                    :key "` *"
-                    :description "\\times")
-    (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                    :key "` ."
-                    :description "\\cdot")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
+                  :key "` <"
+                  :description "\\leq")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
+                  :key "` >"
+                  :description "\\geq")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
+                  :key "` *"
+                  :description "\\times")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
+                  :key "` ."
+                  :description "\\cdot")
 
-  ;;   (cheatsheet-add :group 'LaTeX:math_abbrevs:trig ; Trig
-(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-:key"` C-e"
-:description "\\exp")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:trig
+                  :key"` C-e"
+                  :description "\\exp")
 
-(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-:key"` C-s"
-:description "\\sin")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:trig
+                  :key"` C-s"
+                  :description "\\sin")
 
-(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-:key"` C-c"
-:description "\\cos")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:trig
+                  :key"` C-c"
+                  :description "\\cos")
 
-(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-:key"` C-t"
-:description "\\tan")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:trig
+                  :key"` C-t"
+                  :description "\\tan")
 
-  ;;   (cheatsheet-add :group 'LaTeX:math_abbrevs:analysis ; Analysis
-(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-:key"` C-^"
-:description "\\sup")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
+                  :key"` C-^"
+                  :description "\\sup")
 
-(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-:key"` C-_"
-:description "\\inf")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
+                  :key"` C-_"
+                  :description "\\inf")
 
-(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-:key"` C-l"
-:description "\\lim")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
+                  :key"` C-l"
+                  :description "\\lim")
 
-(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-:key"` C-d"
-:description "\\det")
+  (cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
+                  :key"` C-d"
+                  :description "\\det")
 #+END_SRC
 *** Org-mode cheats
 #+BEGIN_SRC emacs-lisp :noweb-ref org-cheats :tangle no
-    (cheatsheet-add :group 'org
-                    :key "
-#+attr_org: :width 300 
-#+attr_latex :width 3in :placement [H] 
-[[file:./my_image.png]]"
-                    :description "Add image inline")
+  (cheatsheet-add :group 'org
+                  :key "
+  ,#+attr_org: :width 300 
+  ,#+attr_latex :width 3in :placement [H] 
+  [[file:./my_image.png]]"
+                      :description "Add image inline")
 #+END_SRC
 *** Magit cheats
 **** [[*Magit][Magit use-package entry]]
@@ -474,15 +479,33 @@ Much thanks goes to the AUCTeX Reference Card for version 11.89
                   :key "C-c p f"
                   :description "file-find")
   (cheatsheet-add :group 'projectile
+                  :key "C-c p a"
+                  :description "switch to related file (e.g. header)")
+  (cheatsheet-add :group 'projectile
                   :key "C-c p k"
                   :description "kill all buffers for current project")
   (cheatsheet-add :group 'projectile
-                  :key "C-c p a"
-                  :description "switch to related file (e.g. header)")
+                  :key "C-c p <Shift>+s"
+                  :description "save all buffers for current project")
+#+END_SRC
+*** Built-in emacs help
+[[http://stackoverflow.com/questions/965263/given-an-emacs-command-name-how-would-you-find-key-bindings-and-vice-versa][Source]]
+#+BEGIN_SRC emacs-lisp :noweb-ref builtin-cheats :tangle yes
+  (cheatsheet-add :group 'builtin_help
+                  :key "C-h c [command-name]"
+                  :description "Look up the keybinding for a given command")
+  (cheatsheet-add :group 'builtin_help
+                  :key "C-h k [key-sequence]"
+                  :description "Look up the command for a given keybinding")
+  (cheatsheet-add :group 'builtin_help
+                  :key "C-h f [function-name]"
+                  :description "Look up the docs for a command")
+  (cheatsheet-add :group 'builtin_help
+                  :key "C-h ?"
+                  :description "Help for getting more help")
 #+END_SRC
 ** TODO use popwin to make it so that
-*** the cheatsheet pops up in a sensible place (just like helm), i.e.
-the cheatsheet does not occupy the adjacent buffer
+*** the cheatsheet pops up in a sensible place (just like helm), i.e. the cheatsheet does not occupy the adjacent buffer
 *** closing the cheatsheet does not run "delete-window" (C-x 0) on the buffer that it occupied
 ** TODO make this entire section less hideous. (Seriously, the [[*LaTeX%20cheats][LaTeX cheats]] section is p fugly)
 ** NOTE: funky load behavior
@@ -490,9 +513,11 @@ It appears that the cheatsheet loads at startup time. Adding another
 cheatsheet entry makes the entry pop up in the cheatsheet after
 eval'ing my config, but deleting a cheatsheet entry does not update
 the display until you restart Emacs.
+** TODO add the following cheats to cheatsheet
+*** Copy-paste from helm / minibuffer!!! https://groups.google.com/forum/#!topic/emacs-helm/AYrrKO7E53I
 * Yasnippet
 ** [[https://github.com/joaotavora/yasnippet/blob/master/README.mdown][Github]]
-** [[http://cupfullofcode.com/blog/2013/02/26/snippet-expansion-with-yasnippet/index.html][Cup Full of Code tutorial (example starter snippets):]]
+** [[http://cupfullofcode.com/blog/2013/02/26/snippet-expansion-with-yasnippet/index.html][Cup Full of Code tutorial (example starter snippets)]]
 ** [[https://joaotavora.github.io/yasnippet/snippet-organization.html#sec-1][Joatoavora tutorial (better)]]
 ** Configuration
 #+BEGIN_SRC emacs-lisp
@@ -503,37 +528,43 @@ the display until you restart Emacs.
 #+END_SRC
 * Org
 #+BEGIN_SRC emacs-lisp :noweb tangle
-        (use-package org
-          :diminish org-indent-mode
-          :config
-          <<org-aesthetics>>
-          <<org-capture>>
-          <<org-agenda>>
-          <<org-inline-images>>
-          <<org-tree-behavior>>
-          <<org-convenience>>
-          <<org-hacks>>
-          :bind (
-                 ;; For use with my capture templates
-                 ("C-c c" . org-capture)
-                 
-                 ;; More of the org ecosystem!
-                 ("C-c a a" . org-agenda-list)
-                 
-                 ;; C-c C-l will insert link,
-                 ;; C-c C-o will open the link at the point
-                 ("C-c l" . org-store-link)
+  (use-package org
+    :diminish org-indent-mode
+    :config
+    <<org-aesthetics>>
+    <<org-capture>>
+    <<org-agenda>>
+    <<org-inline-images>>
+    <<org-tree-behavior>>
+    <<org-convenience>>
+    <<org-langs>>
+    <<org-links>>
+    :bind (
+           ;; For use with my capture templates
+           ("C-c c" . org-capture)
 
-                 ;; Keybindings that insert inline / display math
-                 ;; into org docs, s.t. everything will export to
-                 ;; LaTeX nicely
-                 ;; NOTE: These shortcuts match up with my shortcuts
-                 ;;       for inserting inline / display math into
-                 ;;       regular LaTeX docs. This is to provide as
-                 ;;       seamless an experience as I can muster.
-                 ("H-C-j" . LaTeX-insert-inline-math)
-                 ("H-C-k" . LaTeX-insert-display-math)
-          ))
+           ;; Tags
+           ("H-q" . org-set-tags-command)
+           
+           ;; Even MORE of the org ecosystem!
+           ("C-c a a" . org-agenda-list)
+
+           ;; Links!
+           ;; - C-c C-l will insert link,
+           ;; - C-c C-o will open the link at the point
+           ("C-c l" . org-store-link)
+
+           ;; Keybindings that insert inline / display math
+           ;; into org docs, s.t. everything will export to
+           ;; LaTeX nicely:
+           ;; NOTE: These shortcuts match up with my shortcuts
+           ;;       for inserting inline / display math into
+           ;;       regular LaTeX docs. This is to provide as
+           ;;       seamless an experience as I can muster.
+           ("H-C-j" . LaTeX-insert-inline-math)
+           ("H-C-k" . LaTeX-insert-display-math)
+           )
+    )
 #+END_SRC
 ** Help! Tips from http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html
 *** todo / schedule / deadline
@@ -601,46 +632,32 @@ the display until you restart Emacs.
   ;; To see what goes into an org-capture template, see
   ;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
   (setq org-capture-templates
-        '(("t" "todo" entry (file+olp "~/lists/todo.org" "todo-queue")
+        '(("t" "todo" entry (file+olp "~/core/lists/todo.org" "todo-queue")
            "* TODO %?\n %i\n")
-          ("a" "annoy" entry (file+olp "~/lists/annoy.org" "annoy")
+          ("a" "annoy" entry (file+olp "~/core/lists/annoy.org" "annoy")
            "* %?\n %i\n")
-          ("p" "project" entry (file+olp "~/lists/todo.org" "projects")
-             "* %?\n %i\n")
-          ("s" "shopping" entry (file+olp "~/lists/todo.org" "shopping")
+          ("p" "project" entry (file+olp "~/core/lists/todo.org" "projects")
            "* %?\n %i\n")
-          ("q" "quotes" entry (file+olp "~/lists/quotes.org" "quotes")
+          ("s" "shopping" entry (file+olp "~/core/lists/todo.org" "shopping")
            "* %?\n %i\n")
-  
-          ("g" "grammar feud" entry 
-           (file+headline "~/dev/spruce/grammar_feud.org" "Disagreements") 
+          ("q" "quotes" entry (file+olp "~/core/lists/quotes.org" "quotes")
+           "* %?\n %i\n")
+          ("h" "hw-style-guide" entry (file+olp "~/core/lists/tacky_hw_things.org" "tacky!")
+           "* %?\n %i\n")
+          ("g" "grammar feud" entry
+           (file+headline "~/fun/dev/spruce/grammar_feud.org" "Disagreements")
            "* Summary: %?
          Disagreed-upon snippet: %^{snippet}
          Link to source: %^{link}")))
 #+END_SRC
-*** Example capture entries:
-#+BEGIN_EXAMPLE 
-;;  ("r" "Meeting Schedule" entry
-;;   (file+headline "~/lists/things.org" "HEADING") 
-;;   "* TODO Meeting - %?
-;; %i
-;; Room: %^{Place}
-;; Subject of the Meeting: %^{Subject}
-;; Who will Atend: %^{Atendees}
-;;        %a ")
-;; '(("t" "Todo" entry (file+olp "~/dev/org_capture_example/gtd.org" "%^{heading|Org Tree Heading 1}")
-;;    "* TODO %?\n %i\n %a")
-;;   ("j" "Journal asdf" entry (file+datetree "~/dev/org_capture_example/journal.org")
-;;    "* %?\nEntered on %U\n %i\n %a")))
-#+END_EXAMPLE
 ** Org agenda
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
   ;; Add a timestamp to record when a TODO item is closed
   (setq org-log-done t)
 
   ;; Places to sniff when compiling a list of TODO items
-  (setq org-agenda-files (list "~/school/W17/at_a_glance.org"
-                               "~/lists/todo.org"))
+  (setq org-agenda-files (list "~/core/school/W17/at_a_glance.org"
+                               "~/core/lists/todo.org"))
 #+END_SRC
 ** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
@@ -710,108 +727,224 @@ Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to
 ** Convenience functions
 Org source blocks
 #+BEGIN_SRC emacs-lisp :noweb-ref org-convenience :tangle no
-    ;; Start a new elisp block in org mode by typing <el and then pressing TAB
-    (add-to-list 'org-structure-template-alist
-                 '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
-    (add-to-list 'org-structure-template-alist
-                 '("c" "#+BEGIN_SRC C\n?\n#+END_SRC" ""))
-    (add-to-list 'org-structure-template-alist
-                 '("cpp" "#+BEGIN_SRC C++\n?\n#+END_SRC" ""))
-    (add-to-list 'org-structure-template-alist
-                 '("p" "#+BEGIN_SRC python\n?\n#+END_SRC" ""))
+  ;; Start a new elisp block in org mode by typing <el and then pressing TAB
+  (add-to-list 'org-structure-template-alist
+               '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
+  (add-to-list 'org-structure-template-alist
+               '("c" "#+BEGIN_SRC C\n?\n#+END_SRC" ""))
+  (add-to-list 'org-structure-template-alist
+               '("cpp" "#+BEGIN_SRC C++\n?\n#+END_SRC" ""))
+  (add-to-list 'org-structure-template-alist
+               '("p" "#+BEGIN_SRC python\n?\n#+END_SRC" ""))
 
-    ;; Start a new elisp block in org mode by typing <el and then pressing TAB
-    (add-to-list 'org-structure-template-alist
-                 '("ex" "#+BEGIN_EXAMPLE \n?\n#+END_EXAMPLE" ""))
+  ;; Start a new elisp block in org mode by typing <el and then pressing TAB
+  (add-to-list 'org-structure-template-alist
+               '("ex" "#+BEGIN_EXAMPLE \n?\n#+END_EXAMPLE" ""))
 #+END_SRC
-** Hacky shit
-It works, okay?
-#+BEGIN_SRC emacs-lisp :noweb-ref org-hacks :tangle no
-    ;; Problem: When editing a TeX file, C-c C-c results in
-    ;; "org-babel-execute-src-block: No org-babel-execute function for LaTeX!"
-    ;; Solution: This, apparently
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((latex . t)
-       (python . t)
-       (emacs-lisp . t)
-       (C . t)
-       ;(C++ . t)
-       (lisp . t)
-       ))
-
-      ;; Org link workflow:
-      ;; 1. Save link to current location with C-c l
-      ;; 2. *move to spot where i'd like to insert the link*
-      ;; 3. C-c C-l to insert link
-      ;; 4. ((here's the annoying bit!)) delete the default string, because I
-      ;;    basically never use the file path as the link description
-      ;; 5. type in my own description
-      ;; 6. carry on with my life
-      (defun org-link-describe (link desc)
-        (if (file-exists-p link)
-            desc
-          (read-string "Description: " nil)))
-
-      (setf org-make-link-description-function #'org-link-describe)
+** Babel / Languages
+Mannnn I don't understand this shit. But I extracted some elisp from
+some (utterly incoherent!) stackoverflow comments, and it seems to
+work? God I /love/ shitty docs.
+#+BEGIN_SRC emacs-lisp :noweb-ref org-langs :tangle no
+  ;; Problem: When editing a TeX file, C-c C-c results in
+  ;; "org-babel-execute-src-block: No org-babel-execute function for LaTeX!"
+  ;; Solution: This, apparently
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((latex . t)
+     (python . t)
+     (emacs-lisp . t)
+     (C . t)
+     (lisp . t)
+     ))
 #+END_SRC
-* (in progress) Mail
-# [[https://elliottucker.net/working-setup-for-sending-email-via-gmail-from-emacs-on-osx.html][The link that finally worked]]
-# Note: I used "brew install gnutls" instead of "sudo port install gnutls"
+** Links
+Org link workflow:
+1. save link to current location with C-c l
+2. move to spot where I'd like to insert the link
+3. C-c C-l to insert link
+4. (TODO! Fix this annoyance:) delete the default string, because I
+   basically never use the file path as the link description
+5. type in my own description
+6. carry on with my life
+#+BEGIN_SRC emacs-lisp :noweb-ref org-links :tangle no
+  (defun org-link-describe (link desc)
+    (if (file-exists-p link)
+        desc
+      (read-string "Description: " nil)))
+  (setf org-make-link-description-function #'org-link-describe)
+#+END_SRC
+** TODO set up & refile this:
+Steam account
 #+BEGIN_SRC emacs-lisp
-  ;; (setq
-  ;;  send-mail-function 'smtpmail-send-it
-  ;;  message-send-mail-function 'smtpmail-send-it
-  ;;  user-mail-address "victorsenkrista@gmail.com"
-  ;;  smtpmail-starttls-credentials '(("smtp.gmail.com" "587" nil nil))
-  ;;  smtpmail-auth-credentials  (expand-file-name "~/.authinfo")
-  ;;  smtpmail-default-smtp-server "smtp.gmail.com"
-  ;;  smtpmail-smtp-server "smtp.gmail.com"
-  ;;  smtpmail-smtp-service 587
-  ;;  smtpmail-debug-info t
-  ;;  starttls-extra-arguments nil
-  ;;  starttls-gnutls-program "/usr/local/bin/gnutls-cli"
-  ;;  starttls-extra-arguments nil
-  ;;  starttls-use-gnutls t
-  ;; )
+;(setq steam-username "xtajv")
+#+END_SRC
+* SML (Smart Mode Line)
+#+BEGIN_SRC emacs-lisp
+  (setq sml/no-confirm-load-theme t)
+  (setq sml/theme 'respectful)
+  (setq sml/shorten-modes t)
+  (sml/setup)
+  (use-package fancy-battery
+    :diminish fancy-battery-mode
+    :config
+    (fancy-battery-mode t))
 #+END_SRC
 * Helm
-#+BEGIN_SRC emacs-lisp
-  (require 'helm-config)
-  (require 'helm)
-  (require 'helm-swoop)
-  (helm-mode t)
-  (global-set-key (kbd "M-x") 'helm-M-x)
-  (global-set-key (kbd "C-x C-f") 'helm-find-files)
-  (global-set-key (kbd "C-x b") 'helm-buffers-list)
-  (global-set-key (kbd "C-s") 'helm-swoop-without-pre-input)
-  ;; helm swoop bookmarks
-  (global-set-key (kbd "C-x r l") 'helm-bookmarks)
+** Introduction
+- Definition of "helm": noun - a tiller or wheel and any associated
+  equipment for steering a ship or boat.
+  - "she stayed at the helm, alert for tankers"
+  - synonyms:	tiller, wheel; steering gear, rudder
+- As you may have anticipated, it's also an Emacs package
+- I include the definition of the common word, because it sums up the
+  package well; Helm is an interface for "steering" interactions. In
+  particular, Helm provides a search interface which filters results
+  visually.
+  - If you do C-s and then press tab twice, a list of suggestions pops
+    up. Helm skips the bullshit and shows suggestions from the get-go
+  - The functionality is similar to how Google searches will give a
+    real-time popup with common queries that match what you've typed.
+- In particular, Helm provides serious enhancement for the following:
+  - searches within files (C-s)
+  - navigation to files on your filesystem (C-x f)
+  - buffer selection (C-x b)
+  - M-x commands (the default binding for execute-extended-command)
+#+BEGIN_SRC emacs-lisp :noweb tangle
+  (use-package helm
+    :diminish helm-mode
+    ;; helm-config is a bootstrapping package. According to
+    ;;   https://github.com/emacs-helm/helm/issues/744 it's not
+    ;;   required, but I checked out the source, and it looks like it
+    ;;   provides some core niceties that I've enjoyed
+    :init (require 'helm-config)
+    :config
+    ;; Enable Helm globally
+    (helm-mode t)
+    :bind <<helm-replace-defaults>>
+    )
+#+END_SRC
+*** Override global keybindings.
+I like Helm so much that I'm willing to override the corresponding
+default Emacs functions. Also, Emacs defaults are "meh".
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-replace-defaults :tangle no
+  ("M-x" . helm-M-x)
+  ("C-x C-f" . helm-find-files)
 
-;; Helm company
-  ;; Make helm split the window vertically
-  (setq helm-swoop-split-direction 'split-window-vertically)
-  (setq helm-swoop-split-with-multiple-windows nil)
-  ;; If nil, you can slightly boost invoke speed in exchange for text color
+  ;; helm-mini shows recentf, the buffers list, and a "create buffer" prompt
+  ("C-x b" . helm-mini)
+
+  ;; helm-buffers-list just shows the buffers list
+  ("C-x C-b" . helm-buffers-list)
+
+  ;; Display bookmarks for frequently-visited spots on my file system
+  ("C-x r l" . helm-bookmarks)
+#+END_SRC
+** Helm descbinds (*desc*-ribe *bind*-ings)
+- Helm descbinds is a smarter replacement for "C-h k" to look up
+  functions by keybinding
+- Invoke with "C-h b"
+- Press TAB for options (e.g. execute the selected command, look up
+  documentation, etc.)
+#+BEGIN_SRC emacs-lisp :noweb tangle
+  (use-package helm-descbinds
+    :diminish helm-descbinds-mode
+    :config (setq helm-descbinds-mode t))
+#+END_SRC
+** Helm swoop
+- Swoop is like isearch, but less shitty. Works really nicely with helm.
+- [[https://github.com/ShingoFukuyama/helm-swoop][ShingoFukuyama's super-fancy helm config]]
+- Editing from Helm swoop. When doing C-s, you can
+  - do "C-c C-e" to edit all matching lines
+  - select lines with C-<space>, and /then/ do "C-c C-e" to edit just
+    the /selected/ lines
+#+BEGIN_SRC emacs-lisp :noweb tangle
+  (use-package helm-swoop
+    :config <<helm-swoop-syntax-highlighting>>
+    <<helm-swoop-window-splitting>>
+    <<helm-swoop-reactivate-mark>>
+    <<helm-swoop-behavior>>
+    :bind 
+    ;; Use swoop instead of isearch
+    ("C-s" . helm-swoop-without-pre-input)
+    ;; r is for "Reuse", b/c this reuses the input from the last query
+    ("C-r" . helm-swoop)
+
+    ;; M-s is for multi-swoop
+    ;; ...TODO write a description for multi-swoop
+    ("C-M-s" . helm-multi-swoop-projectile)
+
+    ;; Bindings so I can still use isearch (if for some crazy reason, I
+    ;; want to use isearch rather than swoop)
+    ("C-c s" . isearch-forward)
+    ("C-c r" . isearch-backward)
+    )
+#+END_SRC
+*** config
+**** Keep syntax highlighting
+Retain syntax highlighting in swoop. It's a tradeoff between this and
+speed, but I think that it's worth the (teeny!) speed hit.
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-syntax-highlighting :tangle no
   (setq helm-swoop-speed-or-color t)
-  ;; (defvar helm-swoop-last-query)         ; Last search query for resume
-  ;; (setq helm-swoop-last-query helm-swoop-pattern)
-  ;; (unless (boundp 'helm-swoop-last-query)
-  ;;     (set (make-local-variable 'helm-swoop-last-query) ""))
+#+END_SRC
+**** Swoop Window Splitting
+Match the window-splitting conventions from helm proper.
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-window-splitting :tangle no
+
+  ;; Split windows in half like *this*:
+  ;; ------------
+  ;; |          |
+  ;; |  Buffer  |
+  ;; |          |
+  ;; ------------
+  ;; |   Helm   |
+  ;; ------------
+  (setq helm-swoop-split-direction 'split-window-vertically)
+
+  ;; Even if there are multiple windows open, /still/ split the window
+  ;; in half
+  (setq helm-swoop-split-with-multiple-windows t)
+#+END_SRC
+**** Mark Reactivation
+Source: Spruce Bondera's fabulous config page For some reason
+helm-swoop deactivates the mark on search selection. This wrapper
+fixes that, by wrapping helm-swoop in a function that will reactivate
+the mark if it was set before search started.
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-reactivate-mark :tangle no
+  (defun krista/helm-swoop-mark-wrapper (original &rest search)
+    "Check the state of the mark before calling helm-swoop and
+    re-activate it after swooping if it was active before-hand"
+    (let ((marked mark-active))
+      (apply original search)
+      (when marked (activate-mark))))
+  (advice-add 'helm-swoop :around #'krista/helm-swoop-mark-wrapper)
+#+END_SRC
+**** Swoop behavior
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-behavior :tangle no
+  ;; If you're at the bottom of the list of swoop matches, and you try
+  ;; to go down another line, then you wrap around again
+  (setq helm-swoop-move-to-line-cycle t)
+
+  ;; Enable fuzzy matching
+  (setq helm-swoop-use-fuzzy-match t)
 #+END_SRC
 * Auto-complete
 ** TODO fix the width issues :P
+** TODO migrate this into a use-package statement
 [[http://stackoverflow.com/questions/27474936/color-schema-of-emacs-auto-complete-mode][color scheme]]
 #+BEGIN_SRC emacs-lisp
-(require 'auto-complete)
+  (require 'auto-complete)
   (ac-config-default)
   (global-auto-complete-mode t)
+
+  ;; Enable auto-complete-mode globally, and don't do it in the minibuffer
+  ;; Source: https://stackoverflow.com/questions/8095715/emacs-auto-complete-mode-at-startup
   (defun auto-complete-mode-maybe ()
-    "No maybe for you. Only AC!"
     (unless (minibufferp (current-buffer))
-      (auto-complete-mode t))) 
+      (auto-complete-mode t)))
   (global-set-key (kbd "C-;") 'auto-complete)
-    (diminish auto-complete-mode)
+
+  (diminish auto-complete-mode)
 #+END_SRC
 * Projectile
 ** Projectile proper
@@ -833,34 +966,54 @@ It works, okay?
 #+END_SRC
 * Magit
 ** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][HALP MOM HOW DO I Magit]]
-** Enter magit: C-c g
-** The config
 #+BEGIN_SRC emacs-lisp
 (use-package magit)
 
-;; Speedy-open magit
-    (global-set-key (kbd "C-c g") 'magit-status)
+;; Speedy-open
+(global-set-key (kbd "C-c g") 'magit-status)
 #+END_SRC
-
 * Programming
 ** C / C++
 #+BEGIN_SRC emacs-lisp
-      (use-package cc-mode
-        :bind (:map
-               c-mode-base-map
-               ("C-c b" . compile)
-               ("M-j" . join-line))
-        :config
-    )
+  (use-package cc-mode
+    :bind (:map
+           c-mode-base-map
+           ("C-c b" . compile)
+           ("M-j" . join-line)))
   ;; Give me preconfigured autocompletions for C and C++!
   ;; (add-hook 'c-mode-hook
   ;;             (lambda ()
   ;;               (add-to-list 'ac-sources 'ac-source-c-headers)
   ;;               (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
+
+  ; My wildly unpopular bracing style
   ; Secret: I really use Ratliffe, but this does the trick
-  (setq c-default-style "whitesmith")
-  (setq-default c-basic-offset 4)
+  ;;(setq c-default-style "whitesmith")
+  ;;(setq-default c-basic-offset 4)
+
+  ; Alternate settings that don't piss other programmers off as much:
+  (setq c-default-style "python")
+  (setq-default c-basic-offset 2)
 #+END_SRC
+** Python
+- Problem: When I ran =run-python=, I got the following error message:
+  - Warning (python): Your ‘python-shell-interpreter’ doesn’t seem to
+    support readline, yet ‘python-shell-completion-native’ was t and
+    "python" is not part of the
+    ‘python-shell-completion-native-disabled-interpreters’ list.
+    Native completions have been disabled locally.
+- Solution (via [[https://emacs.stackexchange.com/a/30970][this]]):
+  #+BEGIN_SRC emacs-lisp
+  (with-eval-after-load 'python
+    (defun python-shell-completion-native-try ()
+      "Return non-nil if can trigger native completion."
+      (let ((python-shell-completion-native-enable t)
+            (python-shell-completion-native-output-timeout
+             python-shell-completion-native-try-output-timeout))
+        (python-shell-completion-native-get-completions
+         (get-buffer-process (current-buffer))
+         nil "_"))))
+  #+END_SRC
 * LaTeX
 #+BEGIN_SRC emacs-lisp
   ;; auctex provides package tex
@@ -877,6 +1030,7 @@ It works, okay?
         (find-file output-file)))
     (add-to-list 'TeX-view-program-list
                  (list "Emacs" #'krista/TeX-open-output-buffer))
+
     (setq TeX-view-program-selection '((output-pdf "Emacs")))
     (setq TeX-parse-self t)
     (setq-default TeX-master nil)
@@ -886,9 +1040,9 @@ It works, okay?
       (add-hook 'LaTeX-mode-hook 'visual-line-mode)
       (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
       (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-      :bind (           
-             ;("`_" . LaTeX-math-bar)
-             )
+      ; :bind (
+      ;        ;("`_" . LaTeX-math-bar)
+      ;        )
       )
     (setq reftex-plug-into-AUCTeX t)
     )
@@ -898,7 +1052,7 @@ It works, okay?
 ** Packages
 *** Slime
 #+BEGIN_SRC emacs-lisp
-  (load (expand-file-name "~/software/quicklisp/slime-helper.el"))
+  (load (expand-file-name "~/core/fun/dev/builds_from_source/quicklisp/slime-helper.el"))
   ;; The SBCL binary and command-line arguments
   (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
 #+END_SRC
@@ -939,6 +1093,30 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 ** Cosmetics
 *** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
+;; Show trailing whitespace by default
+(use-package whitespace)
+(setq-default show-trailing-whitespace t)
+;(add-hook 'before-save-hook 'delete-trailing-whitespace)
+;; ... but don't show trailing whitespace if I'm in
+;; - a minibuffer
+;; - help mode
+;; - in a makefile
+(defun hide-trailing-whitespace ()
+  (setq show-trailing-whitespace nil))
+(add-hook 'minibuffer-setup-hook
+          'hide-trailing-whitespace)
+(add-hook 'help-mode-hook
+          'hide-trailing-whitespace)
+(add-hook 'compiliation-mode-hook
+          'hide-trailing-whitespace)
+(add-hook 'makefile-mode-hook
+          'hide-trailing-whitespace)
+(add-hook 'text-mode-hook
+          'hide-trailing-whitespace)
+;; Function hide-trailing-whitespace is adapted from
+;; the function no-trailing-whitespace, available:
+;; https://ogbe.net/emacsconfig.html
+
   (add-hook 'python-mode-hook 'whitespace-mode)
   (setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
   (setq whitespace-action '(auto-cleanup))
@@ -988,161 +1166,161 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+END_SRC
 ** Keybindings and accessibility
 #+BEGIN_SRC emacs-lisp
-;; Change "yes or no" prompts to "y or n" prompts
-(fset 'yes-or-no-p 'y-or-n-p)
-    ;; Toggle fullscreen with meta-return
-    (global-set-key (kbd "H-<return>") 'toggle-frame-fullscreen)
-    ;; Speedy eval-buffer
-    (global-set-key (kbd "C-c b") 'eval-buffer)
+  ;; Change "yes or no" prompts to "y or n" prompts
+  (fset 'yes-or-no-p 'y-or-n-p)
+  ;; Toggle fullscreen with meta-return
+  (global-set-key (kbd "H-<return>") 'toggle-frame-fullscreen)
+  ;; Speedy eval-buffer
+  (global-set-key (kbd "C-c b") 'eval-buffer)
 
-    ;; count words in selected region
-    (global-set-key (kbd "C-c w") 'count-words)
+  ;; count words in selected region
+  (global-set-key (kbd "C-c w") 'count-words)
 
-    ;; Speedy-open melpa
-    (global-set-key (kbd "H-p") 'package-list-packages)
+  ;; Speedy-open melpa
+  (global-set-key (kbd "H-p") 'package-list-packages)
 
-    ;; Transpose line up or down
-    (defun move-line-up ()
-      "Move up the current line."
-      (interactive)
-      (transpose-lines 1)
-      (forward-line -2)
-      (indent-according-to-mode))
-    (defun move-line-down ()
-      "Move down the current line."
-      (interactive)
-      (forward-line 1)
-      (transpose-lines 1)
-      (forward-line -1)
-      (indent-according-to-mode))
-    (global-set-key [(meta p)]  'move-line-up)
-    (global-set-key [(meta n)]  'move-line-down)
+  ;; Transpose line up or down
+  (defun move-line-up ()
+    "Move up the current line."
+    (interactive)
+    (transpose-lines 1)
+    (forward-line -2)
+    (indent-according-to-mode))
+  (defun move-line-down ()
+    "Move down the current line."
+    (interactive)
+    (forward-line 1)
+    (transpose-lines 1)
+    (forward-line -1)
+    (indent-according-to-mode))
+  (global-set-key [(meta p)]  'move-line-up)
+  (global-set-key [(meta n)]  'move-line-down)
 
-    ;; Don't add 2 spaces after my period, dammit!
-    (setq sentence-end-double-space nil)
+  ;; Don't add 2 spaces after my period, dammit!
+  (setq sentence-end-double-space nil)
 
-    ;; Enable "C-x u" for upcase-region, "C-x l" for downcase-region
-    (put 'upcase-region 'disabled nil)
-    (put 'downcase-region 'disabled nil)
+  ;; Enable "C-x u" for upcase-region, "C-x l" for downcase-region
+  (put 'upcase-region 'disabled nil)
+  (put 'downcase-region 'disabled nil)
 
-    ;; Comment line with M-;
-    ;; Source:
-    ;; <http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html>
-    (defun comment-dwim-line (&optional arg)
-      "Replacement for the comment-dwim command.
-       If no region is selected and current line is not blank and we are not at the end of the line,
-       then comment current line.
-       Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
-      (interactive "*P")
-      (comment-normalize-vars)
-      (if (and (not (region-active-p))
-               (not (looking-at "[ \t]*$")))
-          (comment-or-uncomment-region (line-beginning-position)
-                                       (line-end-position))
-        (comment-dwim arg)))
-    (global-set-key (kbd "M-;") 'comment-dwim-line)
+  ;; Comment line with M-;
+  ;; Source:
+  ;; <http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html>
+  (defun comment-dwim-line (&optional arg)
+    "Replacement for the comment-dwim command.
+         If no region is selected and current line is not blank and we are not at the end of the line,
+         then comment current line.
+         Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
+    (interactive "*P")
+    (comment-normalize-vars)
+    (if (and (not (region-active-p))
+             (not (looking-at "[ \t]*$")))
+        (comment-or-uncomment-region (line-beginning-position)
+                                     (line-end-position))
+      (comment-dwim arg)))
+  (global-set-key (kbd "M-;") 'comment-dwim-line)
 
-    ;; Make C-K clear text AND newline
-    (setq kill-whole-line t)
+  ;; Make C-K clear text AND newline
+  (setq kill-whole-line t)
 
-    ;;; Start & end recording new keyboard macro
-    (global-set-key (kbd "M-[") 'kmacro-start-macro)
-    (global-set-key (kbd "M-]") 'kmacro-end-macro)
-    ;;; (TODO https://www.emacswiki.org/emacs/KeyboardMacros)
-    (global-set-key (kbd "C-l") 'call-last-kbd-macro)
-
-
-    ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
-    ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
-    (global-set-key (kbd "M-j") 'join-line)
-
-    ;; Spruce's Latex stuff: https://gist.github.com/spruceb/4209965bb7c335894b436002c720bf35
-    ;; latex
-    ;; TODO: fucks up prettify for some reason?
-    ;; (company-auctex-init)
-    ;; save buffer style info
-    (setq TeX-auto-save t)
-    ;; automatically parse style info
-    (setq TeX-parse-self t)
-    ;; no tabs
-    (setq TeX-auto-untabify t)
-
-    ;; (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-    (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-    (setq reftex-plug-into-AUCTeX t)
-    (setq TeX-PDF-mode t)
-    ;; better name for local variable
-    (setq TeX-auto-local ".auctex-auto")
-    ;; auto revert pdf buffer
-    (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
-    ;; show errors if there were any
-    (setq TeX-error-overview-open-after-TeX-run t)
-    ;; autocompletion
-    ;; don't confirm before cleaning files
-    (setq TeX-clean-confirm nil)
-    (defun tex-runall-clean ()
-      (interactive)
-      (TeX-command-run-all nil)
-      (TeX-clean))
+      ;;; Start & end recording new keyboard macro
+  (global-set-key (kbd "M-[") 'kmacro-start-macro)
+  (global-set-key (kbd "M-]") 'kmacro-end-macro)
+      ;;; (TODO https://www.emacswiki.org/emacs/KeyboardMacros)
+  (global-set-key (kbd "C-l") 'call-last-kbd-macro)
 
 
-    (defun TeX-insert-pair (arg open-str close-str)
-      "Like TeX-insert-brackes but for any pair"
-      (interactive "P")
-      (if (TeX-active-mark)
-          (progn
-            (if (< (point) (mark)) (exchange-point-and-mark))
-            (insert close-str)
-            (save-excursion (goto-char (mark)) (insert open-str)))
-        (insert open-str)
-        (save-excursion
-          (if arg (forward-sexp (prefix-numeric-value arg)))
-          (insert close-str))))
+  ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
+  ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
+  (global-set-key (kbd "M-j") 'join-line)
 
-;; Make it so that I can insert inline/display math quickly
-    (defun LaTeX-insert-inline-math (arg)
-      (interactive "P")
-      (TeX-insert-pair arg "\\( " " \\)"))
-    (defun LaTeX-insert-display-math (arg)
-      (interactive "P")
-      (TeX-insert-pair arg "\\[ " " \\]"))
-    (defun LaTeX-mode-keybindings ()
-      (local-set-key (kbd "H-C-j") #'LaTeX-insert-inline-math)
-      (local-set-key (kbd "H-C-k") #'LaTeX-insert-display-math))
-    (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
+  ;; Spruce's Latex stuff: https://gist.github.com/spruceb/4209965bb7c335894b436002c720bf35
+  ;; latex
+  ;; TODO: fucks up prettify for some reason?
+  ;; (company-auctex-init)
+  ;; save buffer style info
+  (setq TeX-auto-save t)
+  ;; automatically parse style info
+  (setq TeX-parse-self t)
+  ;; no tabs
+  (setq TeX-auto-untabify t)
 
-    (defun TeX-mode-keybindings ()
-      (local-set-key (kbd "C-c b") #'tex-runall-clean)
-      (local-set-key (kbd "H b") #'LaTeX-math-bar))
-    (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
+  ;; (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-plug-into-AUCTeX t)
+  (setq TeX-PDF-mode t)
+  ;; better name for local variable
+  (setq TeX-auto-local ".auctex-auto")
+  ;; auto revert pdf buffer
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+  ;; show errors if there were any
+  (setq TeX-error-overview-open-after-TeX-run t)
+  ;; autocompletion
+  ;; don't confirm before cleaning files
+  (setq TeX-clean-confirm nil)
+  (defun tex-runall-clean ()
+    (interactive)
+    (TeX-command-run-all nil)
+    (TeX-clean))
 
-    (setq TeX-save-query nil)
 
-;; TODO: wtf is this
-    (setq latex-templates-directory "~/.emacs.d/templates/latex-templates/")
-    (defun latex-template ()
-      (interactive)
-      (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
-             (selection (completing-read "LaTeX Template: "
-                                         (mapcar #'file-name-base files))))
-        (insert-file-contents (concat latex-templates-directory selection ".tex"))))
+  (defun TeX-insert-pair (arg open-str close-str)
+    "Like TeX-insert-brackes but for any pair"
+    (interactive "P")
+    (if (TeX-active-mark)
+        (progn
+          (if (< (point) (mark)) (exchange-point-and-mark))
+          (insert close-str)
+          (save-excursion (goto-char (mark)) (insert open-str)))
+      (insert open-str)
+      (save-excursion
+        (if arg (forward-sexp (prefix-numeric-value arg)))
+        (insert close-str))))
 
-    (setq TeX-electric-sub-and-superscript t)
-    (setq LaTeX-math-menu-unicode t)
-    (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
+  ;; Make it so that I can insert inline/display math quickly
+  (defun LaTeX-insert-inline-math (arg)
+    (interactive "P")
+    (TeX-insert-pair arg "\\( " " \\)"))
+  (defun LaTeX-insert-display-math (arg)
+    (interactive "P")
+    (TeX-insert-pair arg "\\[ " " \\]"))
+  (defun LaTeX-mode-keybindings ()
+    (local-set-key (kbd "H-C-j") #'LaTeX-insert-inline-math)
+    (local-set-key (kbd "H-C-k") #'LaTeX-insert-display-math))
+  (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
 
-;; Wrap lines at n characters
-    (add-hook 'LaTeX-mode-hook
-              (lambda () (set-fill-column 70)))
-;; Automatically wrap lines when I go past n characters
-    (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+  (defun TeX-mode-keybindings ()
+    (local-set-key (kbd "C-c b") #'tex-runall-clean)
+    (local-set-key (kbd "H b") #'LaTeX-math-bar))
+  (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
 
-;; Automatically turn \ + alpha into the unicode equivalent \alpha
-    (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
+  (setq TeX-save-query nil)
 
-    (put 'TeX-command-extra-options 'safe-local-variable
-         (lambda (x) (string-equal x "-shell-escape")))
+  ;; TODO: wtf is this
+  (setq latex-templates-directory "~/.emacs.d/templates/latex-templates/")
+  (defun latex-template ()
+    (interactive)
+    (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
+           (selection (completing-read "LaTeX Template: "
+                                       (mapcar #'file-name-base files))))
+      (insert-file-contents (concat latex-templates-directory selection ".tex"))))
+
+  (setq TeX-electric-sub-and-superscript t)
+  (setq LaTeX-math-menu-unicode t)
+  (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
+
+  ;; Wrap lines at n characters
+  (add-hook 'LaTeX-mode-hook
+            (lambda () (set-fill-column 70)))
+  ;; Automatically wrap lines when I go past n characters
+  (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+
+  ;; Automatically turn \ + alpha into the unicode equivalent \alpha
+  (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
+
+  (put 'TeX-command-extra-options 'safe-local-variable
+       (lambda (x) (string-equal x "-shell-escape")))
 #+END_SRC
 ** Stuff added by Custom
 #+BEGIN_SRC emacs-lisp
@@ -1159,7 +1337,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
        [default default default italic underline success warning error])
      '(ansi-color-names-vector
        ["#212526" "#ff4b4b" "#b4fa70" "#fce94f" "#729fcf" "#e090d7" "#8cc4ff" "#eeeeec"])
-     '(custom-enabled-themes (quote (sanityinc-tomorrow-eighties)))
      '(custom-safe-themes
        (quote
         ("628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
@@ -1170,7 +1347,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
      '(org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
      '(package-selected-packages
        (quote
-        (undo-tree smartparens slime reveal-in-osx-finder pylint org-bullets magit helm-swoop color-theme-sanityinc-tomorrow auctex ac-emoji)))
+        (undo-tree smartparens slime reveal-in-osx-finder pylint org-bullets magit helm-swoop auctex)))
 )
 
     ;; custom-set-faces was added by Custom.
@@ -1201,17 +1378,16 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+END_SRC
 ** Select all: C-xh
 * Kinesis-specific keyboard issues
-  My hands were hurting after long typing sessions. As a computer
-  science student, I forsaw this as being a potentially-huge problem
-  later on in life. So I decided to get a Kinesis Advantage 2 while I
-  was still young, springy, and stupid enough to consider adapting my
-  muscle memory to a new keyboard style. (...but fuck Dvorak. I ain't
-  crazy enough for Dvorak.)  2 weeks later, my new Kinesis arrived. I
-  plugged her into my Mac, and with a perverse glee, I started up
-  Emacs to see what was broken. Here, I shall document those things.
-
-  - First, I live in the U.S. This keyboard therefore shipped with a
-    P.C. layout. I followed the instructions for "Mac Mode", as per
-    the quickstart guide. It should be noted that before switching, my
-    layout was modified from the stock OS X layout as follows:
-    - Global modifications:
+My hands were hurting after long typing sessions. As a computer
+science student, I forsaw this as being a potentially-huge problem
+later on in life. So I decided to get a Kinesis Advantage 2 while I
+was still young, springy, and stupid enough to consider adapting my
+muscle memory to a new keyboard style. (...but fuck Dvorak. I ain't
+crazy enough for Dvorak.)  2 weeks later, my new Kinesis arrived. I
+plugged her into my Mac, and with a perverse glee, I started up
+Emacs to see what was broken. Here, I shall document those things.
+- First, I live in the U.S. This keyboard therefore shipped with a
+  P.C. layout. I followed the instructions for "Mac Mode", as per
+  the quickstart guide. It should be noted that before switching, my
+  layout was modified from the stock OS X layout as follows:
+- Global modifications:

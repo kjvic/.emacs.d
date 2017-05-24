@@ -60,7 +60,9 @@ Semantic, and Ansi-Color faces are included.")
       (tron-white "#eeeeec")            ; modeline foreground
       (tron-gray-light "#888a85")       ; modeline inactive foreground
       (tron-orange-hot "#cf7a00")       ; minibufer prompt
-      (tron-turquize "#032929")         ; selection background / region / primary
+      (tron-turquize "#075f5f") ; selection background / region / primary
+      
+;      (tron-turquize "#032929")         ; selection background / region / primary
       (tron-green "#043d18")            ; secondary selection background
       (tron-orange-pale "#804532")      ; slime-repl-inputed-output-face foreground /
                                         ; ediff-odd-diff-A foreground /
@@ -71,11 +73,11 @@ Semantic, and Ansi-Color faces are included.")
 
       ;; Tango colors, these are used in Gnus-related faces, need yet to see
       ;; what it looks like
-      (butter-2 "#edd400") 
+      (butter-2 "#edd400")
       (orange-1 "#fcaf3e") (orange-2 "#f57900")
       (choc-2 "#c17d11")
-      (cham-1 "#8ae234") (cham-2 "#73d216") 
-      (blue-2 "#3465a4") 
+      (cham-1 "#8ae234") (cham-2 "#73d216")
+      (blue-2 "#3465a4")
       (plum-1 "#ad7fa8") (plum-2 "#75507b")
       (plum-0 "#e6a8df"))
 
