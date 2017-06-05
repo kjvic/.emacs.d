@@ -1391,3 +1391,21 @@ Emacs to see what was broken. Here, I shall document those things.
   the quickstart guide. It should be noted that before switching, my
   layout was modified from the stock OS X layout as follows:
 - Global modifications:
+* Further plans
+** More granular version control
+- I've noticed that when coding in a compiled language such as C/C++,
+  I often end up in this workflow:
+  - Type some stuff
+  - Save
+  - Try compiling
+  - If compiler errors
+    - Make note of what's wrong
+    - Try to solve the problem
+    - Try compiling again
+- It would be nice to be able to record the flow of [compiler error /
+  troubleshooting idea / fix] for the purposes of version control
+- I want a package that will let me have a debugging diary which will
+  archive my code, compiler output, and any thoughts that i'd like to
+  record.
+- Ideally, the package would output an org doc with an undo-tree -like
+  interface for retracing my steps in debugging
