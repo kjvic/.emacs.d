@@ -974,7 +974,7 @@ the mark if it was set before search started.
 ;; Speedy-open
 (global-set-key (kbd "C-c g") 'magit-status)
 #+END_SRC
-* Programming
+* Programming languages
 ** C / C++
 #+BEGIN_SRC emacs-lisp
   (use-package cc-mode
