@@ -644,7 +644,9 @@ the display until you restart Emacs.
            "* %?\n %i\n")
           ("h" "hw-style-guide" entry (file+olp "~/core/lists/tacky_hw_things.org" "tacky!")
            "* %?\n %i\n")
-          ("g" "grammar feud" entry
+          ("g" "git-gotchas" entry (file+olp "~/core/lists/git-gotchas.org" "The gotchas")
+           "* %?\n %i\n")
+          ("f" "grammar feud" entry
            (file+headline "~/fun/dev/spruce/grammar_feud.org" "Disagreements")
            "* Summary: %?
          Disagreed-upon snippet: %^{snippet}
