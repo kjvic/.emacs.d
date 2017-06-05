@@ -948,6 +948,29 @@ the mark if it was set before search started.
 
   (diminish auto-complete-mode)
 #+END_SRC
+* Flycheck - syntax checking
+** Config
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck
+    :init (global-flycheck-mode))
+;; Permanently enable syntax checking
+(add-hook 'after-init-hook #'global-flycheck-mode)
+#+END_SRC
+** Usage
+via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
+- =C-c ! n= :: go forward to next error
+- =C-c ! p= :: go backward to prev. error
+- =C-c ! l= :: show a popup list of errors
+* Corral - surround things with quotes/paren easily!
+#+BEGIN_SRC emacs-lisp
+  ;; (global-set-key (kbd "M-9") 'corral-parentheses-backward)
+  ;; (global-set-key (kbd "M-0") 'corral-parentheses-forward)
+  ;; (global-set-key (kbd "M-[") 'corral-brackets-backward)
+  ;; (global-set-key (kbd "M-]") 'corral-brackets-forward)
+  ;; (global-set-key (kbd "M-{") 'corral-braces-backward)
+  ;; (global-set-key (kbd "M-}") 'corral-braces-forward)
+  ;; (global-set-key (kbd "M-\"") 'corral-double-quotes-forward)
+#+END_SRC
 * Projectile
 ** Projectile proper
 #+BEGIN_SRC emacs-lisp

@@ -8,3 +8,9 @@
          mac-control-modifier 'control
          mac-option-modifier 'hyper)
 #+END_SRC
+* Flycheck
+This stuff is required for flycheck to work
+#+BEGIN_SRC emacs-lisp
+(package-install 'exec-path-from-shell)
+(exec-path-from-shell-initialize)
+#+END_SRC
