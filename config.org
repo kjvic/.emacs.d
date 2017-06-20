@@ -164,6 +164,8 @@ Replace the (fugly!) arrows that serve to indicate line continuation
      #b10010010
      #b10010010
      #b00000000])
+
+ (setq visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow)))
 #+END_SRC
 *** Mode line
 **** Display column number, do not display time
@@ -641,6 +643,7 @@ the display until you restart Emacs.
   ;; Org mode clean view
   ;; <http://orgmode.org/manual/Clean-view.html>
   (setq org-startup-indented t)
+  (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
 #+END_SRC
 ** Exporting to LaTeX
 #+BEGIN_SRC emacs-lisp
@@ -763,14 +766,35 @@ Steam account
 #+END_SRC
 * mode line
 #+BEGIN_SRC emacs-lisp
-  (setq battery-mode-line-format " %p")
   (use-package fancy-battery
     :diminish fancy-battery-mode
     :config
     (fancy-battery-mode t))
- '(display-battery-mode nil)
- '(fancy-battery-mode t)
- '(fancy-battery-show-percentage t)
+
+  '(display-battery-mode nil)
+  '(fancy-battery-mode t)
+  '(fancy-battery-show-percentage t)
+  (setq battery-mode-line-format " %p")
+
+  (set-face-attribute 'mode-line nil 
+                      :background "#000d0f" 
+                      :foreground "cyan" 
+                      :inverse-video nil 
+                      :box '(:line-width 1 :color "dark slate grey") 
+                      :family "Fira Code")
+
+  (set-face-attribute 'mode-line-buffer-id nil 
+                      :weight 'normal
+                      :family "Fira Code")
+
+  (set-face-attribute 'mode-line-emphasis nil
+                      :weight 'bold)
+
+  (set-face-attribute 'mode-line-inactive nil
+                      :background "#000d0f"
+                      :foreground "#888a85"
+                      :inverse-video nil)
+
 #+END_SRC
 * Helm
 ** Introduction
@@ -946,7 +970,38 @@ the mark if it was set before search started.
   (global-set-key (kbd "C-;") 'auto-complete)
 
   (diminish auto-complete-mode)
+#+END_SRC
+* Set popup face
+Among other things, popup is used in autocomplete. But if I ever want to do more, it'll still look pretty :D
+#+BEGIN_SRC emacs-lisp
+  (set-face-attribute 'popup-face nil
+                      :background "#19343D"
+                      :foreground "#a0ffff"
+                      :weight 'light
+                      :family "Fira code")
 
+  (set-face-attribute 'popup-menu-face nil
+                      :inherit 'popup-face
+                      :family "Fira code")
+
+  (set-face-attribute 'popup-menu-selection-face nil
+                      :inherit 'default
+                      :background "#033021"
+                      :foreground "#3fffff"
+                      :weight 'light
+                      :family "Fira Code")
+
+  (set-face-attribute 'popup-scroll-bar-foreground-face nil
+                      :background "#19343D")
+
+  (set-face-attribute 'popup-summary-face nil
+                       :inherit 'popup-face
+                       :foreground "slate blue")
+
+  (set-face-attribute 'popup-tip-face nil
+                      :background "dark slate gray"
+                      :foreground "aquamarine"
+                      :family "Fira Code")
 #+END_SRC
 * Flycheck - syntax checking
 ** Config
@@ -980,15 +1035,46 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
   (use-package helm-projectile
     :config
     (with-eval-after-load 'projectile (helm-projectile-on))
-    )
+    (setq projectile-mode t)
+    (setq projectile-switch-project-action 'helm-projectile-find-file))
 #+END_SRC
 * Magit
-** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][HALP MOM HOW DO I Magit]]
-#+BEGIN_SRC emacs-lisp
-(use-package magit)
+** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
+** Config
+#+BEGIN_SRC emacs-lisp :noweb tangle
+  (use-package magit
+    :config
+    <<magit-color-scheme>>
+    )
 
-;; Speedy-open
-(global-set-key (kbd "C-c g") 'magit-status)
+  ;; Speedy-open
+  (global-set-key (kbd "C-c g") 'magit-status)
+#+END_SRC
+** Color scheme
+Note: "vc" stands for *V*-ersion *C*-ontrol
+#+BEGIN_SRC emacs-lisp :noweb-ref magit-color-scheme :tangle no
+  (setq vc-annotate-background nil)
+  (setq vc-annotate-color-map
+    (quote
+     ((20 . "#f2777a")
+      (40 . "#f99157")
+      (60 . "#ffcc66")
+      (80 . "#99cc99")
+      (100 . "#66cccc")
+      (120 . "#6699cc")
+      (140 . "#cc99cc")
+      (160 . "#f2777a")
+      (180 . "#f99157")
+      (200 . "#ffcc66")
+      (220 . "#99cc99")
+      (240 . "#66cccc")
+      (260 . "#6699cc")
+      (280 . "#cc99cc")
+      (300 . "#f2777a")
+      (320 . "#f99157")
+      (340 . "#ffcc66")
+      (360 . "#99cc99"))))
+  (setq vc-annotate-very-old-color nil)
 #+END_SRC
 * Programming languages
 ** C / C++
@@ -1157,6 +1243,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
     (setq inhibit-startup-message t)
     (setq initial-scratch-message "")
     (setq inhibit-startup-screen t)
+    (setq large-file-warning-threshold nil)
 #+END_SRC
 ** Kill the default emacs toolbar (top of screen)
 #+BEGIN_SRC emacs-lisp
@@ -1345,51 +1432,50 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+END_SRC
 * Stuff added by Custom
 #+BEGIN_SRC emacs-lisp :noweb tangle
-      ;; custom-set-variables was added by Custom.
-      ;; If you edit it by hand, you could mess it up, so be careful.
-      ;; Your init file should contain only one such instance.
-      ;; If there is more than one, they won't work right.
-      (custom-set-variables
-       ;; custom-set-variables was added by Custom.
-       ;; If you edit it by hand, you could mess it up, so be careful.
-       ;; Your init file should contain only one such instance.
-       ;; If there is more than one, they won't work right.
+  ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  ;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
+  ;; (load custom-file :noerror)
 
-       <<ansi-colors>>
+    (custom-set-variables
+     <<ansi-colors>>
 
-       '(custom-enabled-themes (quote (tron-dark)))
-       '(custom-safe-themes
-         (quote
-          ("628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
+     '(custom-enabled-themes (quote (tron-dark)))
+     '(custom-safe-themes (quote
+        ("5fb8a3d4493189890e01c24fca16f54388a6cf2bcb77baff94050ca2df722428"
+         "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d"
+         default)))
 
-       '(gud-gdb-command-name "gdb --annotate=1")
-       '(large-file-warning-threshold nil)
+     '(gud-gdb-command-name "gdb --annotate=1")
 
-       '(mac-command-modifier (quote meta))
+     ;; '(package-selected-packages
+     ;;   (quote
+     ;;    (undo-tree
+     ;;     smartparens
+     ;;     slime
+     ;;     reveal-in-osx-finder
+     ;;     pylint
+     ;;     org-bullets
+     ;;     magit
+     ;;     helm-swoop
+     ;;     auctex
+     ;;     benchmark-init
+     ;;     exec-path-from-shell
+     ;;     free-keys
+     ;;     steam)))
+     )
 
-       '(org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
+    ;; custom-set-faces was added by Custom.
+    ;; If you edit it by hand, you could mess it up, so be careful.
+    ;; Your init file should contain only one such instance.
+    ;; If there is more than one, they won't work right.
+  (set-face-attribute 'fringe nil :background "#001519")
+  (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
 
-       '(package-selected-packages
-         (quote
-          (undo-tree
-           smartparens
-           slime
-           reveal-in-osx-finder
-           pylint
-           org-bullets
-           magit
-           helm-swoop
-           auctex)))
-       )
-
-      ;; custom-set-faces was added by Custom.
-      ;; If you edit it by hand, you could mess it up, so be careful.
-      ;; Your init file should contain only one such instance.
-      ;; If there is more than one, they won't work right.
-      (custom-set-faces
-       '(fringe ((t (:background "#001519"))))
-       '(vertical-border ((t (:foreground "#00d4d4"))))
-  )
+    ;; (custom-set-faces
+    ;;  '(fringe ((t (:background "#001519"))))
+    ;;  '(vertical-border ((t (:foreground "#00d4d4"))))
+    ;;  )
 #+END_SRC
 ** ANSI colors
 #+BEGIN_SRC emacs-lisp :noweb-ref ansi-colors :tangle yes
