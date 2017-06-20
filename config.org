@@ -688,54 +688,6 @@ the display until you restart Emacs.
 
   ;; By default, *do* display inline images
   (setq org-startup-with-inline-images t)
-
-  ;; Let me automagically display PDFs as inline images!
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; - Solution via http://emacs.stackexchange.com/questions/390/display-pdf-images-in-org-mode
-  ;; - NOTE: This solution requires imagemagick and ghostscript
-  ;;   To install these on macOS, run:
-  ;;       brew install ghostscript
-  ;;       brew install imagemagick
-  ;;   Source for install instructions: http://stackoverflow.com/a/37457373
-
-  ;; ;; Execute the `org-include-img-from-pdf' function just before saving the file
-  ;; (add-hook 'before-save-hook #'org-include-img-from-pdf)
-  ;; ;; Execute the `org-include-img-from-pdf' function before processing the
-  ;; ;; file for export
-  ;; (add-hook 'org-export-before-processing-hook #'org-include-img-from-pdf)
-  ;; (defun org-include-img-from-pdf (&rest ignore)
-  ;;   "Convert the pdf files to image files.
-
-  ;; Only looks at #HEADER: lines that have \":convertfrompdf t\".
-  ;; This function does nothing if not in org-mode, so you can safely
-  ;; add it to `before-save-hook'."
-  ;;   (interactive)
-  ;;   (when (derived-mode-p 'org-mode)
-  ;;     (save-excursion
-  ;;       (goto-char (point-min))
-  ;;       (while (search-forward-regexp
-  ;;               "^\\s-*#\\+HEADER:.*\\s-:convertfrompdf\\s-+t"
-  ;;               nil 'noerror)
-  ;;         (let* (filenoext imgext imgfile pdffile cmd)
-  ;;           ;; Keep on going on to the next line till it finds a line with
-  ;;           ;; `[[FILE]]'
-  ;;           (while (progn
-  ;;                    (forward-line 1)
-  ;;                    (not (looking-at "\\[\\[\\(.*\\)\\.\\(.*\\)\\]\\]"))))
-  ;;           (when (looking-at "\\[\\[\\(.*\\)\\.\\(.*\\)\\]\\]")
-  ;;             (setq filenoext (match-string-no-properties 1))
-  ;;             (setq imgext (match-string-no-properties 2))
-  ;;             (setq imgfile (expand-file-name (concat filenoext "." imgext)))
-  ;;             (setq pdffile (expand-file-name (concat filenoext "." "pdf")))
-  ;;             (message "imgfile: %s" imgfile)
-  ;;             (setq cmd (concat "convert -density 96 -quality 85 "
-  ;;                               pdffile " " imgfile))
-  ;;             (when (file-newer-than-file-p pdffile imgfile)
-  ;;               ;; This block is executed only if pdffile is newer than imgfile
-  ;;               ;; or if imgfile does not exist
-  ;;               ;; Source: https://www.gnu.org/software/emacs/manual/html_node/elisp/Testing-Accessibility.html
-  ;;               (message "%s" cmd)
-  ;;               (shell-command cmd))))))))
 #+END_SRC
 ** Tweaks to tree behavior
 Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to the whole subtree!
@@ -800,10 +752,6 @@ Steam account
 #+END_SRC
 * mode line
 #+BEGIN_SRC emacs-lisp
-  ;; (setq sml/no-confirm-load-theme t)
-  ;; (setq sml/theme 'respectful)
-  ;; (setq sml/shorten-modes t)
-  ;; (sml/setup)
   (setq battery-mode-line-format " %p")
   (use-package fancy-battery
     :diminish fancy-battery-mode
@@ -972,7 +920,6 @@ the mark if it was set before search started.
   (setq helm-swoop-use-fuzzy-match t)
 #+END_SRC
 * Auto-complete
-** TODO fix the width issues :P
 ** TODO migrate this into a use-package statement
 [[http://stackoverflow.com/questions/27474936/color-schema-of-emacs-auto-complete-mode][color scheme]]
 #+BEGIN_SRC emacs-lisp
