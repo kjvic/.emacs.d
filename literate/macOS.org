@@ -1,5 +1,5 @@
 * Railwaycat's [[https://github.com/railwaycat/homebrew-emacsmacport][macport]] of the emacs gui
-* [[https:/f/gist.github.com/railwaycat/4043945][Script]] to open the emacs gui from the command line
+* TODO [[https://gist.github.com/railwaycat/4043945][script]] to open the emacs gui from the command line
 * modifier keys
 #+BEGIN_SRC emacs-lisp
    (setq mac-option-key-is-meta nil
