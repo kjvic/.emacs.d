@@ -1,9 +1,9 @@
-;; Don't bother loading if your emacs is old af
 (when (version< emacs-version "24")
   (unless (yes-or-no-p "This Emacs is old, config probably won't work. Kill? ")
     (kill-emacs)))
+;; ^^ Don't bother loading if your emacs is too old
 
-;; PACKAGES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+;; Packages
 (when (>= emacs-major-version 24)
   (require 'package)
   (setq package-archives
@@ -25,24 +25,22 @@
 (org-babel-load-file krista/bootstrap-org-path)
 
 
-;; NOPENOPENOPENOPENOPENOPENOPE
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(LaTeX-math-menu-unicode t t)
+; '(LaTeX-math-menu-unicode t)
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
  '(ansi-color-names-vector
    ["#212526" "#ff4b4b" "#b4fa70" "#fce94f" "#729fcf" "#e090d7" "#8cc4ff" "#eeeeec"])
  '(ansi-term-color-vector
    [unspecified "#081724" "#ff694d" "#68f6cb" "#fffe4e" "#bad6e2" "#afc0fd" "#d2f1ff" "#d3f9ee"])
- '(battery-mode-line-format " %p")
  '(custom-enabled-themes (quote (tron-dark)))
  '(custom-safe-themes
    (quote
-    ("2f3eae65a9f557b72d3efbaa73823bb45b00417807fc29c3f980491b82dcc048" "4cbeaf4592c7fcf9ef17f12fa89a8d4c4433c38d1c0b603afdb7124d326d021e" "5008a5c8985fda9803ff9d02bc2a56b45407ccc251ff85a817e9dfe7f345ffe5" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
+    ("a6771b6aa32f12d6cd78367608310310d591a21bd9f784e274ec30e27b3f22f3" "2f3eae65a9f557b72d3efbaa73823bb45b00417807fc29c3f980491b82dcc048" "4cbeaf4592c7fcf9ef17f12fa89a8d4c4433c38d1c0b603afdb7124d326d021e" "5008a5c8985fda9803ff9d02bc2a56b45407ccc251ff85a817e9dfe7f345ffe5" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
  '(display-battery-mode nil)
  '(fancy-battery-mode t)
  '(fancy-battery-show-percentage t)
@@ -65,14 +63,9 @@
  '(org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
  '(package-selected-packages
    (quote
-    (steam undo-tree smartparens slime reveal-in-osx-finder pylint org-bullets magit helm-swoop auctex)))
+    (benchmark-init exec-path-from-shell free-keys steam undo-tree smartparens pylint org-bullets magit helm-swoop auctex)))
  '(projectile-mode t nil (projectile))
  '(projectile-switch-project-action (quote helm-projectile-find-file))
- '(sml/mode-width (quote empty))
- '(sml/mule-info nil)
- '(sml/position-percentage-format "")
- '(sml/show-trailing-N nil)
- '(sml/theme (quote respectful))
  '(suggest-key-bindings t)
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
@@ -137,8 +130,4 @@
  '(popup-summary-face ((t (:inherit popup-face :foreground "slate blue"))))
  '(popup-tip-face ((t (:background "dark slate gray" :foreground "aquamarine" :family "Fira Code"))))
  '(region ((t (:background "#032929"))))
- '(sml/client ((t (:inherit sml/prefix :family "Fira Code"))))
- '(sml/filename ((t (:inherit mode-line-buffer-id :family "Fira Code"))))
- '(sml/folder ((t (:inherit sml/global :weight normal :family "Fira Code"))))
- '(sml/line-number ((t (:inherit sml/modes :weight semi-bold :family "Fira Code"))))
  '(vertical-border ((t (:foreground "#00d4d4")))))

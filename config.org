@@ -44,6 +44,7 @@ How to: see spruce's config. Something something angle brackets source block tit
 #+END_SRC
 ** Setting up my load-path
 #+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
   (add-to-list 'load-path "~/.emacs.d/elisp/")
   (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
 ;; WTF why do i have ac-emoji. MOM!!!!!
@@ -97,6 +98,22 @@ How to: see spruce's config. Something something angle brackets source block tit
   (use-package achievements
     :diminish achievements-mode
     :config (achievements-mode t))
+#+END_SRC
+** Freekeys
+#+BEGIN_SRC emacs-lisp
+  (use-package free-keys
+    :bind ("M-F" . free-keys))
+#+END_SRC
+** Benchmark init
+- Figure out where you're burning time!!!
+- [[https://www.emacswiki.org/emacs/BenchmarkInit][docs]]
+- config
+  #+BEGIN_SRC emacs-lisp
+  (require 'benchmark-init)
+  #+END_SRC
+** Keep as many \*Messages* around as you can!
+#+BEGIN_SRC emacs-lisp
+(setq message-log-max t)
 #+END_SRC
 * Emacs proper
 ** Turn off alarm sounds
@@ -781,12 +798,13 @@ Steam account
 #+BEGIN_SRC emacs-lisp
 ;(setq steam-username "xtajv")
 #+END_SRC
-* SML (Smart Mode Line)
+* mode line
 #+BEGIN_SRC emacs-lisp
-  (setq sml/no-confirm-load-theme t)
-  (setq sml/theme 'respectful)
-  (setq sml/shorten-modes t)
-  (sml/setup)
+  ;; (setq sml/no-confirm-load-theme t)
+  ;; (setq sml/theme 'respectful)
+  ;; (setq sml/shorten-modes t)
+  ;; (sml/setup)
+  (setq battery-mode-line-format " %p")
   (use-package fancy-battery
     :diminish fancy-battery-mode
     :config
@@ -823,8 +841,17 @@ Steam account
     :config
     ;; Enable Helm globally
     (helm-mode t)
+    <<helm-behavior>>
     :bind <<helm-replace-defaults>>
     )
+#+END_SRC
+*** Helm behavior
+Sometimes, I just want to tweak something about how Helm functions.
+This is the place to put it
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-behavior :tangle no
+;; Make it so that Helm auto-selects the only match for a query
+;; https://emacs.stackexchange.com/questions/13273/how-can-i-quickly-enter-a-directory-in-helm-find-file-when-there-is-only-one-to
+(setq helm-ff-auto-update-initial-value t)
 #+END_SRC
 *** Override global keybindings.
 I like Helm so much that I'm willing to override the corresponding
@@ -962,15 +989,6 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
 - =C-c ! p= :: go backward to prev. error
 - =C-c ! l= :: show a popup list of errors
 * Corral - surround things with quotes/paren easily!
-#+BEGIN_SRC emacs-lisp
-  ;; (global-set-key (kbd "M-9") 'corral-parentheses-backward)
-  ;; (global-set-key (kbd "M-0") 'corral-parentheses-forward)
-  ;; (global-set-key (kbd "M-[") 'corral-brackets-backward)
-  ;; (global-set-key (kbd "M-]") 'corral-brackets-forward)
-  ;; (global-set-key (kbd "M-{") 'corral-braces-backward)
-  ;; (global-set-key (kbd "M-}") 'corral-braces-forward)
-  ;; (global-set-key (kbd "M-\"") 'corral-double-quotes-forward)
-#+END_SRC
 * Projectile
 ** Projectile proper
 #+BEGIN_SRC emacs-lisp
@@ -982,6 +1000,8 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
     (projectile-global-mode)
     )
 #+END_SRC
+** Config
+
 ** Helm projectile
 #+BEGIN_SRC emacs-lisp
   (use-package helm-projectile
@@ -1017,8 +1037,13 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
   ;;(setq-default c-basic-offset 4)
 
   ; Alternate settings that don't piss other programmers off as much:
-  (setq c-default-style "python")
-  (setq-default c-basic-offset 2)
+
+  (setq krista-c-style
+        '((setq c-default-style "python")
+          (setq-default c-basic-offset 2)))
+
+  (add-hook 'c-mode-common-hook
+            (lambda () (c-add-style "krista-c-style" krista-c-style t)))
 #+END_SRC
 ** Python
 - Problem: When I ran =run-python=, I got the following error message:
@@ -1047,44 +1072,42 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
     :config
     (setq TeX-auto-save t)
     (setq TeX-PDF-mode t)
+    (setq TeX-view-program-selection '((output-pdf "Emacs")))
+    (setq TeX-parse-self t)
+    (setq-default TeX-master t)
+    
     (defun krista/TeX-open-output-buffer ()
       (interactive)
       (let ((output-file (with-current-buffer TeX-command-buffer
                            (expand-file-name
-                            (TeX-active-master (TeX-output-extension))))))
+                            (TeX-active-master
+                             (TeX-output-extension))))))
         (find-file output-file)))
-    (add-to-list 'TeX-view-program-list
-                 (list "Emacs" #'krista/TeX-open-output-buffer))
 
-    (setq TeX-view-program-selection '((output-pdf "Emacs")))
-    (setq TeX-parse-self t)
-    (setq-default TeX-master nil)
+    (add-to-list 'TeX-view-program-list
+                 (list "Emacs" #'krista/TeX-open-output-buffer)))
+
     (use-package latex
       :ensure nil
       :config
-      (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-      (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-      (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-      ; :bind (
-      ;        ;("`_" . LaTeX-math-bar)
-      ;        )
-      )
-    (setq reftex-plug-into-AUCTeX t)
-    )
+      (setq visual-line-mode t)
+      (setq LaTeX-math-mode t)
+      (setq turn-on-reftex t)
+      (setq LaTeX-math-menu-unicode t)
+      (setq reftex-plug-into-AUCTeX t))
 #+END_SRC
-
 * Unfiled
 ** Packages
 *** Slime
 #+BEGIN_SRC emacs-lisp
-  (load (expand-file-name "~/core/fun/dev/builds_from_source/quicklisp/slime-helper.el"))
+;  (load (expand-file-name "~/core/fun/dev/builds_from_source/quicklisp/slime-helper.el"))
   ;; The SBCL binary and command-line arguments
-  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
+;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
 #+END_SRC
 *** Emacs/W3 Configuration
 #+BEGIN_SRC emacs-lisp
-    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
-    (condition-case () (require 'w3-auto "w3-auto") (error nil))
+;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
+;    (condition-case () (require 'w3-auto "w3-auto") (error nil))
 #+END_SRC
 *** multiple-cursors
 #+BEGIN_SRC emacs-lisp
