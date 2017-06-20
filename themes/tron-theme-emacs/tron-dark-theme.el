@@ -1,4 +1,4 @@
-;;; tron-dark-theme.el --- Color theme inspired by Tron Legacy film
+;;; tron-dark-theme.el --- Color theme inspired by Tron Legacy film:
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 ;; Version: 0.1
 ;; Keywords: theme customization
 
-;;; Commentary
+;;; Commentary:
 
 ;; This theme is inspired by the Tron Legacy film.
 
