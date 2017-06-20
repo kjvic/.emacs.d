@@ -63,7 +63,8 @@ How to: see spruce's config. Something something angle brackets source block tit
   (setq use-package-always-ensure t)
 #+END_SRC
 * Evolution
-** This is where I put things that help me modify my emacs install more efficiently
+This is where I put things that help me modify my emacs install more efficiently
+** Speedy-keys to open and eval my config file
 #+BEGIN_SRC emacs-lisp
   (defun krista/open-config ()
     (interactive)
@@ -89,6 +90,8 @@ How to: see spruce's config. Something something angle brackets source block tit
   (add-hook 'emacs-lisp-mode-hook
             (lambda ()
               (global-set-key (kbd "C-c C-b") 'eval-region-or-buffer)))
+
+;; Speedy-keys!!!
   (bind-key "H-e" 'krista/eval-config)
   (bind-key "C-c e" 'krista/open-config)
 #+END_SRC
@@ -114,6 +117,14 @@ How to: see spruce's config. Something something angle brackets source block tit
 ** Keep as many \*Messages* around as you can!
 #+BEGIN_SRC emacs-lisp
 (setq message-log-max t)
+#+END_SRC
+** Help me learn new keybindings!
+#+BEGIN_SRC emacs-lisp
+(setq suggest-key-bindings t)
+#+END_SRC
+** Help me pick colors!
+#+BEGIN_SRC emacs-lisp
+(setq list-colors-sort 'luminance)
 #+END_SRC
 * Emacs proper
 ** Turn off alarm sounds
