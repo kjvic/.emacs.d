@@ -809,6 +809,9 @@ Steam account
     :diminish fancy-battery-mode
     :config
     (fancy-battery-mode t))
+ '(display-battery-mode nil)
+ '(fancy-battery-mode t)
+ '(fancy-battery-show-percentage t)
 #+END_SRC
 * Helm
 ** Introduction
@@ -830,6 +833,7 @@ Steam account
   - navigation to files on your filesystem (C-x f)
   - buffer selection (C-x b)
   - M-x commands (the default binding for execute-extended-command)
+** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
   (use-package helm
     :diminish helm-mode
@@ -842,6 +846,7 @@ Steam account
     ;; Enable Helm globally
     (helm-mode t)
     <<helm-behavior>>
+    <<helm-window-choices>>
     :bind <<helm-replace-defaults>>
     )
 #+END_SRC
@@ -850,10 +855,18 @@ Sometimes, I just want to tweak something about how Helm functions.
 This is the place to put it
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-behavior :tangle no
 ;; Make it so that Helm auto-selects the only match for a query
-;; https://emacs.stackexchange.com/questions/13273/how-can-i-quickly-enter-a-directory-in-helm-find-file-when-there-is-only-one-to
+;; Source: https://emacs.stackexchange.com/questions/13273/how-can-i-quickly-enter-a-directory-in-helm-find-file-when-there-is-only-one-to
+;; Note: ff is *F*ind *F*ile
 (setq helm-ff-auto-update-initial-value t)
 #+END_SRC
-*** Override global keybindings.
+*** Helm windows
+**** TODO document these settings better
+**** Config
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-window-choices :tangle no
+(setq helm-full-frame nil)
+(setq helm-show-action-window-other-window nil)
+#+END_SRC
+*** Override global keybindings (replace defaults)
 I like Helm so much that I'm willing to override the corresponding
 default Emacs functions. Also, Emacs defaults are "meh".
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-replace-defaults :tangle no
@@ -933,6 +946,7 @@ Match the window-splitting conventions from helm proper.
   ;; Even if there are multiple windows open, /still/ split the window
   ;; in half
   (setq helm-swoop-split-with-multiple-windows t)
+
 #+END_SRC
 **** Mark Reactivation
 Source: Spruce Bondera's fabulous config page For some reason
@@ -964,7 +978,7 @@ the mark if it was set before search started.
 #+BEGIN_SRC emacs-lisp
   (require 'auto-complete)
   (ac-config-default)
-  (global-auto-complete-mode t)
+  (setq global-auto-complete-mode t)
 
   ;; Enable auto-complete-mode globally, and don't do it in the minibuffer
   ;; Source: https://stackoverflow.com/questions/8095715/emacs-auto-complete-mode-at-startup
@@ -974,6 +988,7 @@ the mark if it was set before search started.
   (global-set-key (kbd "C-;") 'auto-complete)
 
   (diminish auto-complete-mode)
+
 #+END_SRC
 * Flycheck - syntax checking
 ** Config
@@ -1096,25 +1111,24 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
       (setq LaTeX-math-menu-unicode t)
       (setq reftex-plug-into-AUCTeX t))
 #+END_SRC
-* Unfiled
-** Packages
-*** Slime
+* Packages
+** Slime
 #+BEGIN_SRC emacs-lisp
 ;  (load (expand-file-name "~/core/fun/dev/builds_from_source/quicklisp/slime-helper.el"))
   ;; The SBCL binary and command-line arguments
 ;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
 #+END_SRC
-*** Emacs/W3 Configuration
+** Emacs/W3 Configuration
 #+BEGIN_SRC emacs-lisp
 ;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
 ;    (condition-case () (require 'w3-auto "w3-auto") (error nil))
 #+END_SRC
-*** multiple-cursors
+** multiple-cursors
 #+BEGIN_SRC emacs-lisp
   ;(use-package multiple-cursors
   ;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
 #+END_SRC
-*** Recently-opened files
+** Recently-opened files
 #+BEGIN_SRC emacs-lisp
     (require 'recentf)
     (recentf-mode t)
@@ -1123,13 +1137,13 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
     ;;; Fast access to them recently-opened files
     (global-set-key "\C-x\ \C-r" 'helm-recentf)
 #+END_SRC
-*** Pylint minor mode
+** Pylint minor mode
 #+BEGIN_SRC emacs-lisp
     (autoload 'pylint "pylint")
     (add-hook 'python-mode-hook 'pylint-add-menu-items)
     (add-hook 'python-mode-hook 'pylint-add-key-bindings)
 #+END_SRC
-*** Undo tree
+** Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+BEGIN_SRC emacs-lisp
   (require 'undo-tree)
@@ -1138,8 +1152,8 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (add-to-list 'undo-tree-history-directory-alist
                '("." . "~/.emacs.d/cache/undo"))
 #+END_SRC
-** Cosmetics
-*** Whitespace preferences
+* Cosmetics
+** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
 ;; Show trailing whitespace by default
 (use-package whitespace)
@@ -1172,7 +1186,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (setq tab-width 8)
   ;(defvaralias 'c-basic-offset 'tab-width)
 #+END_SRC
-*** Python: indent with a 4-space-wide tab
+** Python: indent with a 4-space-wide tab
 #+BEGIN_SRC emacs-lisp
     (add-hook 'python-mode-hook
               (lambda ()
@@ -1180,28 +1194,29 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
                 (setq tab-width 4)
                 (setq python-indent 4)))
 #+END_SRC
-*** Kill default startup message, text at the top of scratch buffers
+** Kill default startup message, text at the top of scratch buffers
 #+BEGIN_SRC emacs-lisp
     (setq inhibit-startup-message t)
     (setq initial-scratch-message "")
+    (setq inhibit-startup-screen t)
 #+END_SRC
-*** Kill the default emacs toolbar (top of screen)
+** Kill the default emacs toolbar (top of screen)
 #+BEGIN_SRC emacs-lisp
     (tool-bar-mode -1)
 #+END_SRC
-*** Highlight corresponding paren whenever you mouse over its pair
+** Highlight corresponding paren whenever you mouse over its pair
 #+BEGIN_SRC emacs-lisp
     (show-paren-mode 1)
 #+END_SRC
-*** Delete highlighted text if you start typing on top of it
+** Delete highlighted text if you start typing on top of it
 #+BEGIN_SRC emacs-lisp
     (delete-selection-mode 1)
 #+END_SRC
-*** Hide the scrollbar
+** Hide the scrollbar
 #+BEGIN_SRC emacs-lisp
     (scroll-bar-mode -1)
 #+END_SRC
-*** Organize autosaved backup files (put them someplace else!)
+** Organize autosaved backup files (put them someplace else!)
 [[http://stackoverflow.com/questions/2680389/how-to-remove-all-files-ending-with-made-by-emacs][source]]
 #+BEGIN_SRC emacs-lisp
     (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
@@ -1212,7 +1227,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
           kept-old-versions 5    ; and how many of the old
           )
 #+END_SRC
-** Keybindings and accessibility
+* Keybindings and accessibility
 #+BEGIN_SRC emacs-lisp
   ;; Change "yes or no" prompts to "y or n" prompts
   (fset 'yes-or-no-p 'y-or-n-p)
@@ -1370,42 +1385,87 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (put 'TeX-command-extra-options 'safe-local-variable
        (lambda (x) (string-equal x "-shell-escape")))
 #+END_SRC
-** Stuff added by Custom
-#+BEGIN_SRC emacs-lisp
-    ;; custom-set-variables was added by Custom.
-    ;; If you edit it by hand, you could mess it up, so be careful.
-    ;; Your init file should contain only one such instance.
-    ;; If there is more than one, they won't work right.
-    (custom-set-variables
-     ;; custom-set-variables was added by Custom.
-     ;; If you edit it by hand, you could mess it up, so be careful.
-     ;; Your init file should contain only one such instance.
-     ;; If there is more than one, they won't work right.
-     '(ansi-color-faces-vector
-       [default default default italic underline success warning error])
-     '(ansi-color-names-vector
-       ["#212526" "#ff4b4b" "#b4fa70" "#fce94f" "#729fcf" "#e090d7" "#8cc4ff" "#eeeeec"])
-     '(custom-safe-themes
-       (quote
-        ("628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
-     '(gud-gdb-command-name "gdb --annotate=1")
-     '(inhibit-startup-screen t)
-     '(large-file-warning-threshold nil)
-     '(mac-command-modifier (quote meta))
-     '(org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
-     '(package-selected-packages
-       (quote
-        (undo-tree smartparens slime reveal-in-osx-finder pylint org-bullets magit helm-swoop auctex)))
-)
+* Stuff added by Custom
+#+BEGIN_SRC emacs-lisp :noweb tangle
+      ;; custom-set-variables was added by Custom.
+      ;; If you edit it by hand, you could mess it up, so be careful.
+      ;; Your init file should contain only one such instance.
+      ;; If there is more than one, they won't work right.
+      (custom-set-variables
+       ;; custom-set-variables was added by Custom.
+       ;; If you edit it by hand, you could mess it up, so be careful.
+       ;; Your init file should contain only one such instance.
+       ;; If there is more than one, they won't work right.
 
-    ;; custom-set-faces was added by Custom.
-    ;; If you edit it by hand, you could mess it up, so be careful.
-    ;; Your init file should contain only one such instance.
-    ;; If there is more than one, they won't work right.
-    (custom-set-faces
-     '(fringe ((t (:background "#001519"))))
-     '(vertical-border ((t (:foreground "#00d4d4"))))
-)
+       <<ansi-colors>>
+
+       '(custom-enabled-themes (quote (tron-dark)))
+       '(custom-safe-themes
+         (quote
+          ("628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
+
+       '(gud-gdb-command-name "gdb --annotate=1")
+       '(large-file-warning-threshold nil)
+
+       '(mac-command-modifier (quote meta))
+
+       '(org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
+
+       '(package-selected-packages
+         (quote
+          (undo-tree
+           smartparens
+           slime
+           reveal-in-osx-finder
+           pylint
+           org-bullets
+           magit
+           helm-swoop
+           auctex)))
+       )
+
+      ;; custom-set-faces was added by Custom.
+      ;; If you edit it by hand, you could mess it up, so be careful.
+      ;; Your init file should contain only one such instance.
+      ;; If there is more than one, they won't work right.
+      (custom-set-faces
+       '(fringe ((t (:background "#001519"))))
+       '(vertical-border ((t (:foreground "#00d4d4"))))
+  )
+#+END_SRC
+** ANSI colors
+#+BEGIN_SRC emacs-lisp :noweb-ref ansi-colors :tangle yes
+  '(ansi-color-faces-vector
+    [default
+      default
+      default
+      italic
+      underline
+      success
+      warning
+      error
+      ])
+  '(ansi-color-names-vector
+    ["#212526"
+     "#ff4b4b"
+     "#b4fa70"
+     "#fce94f"
+     "#729fcf"
+     "#e090d7"
+     "#8cc4ff"
+     "#eeeeec"
+     ])
+  '(ansi-term-color-vector
+    [unspecified
+     "#081724"
+     "#ff694d"
+     "#68f6cb"
+     "#fffe4e"
+     "#bad6e2"
+     "#afc0fd"
+     "#d2f1ff"
+     "#d3f9ee"
+     ])
 #+END_SRC
 * Emacs help
 ** [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Commands.html][Keybinding instructions]]
