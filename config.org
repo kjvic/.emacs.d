@@ -685,9 +685,6 @@ the display until you restart Emacs.
 #+END_SRC
 ** Org agenda
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
-  ;; Add a timestamp to record when a TODO item is closed
-  (setq org-log-done t)
-
   ;; Places to sniff when compiling a list of TODO items
   (setq org-agenda-files (list "~/core/school/W17/at_a_glance.org"
                                "~/core/lists/todo.org"))
