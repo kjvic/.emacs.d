@@ -91,7 +91,7 @@ This is where I put things that help me modify my emacs install more efficiently
             (lambda ()
               (global-set-key (kbd "C-c C-b") 'eval-region-or-buffer)))
 
-;; Speedy-keys!!!
+  ;; Speedy-keys!!!
   (bind-key "H-e" 'krista/eval-config)
   (bind-key "C-c e" 'krista/open-config)
 #+END_SRC
@@ -240,25 +240,105 @@ hrm. doesn't seem to work for me :P
 #+BEGIN_SRC emacs-lisp
 (setq ns-auto-hide-menu-bar t)
 #+END_SRC
+*** Kill default startup message, text at the top of scratch buffers
+#+BEGIN_SRC emacs-lisp
+    (setq inhibit-startup-message t)
+    (setq initial-scratch-message "")
+    (setq inhibit-startup-screen t)
+    (setq large-file-warning-threshold nil)
+#+END_SRC
+*** Kill the default emacs toolbar (top of screen)
+#+BEGIN_SRC emacs-lisp
+    (tool-bar-mode -1)
+#+END_SRC
+*** Highlight corresponding paren whenever you mouse over its pair
+#+BEGIN_SRC emacs-lisp
+    (show-paren-mode 1)
+#+END_SRC
+*** Fonts
+#+BEGIN_SRC emacs-lisp
+    (set-face-attribute 'bold nil :weight 'extra-bold)
+
+    (set-face-attribute 'bold-italic nil
+                        :slant 'oblique
+                        :weight 'bold)
+
+    (set-face-attribute 'font-lock-doc-face nil
+                        :foreground "#58615a"
+                        :family "Fira Code")
+
+    (set-face-attribute 'region nil :background "#032929")
+    (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
+#+END_SRC
+*** Delete highlighted text if you start typing on top of it
+#+BEGIN_SRC emacs-lisp
+ (delete-selection-mode 1)
+#+END_SRC
+*** Hide the scrollbar
+#+BEGIN_SRC emacs-lisp
+  (scroll-bar-mode -1)
+#+END_SRC
+*** Organize autosaved backup files (put them someplace else!)
+[[http://stackoverflow.com/questions/2680389/how-to-remove-all-files-ending-with-made-by-emacs][source]]
+#+BEGIN_SRC emacs-lisp
+  (setq backup-directory-alist '(("." . "~/.emacs.d/backup")))
+  (setq backup-by-copying t)    ; Don't delink hardlinks
+  (setq version-control t)      ; Use version numbers on backups
+  (setq delete-old-versions t)  ; Automatically delete excess backups
+  (setq kept-new-versions 20)   ; how many of the newest versions to keep
+  (setq kept-old-versions 5)    ; and how many of the old
+#+END_SRC
+
 ** Getting around
 #+BEGIN_SRC emacs-lisp
-;; Where to land when we start up
-(setq initial-buffer-choice "~/core/scratch")
+  ;; Where to land when we start up
+  (setq initial-buffer-choice "~/core/scratch")
 
-; Cycle backwards through buffers
-; ..."C-x o", meet your new friend "C-c o"!
-(global-set-key (kbd "C-c o") 'previous-multiframe-window)
+  ; Cycle backwards through buffers
+  ; ..."C-x o", meet your new friend "C-c o"!
+  (global-set-key (kbd "C-c o") 'previous-multiframe-window)
 
-; Backwards kill-line. It's the backwards version of C-k
-; Source: https://www.emacswiki.org/emacs/BackwardKillLine
-(defun backward-kill-line (arg)
-  "Kill ARG lines backward."
-  (interactive "p")
-  (kill-line (- 1 arg)))
-(global-set-key (kbd "C-c k") 'backward-kill-line)
+  ; Backwards kill-line. It's the backwards version of C-k
+  ; Source: https://www.emacswiki.org/emacs/BackwardKillLine
+  (defun backward-kill-line (arg)
+    "Kill ARG lines backward."
+    (interactive "p")
+    (kill-line (- 1 arg)))
+  (global-set-key (kbd "C-c k") 'backward-kill-line)
+
+  ;; Stop bumping into the end of the modeline!
+  ;; Thanks to http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
+  (customize-set-variable
+   'minibuffer-prompt-properties
+   (quote (read-only t cursor-intangible t face minibuffer-prompt)))
+
+  ;; Referrer: https://emacs.stackexchange.com/questions/368/how-do-i-make-org-beginning-of-line-move-cursor-to-the-first-text-in-heading-b
+  ;;
+  ;; Make C-a toggle between beginning of line and indentation
+  ;; https://github.com/lunaryorn/stante-pede/blob/master/init.el
+  (defun back-to-indentation-or-beginning-of-line (arg)
+    "Move point back to indentation of beginning of line.
+  Move point to the first non-whitespace character on this line.
+  If point is already there, move to the beginning of the line.
+  Effectively toggle between the first non-whitespace character and
+  the beginning of the line.
+  If ARG is not nil or 1, move forward ARG - 1 lines first.  If
+  point reaches the beginning or end of the buffer, stop there."
+    (interactive "^p")
+    (setq arg (or arg 1))
+
+    ;; Move lines first
+    (when (/= arg 1)
+      (let ((line-move-visual nil))
+        (forward-line (1- arg))))
+
+    (let ((orig-point (point)))
+      (back-to-indentation)
+      (when (= orig-point (point))
+        (move-beginning-of-line 1))))
 #+END_SRC
 * cheatsheet
-** Intro
+** What is cheatsheet?
 Cheatsheet gives quick access to read-only buffers.
 Use case: peeking at cheat sheets!
 Github page: https://github.com/darksmile/cheatsheet/
@@ -612,7 +692,11 @@ the display until you restart Emacs.
 ** Aesthetics
 #+BEGIN_SRC emacs-lisp :noweb-ref org-aesthetics :tangle no
   ;; Display bullets instead of asterisks
-  (require 'org-bullets)
+  (use-package org-bullets
+    :diminish
+    :config
+    (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
+    )
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
 
   ;; Setting this to `t' will automatically render LaTeX special
@@ -635,7 +719,8 @@ the display until you restart Emacs.
   ;; Make top-level headings larger, and lower-level headings progressively smaller
   (set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.2)
   (set-face-attribute 'org-level-2 nil :inherit 'outline-2 :height 1.0)
-  (add-hook 'org-mode-hook (lambda () (setq line-spacing '0.25)))
+  ;; (add-hook 'org-mode-hook (lambda () (setq line-spacing '0.25)))
+  (setq line-spacing '0.25)
 
   ;; Use my theme as the color scheme for source blocks
   (setq org-src-fontify-natively t)
@@ -643,7 +728,17 @@ the display until you restart Emacs.
   ;; Org mode clean view
   ;; <http://orgmode.org/manual/Clean-view.html>
   (setq org-startup-indented t)
-  (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
+
+  (set-face-attribute 'org-code nil
+                      :inherit 'shadow
+                      :foreground "dark sea green"
+                      :family "Courier")
+
+  (set-face-attribute 'org-verbatim nil
+                      :inherit 'shadow
+                      :stipple nil
+                      :foreground "AntiqueWhite4"
+                      :family "Andale Mono")
 #+END_SRC
 ** Exporting to LaTeX
 #+BEGIN_SRC emacs-lisp
@@ -703,8 +798,41 @@ the display until you restart Emacs.
 ** Tweaks to tree behavior
 Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to the whole subtree!
 #+BEGIN_SRC emacs-lisp :noweb-ref org-tree-behavior :tangle no
-(setq org-yank-adjusted-subtrees t)
-(setq org-yank-folded-subtrees t)
+  ;;   (setq org-yank-adjusted-subtrees t)
+  ;;   (setq org-yank-folded-subtrees t)
+
+  ;;   ;; Source: https://github.com/lunaryorn
+  ;;   (defun smarter-move-beginning-of-line (arg)
+  ;;     "Move point back to indentation of beginning of line.
+
+  ;;         Move point to the first non-whitespace character on this line.
+  ;;         If point is already there, move to the beginning of the line.
+  ;;         Effectively toggle between the first non-whitespace character and
+  ;;         the beginning of the line.
+
+  ;;         If ARG is not nil or 1, move forward ARG - 1 lines first.  If
+  ;;         point reaches the beginning or end of the buffer, stop there."
+  ;;     (interactive "^p")
+  ;;     (setq arg (or arg 1))
+
+  ;;     ;; Move lines first
+  ;;     (when (/= arg 1)
+  ;;       ;(let ((line-move-visual nil))
+  ;;       ;  (forward-line (- 1 arg))
+  ;;         (move-to-column (+ outline-level 2))
+  ;; ;)
+
+  ;;       ))
+
+  ;;   (let ((orig-point (point)))
+  ;;     (back-to-indentation)
+  ;;     (when (= orig-point (point))
+  ;;       (move-beginning-of-line 1))))
+
+  ;;   ;; remap C-a to `smarter-move-beginning-of-line'
+  ;;   (global-set-key [remap move-beginning-of-line]
+  ;;                   'smarter-move-beginning-of-line)
+
 #+END_SRC
 ** Convenience functions
 Org source blocks
@@ -762,6 +890,7 @@ Steam account
 ;(setq steam-username "xtajv")
 #+END_SRC
 * mode line
+** Battery display
 #+BEGIN_SRC emacs-lisp
   (use-package fancy-battery
     :diminish fancy-battery-mode
@@ -772,7 +901,9 @@ Steam account
   '(fancy-battery-mode t)
   '(fancy-battery-show-percentage t)
   (setq battery-mode-line-format " %p")
-
+#+END_SRC
+** Fonts and colors
+#+BEGIN_SRC emacs-lisp
   (set-face-attribute 'mode-line nil 
                       :background "#000d0f" 
                       :foreground "cyan" 
@@ -791,8 +922,50 @@ Steam account
                       :background "#000d0f"
                       :foreground "#888a85"
                       :inverse-video nil)
-
 #+END_SRC
+** Display column number, do not display time
+#+BEGIN_SRC emacs-lisp
+(setq display-time-mode nil)
+(column-number-mode t)
+(setq display-time-default-load-average nil)
+#+END_SRC
+** Display wordcount
+#+BEGIN_SRC emacs-lisp
+    (setq mode-line-position
+      (append
+       mode-line-position
+       '((wc-mode
+          (6 (:eval (if (use-region-p)
+                        (format " %d,%d,%d"
+                                (abs (- (point) (mark)))
+                                (count-words-region (point) (mark))
+                                (abs (- (line-number-at-pos (point))
+                                        (line-number-at-pos (mark)))))
+                      (format " %d,%d,%d"
+                              (- (point-max) (point-min))
+                              (count-words-region (point-min) (point-max))
+                              (line-number-at-pos (point-max))))))
+          nil))))
+#+END_SRC
+** Diminish!
+Get the names of your minor-modes out of my mode line, dammit!
+Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
+#+BEGIN_SRC emacs-lisp
+  ;; Silence the minor modes!!!
+  (when (require 'diminish nil 'noerror)
+    (eval-after-load "auto-complete"
+      '(diminish 'auto-complete-mode ""))
+    (eval-after-load "undo-tree"
+      '(diminish 'undo-tree-mode ""))
+    (eval-after-load "Helm"
+      '(diminish 'helm-mode ""))
+    (eval-after-load "DocView"
+      '(diminish 'DocView-mode "PDF"))
+    (diminish 'auto-revert-mode "")
+    (diminish 'c++-mode "C++")
+    )
+#+END_SRC
+** TODO get an *X* when the buffer is modified
 * Helm
 ** Introduction
 - Definition of "helm": noun - a tiller or wheel and any associated
@@ -886,6 +1059,7 @@ default Emacs functions. Also, Emacs defaults are "meh".
     <<helm-swoop-window-splitting>>
     <<helm-swoop-reactivate-mark>>
     <<helm-swoop-behavior>>
+    <<helm-swoop-aesthetics>>
     :bind 
     ;; Use swoop instead of isearch
     ("C-s" . helm-swoop-without-pre-input)
@@ -951,6 +1125,29 @@ the mark if it was set before search started.
   ;; Enable fuzzy matching
   (setq helm-swoop-use-fuzzy-match t)
 #+END_SRC
+**** helm swoop aesthetics
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-aesthetics :tangle no
+  (set-face-attribute 'helm-ff-directory nil
+                      :background "#eeeeec"
+                      :foreground "#42071d")
+
+  (set-face-attribute 'helm-selection nil
+                      :background "#75dbb7"
+                      :distant-foreground "#000d0f"
+                      :foreground "#804532")
+
+  (set-face-attribute 'helm-source-header nil
+                      :background "turquoise4"
+                      :foreground "#f0ffff"
+                      :weight 'semi-bold
+                      :height 1.3
+                      :family "Fira Code")
+
+  (set-face-attribute 'helm-swoop-target-word-face nil
+                      :background "#7700ff"
+                      :foreground "white")
+
+#+END_SRC
 * Auto-complete
 ** TODO migrate this into a use-package statement
 [[http://stackoverflow.com/questions/27474936/color-schema-of-emacs-auto-complete-mode][color scheme]]
@@ -1003,17 +1200,19 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
 * Flycheck - syntax checking
 ** Config
 #+BEGIN_SRC emacs-lisp
-  (use-package flycheck
-    :init (global-flycheck-mode))
-;; Permanently enable syntax checking
-(add-hook 'after-init-hook #'global-flycheck-mode)
+  ;;   (use-package flycheck
+  ;;     :init (global-flycheck-mode)
+  ;;     :diminish)
+  ;; ;; Permanently enable syntax checking
+  ;; (add-hook 'after-init-hook #'global-flycheck-mode)
 #+END_SRC
 ** Usage
 via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
 - =C-c ! n= :: go forward to next error
 - =C-c ! p= :: go backward to prev. error
 - =C-c ! l= :: show a popup list of errors
-* Corral - surround things with quotes/paren easily!
+* TODO install ~Corral~
+Surround things with quotes/paren easily!
 * Projectile
 ** Projectile proper
 #+BEGIN_SRC emacs-lisp
@@ -1076,30 +1275,34 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 * Programming languages
 ** C / C++
 #+BEGIN_SRC emacs-lisp
-  (use-package cc-mode
-    :bind (:map
-           c-mode-base-map
-           ("C-c b" . compile)
-           ("M-j" . join-line)))
-  ;; Give me preconfigured autocompletions for C and C++!
-  ;; (add-hook 'c-mode-hook
-  ;;             (lambda ()
-  ;;               (add-to-list 'ac-sources 'ac-source-c-headers)
-  ;;               (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
+    (use-package cc-mode
+      :bind (:map
+             c-mode-base-map
+             ("C-c b" . compile)
+             ("M-j" . join-line)))
+    ;; Give me preconfigured autocompletions for C and C++!
+    ;; (add-hook 'c-mode-hook
+    ;;             (lambda ()
+    ;;               (add-to-list 'ac-sources 'ac-source-c-headers)
+    ;;               (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
 
-  ; My wildly unpopular bracing style
-  ; Secret: I really use Ratliffe, but this does the trick
-  ;;(setq c-default-style "whitesmith")
-  ;;(setq-default c-basic-offset 4)
+    ; My wildly unpopular bracing style
+    ; Secret: I really use Ratliffe, but this does the trick
+    (setq krista-c-style
+          '((setq c-default-style "whitesmith")
+            (setq-default c-basic-offset 4)))
 
-  ; Alternate settings that don't piss other programmers off as much:
+    ;;(setq c-default-style "whitesmith")
+    ;;(setq-default c-basic-offset 4)
 
-  (setq krista-c-style
-        '((setq c-default-style "python")
-          (setq-default c-basic-offset 2)))
+    ; Alternate settings that don't piss other programmers off as much:
 
-  (add-hook 'c-mode-common-hook
-            (lambda () (c-add-style "krista-c-style" krista-c-style t)))
+    (setq conformity-c-style
+          '((setq c-default-style "python")
+            (setq-default c-basic-offset 2)))
+
+    (add-hook 'c-mode-common-hook
+              (lambda () (c-add-style "krista-c-style" krista-c-style t)))
 #+END_SRC
 ** Python
 - Problem: When I ran =run-python=, I got the following error message:
@@ -1198,7 +1401,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+BEGIN_SRC emacs-lisp
 ;; Show trailing whitespace by default
 (use-package whitespace)
-(setq-default show-trailing-whitespace t)
+(setq-default show-trailing-whitespace nil)
 ;(add-hook 'before-save-hook 'delete-trailing-whitespace)
 ;; ... but don't show trailing whitespace if I'm in
 ;; - a minibuffer
@@ -1234,40 +1437,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
                 (setq indent-tabs-mode nil)
                 (setq tab-width 4)
                 (setq python-indent 4)))
-#+END_SRC
-** Kill default startup message, text at the top of scratch buffers
-#+BEGIN_SRC emacs-lisp
-    (setq inhibit-startup-message t)
-    (setq initial-scratch-message "")
-    (setq inhibit-startup-screen t)
-    (setq large-file-warning-threshold nil)
-#+END_SRC
-** Kill the default emacs toolbar (top of screen)
-#+BEGIN_SRC emacs-lisp
-    (tool-bar-mode -1)
-#+END_SRC
-** Highlight corresponding paren whenever you mouse over its pair
-#+BEGIN_SRC emacs-lisp
-    (show-paren-mode 1)
-#+END_SRC
-** Delete highlighted text if you start typing on top of it
-#+BEGIN_SRC emacs-lisp
-    (delete-selection-mode 1)
-#+END_SRC
-** Hide the scrollbar
-#+BEGIN_SRC emacs-lisp
-    (scroll-bar-mode -1)
-#+END_SRC
-** Organize autosaved backup files (put them someplace else!)
-[[http://stackoverflow.com/questions/2680389/how-to-remove-all-files-ending-with-made-by-emacs][source]]
-#+BEGIN_SRC emacs-lisp
-    (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
-          backup-by-copying t    ; Don't delink hardlinks
-          version-control t      ; Use version numbers on backups
-          delete-old-versions t  ; Automatically delete excess backups
-          kept-new-versions 20   ; how many of the newest versions to keep
-          kept-old-versions 5    ; and how many of the old
-          )
 #+END_SRC
 * Keybindings and accessibility
 #+BEGIN_SRC emacs-lisp
@@ -1413,16 +1582,13 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 
   (setq TeX-electric-sub-and-superscript t)
   (setq LaTeX-math-menu-unicode t)
-  (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
-
-  ;; Wrap lines at n characters
-  (add-hook 'LaTeX-mode-hook
-            (lambda () (set-fill-column 70)))
-  ;; Automatically wrap lines when I go past n characters
-  (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
-
-  ;; Automatically turn \ + alpha into the unicode equivalent \alpha
-  (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
+  (defun my-latex-settings (interactive)
+    (latex-electric-env-pair-mode t) ; Highlight other (closing/opening) paren
+    (set-fill-column 70) ;Wrap lines at n characters
+    (turn-on-auto-fill) ; Automatically wrap lines when I go past n characters
+    (prettify-symbols-mode) ; Automatically render unicode
+    )
+  (add-hook 'LaTeX-mode-hook 'my-latex-settings)
 
   (put 'TeX-command-extra-options 'safe-local-variable
        (lambda (x) (string-equal x "-shell-escape")))
