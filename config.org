@@ -67,15 +67,20 @@ This is where I put things that help me modify my emacs install more efficiently
 ** Speedy-keys to open and eval my config file
 #+BEGIN_SRC emacs-lisp
   (defun krista/open-config ()
+    "Quickly open my config file"
     (interactive)
     (find-file (or "~/.emacs.d/config.org"
                    user-init-file "")))
+  (bind-key "C-c e" 'krista/open-config)
+
   (defun krista/eval-config ()
+    "Quickly evaluate my config file"
     (interactive)
     (load-file user-init-file))
+  (bind-key "H-e" 'krista/eval-config)
 
-  ; Let me eval either a region or a buffer at a time
   (defun eval-region-or-buffer ()
+    "Let me eval either a region or a buffer at a time"
     (interactive)
     (let ((debug-on-error t))
       (cond
@@ -91,9 +96,8 @@ This is where I put things that help me modify my emacs install more efficiently
             (lambda ()
               (global-set-key (kbd "C-c C-b") 'eval-region-or-buffer)))
 
-  ;; Speedy-keys!!!
-  (bind-key "H-e" 'krista/eval-config)
-  (bind-key "C-c e" 'krista/open-config)
+
+
 #+END_SRC
 ** achievements mode
 *** [[https://bitbucket.org/gvol/emacs-achievements/src/5b4b7b6816aaf105cd493f51b3860bd2f0c014a6/README.md?at=default&fileviewer=file-view-default][Bitbucket]]
