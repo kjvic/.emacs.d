@@ -1310,6 +1310,13 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
               (lambda () (c-add-style "krista-c-style" krista-c-style t)))
 #+END_SRC
 ** Python
+*** Pylint minor mode
+#+BEGIN_SRC emacs-lisp
+  (autoload 'pylint "pylint")
+  (add-hook 'python-mode-hook 'pylint-add-menu-items)
+  (add-hook 'python-mode-hook 'pylint-add-key-bindings)
+#+END_SRC
+*** Python shell interpreter
 - Problem: When I ran =run-python=, I got the following error message:
   - Warning (python): Your ‘python-shell-interpreter’ doesn’t seem to
     support readline, yet ‘python-shell-completion-native’ was t and
@@ -1360,24 +1367,23 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
       (setq LaTeX-math-menu-unicode t)
       (setq reftex-plug-into-AUCTeX t))
 #+END_SRC
-* Packages
-** Slime
+* Slime
 #+BEGIN_SRC emacs-lisp
 ;  (load (expand-file-name "~/core/fun/dev/builds_from_source/quicklisp/slime-helper.el"))
   ;; The SBCL binary and command-line arguments
 ;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
 #+END_SRC
-** Emacs/W3 Configuration
+* Emacs/W3 Configuration
 #+BEGIN_SRC emacs-lisp
 ;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
 ;    (condition-case () (require 'w3-auto "w3-auto") (error nil))
 #+END_SRC
-** multiple-cursors
+* multiple-cursors
 #+BEGIN_SRC emacs-lisp
   ;(use-package multiple-cursors
   ;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
 #+END_SRC
-** Recently-opened files
+* Recentf
 #+BEGIN_SRC emacs-lisp
     (require 'recentf)
     (recentf-mode t)
@@ -1386,13 +1392,7 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
     ;;; Fast access to them recently-opened files
     (global-set-key "\C-x\ \C-r" 'helm-recentf)
 #+END_SRC
-** Pylint minor mode
-#+BEGIN_SRC emacs-lisp
-    (autoload 'pylint "pylint")
-    (add-hook 'python-mode-hook 'pylint-add-menu-items)
-    (add-hook 'python-mode-hook 'pylint-add-key-bindings)
-#+END_SRC
-** Undo tree
+* Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+BEGIN_SRC emacs-lisp
   (require 'undo-tree)
@@ -1639,11 +1639,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
     ;; If there is more than one, they won't work right.
   (set-face-attribute 'fringe nil :background "#001519")
   (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
-
-    ;; (custom-set-faces
-    ;;  '(fringe ((t (:background "#001519"))))
-    ;;  '(vertical-border ((t (:foreground "#00d4d4"))))
-    ;;  )
 #+END_SRC
 ** ANSI colors
 #+BEGIN_SRC emacs-lisp :noweb-ref ansi-colors :tangle yes
@@ -1681,7 +1676,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+END_SRC
 * Emacs help
 ** [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Commands.html][Keybinding instructions]]
-** How to edit source code in org-mode file:
+** How to edit source code in org-mode file
 *** New code block:
 **** New source block (lang unspecified): <s [TAB]
 **** New elisp block: <el [TAB]
