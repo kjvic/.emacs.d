@@ -14,7 +14,7 @@
 How to: see spruce's config. Something something angle brackets source block titles
 * Bootstrap
  Get emacs off the ground!
-** Tangling external files
+** Set up tangling macros
 *** Tangling helpers
 #+BEGIN_SRC emacs-lisp
   (setq-default krista/org-config-directory "literate")
@@ -35,23 +35,20 @@ How to: see spruce's config. Something something angle brackets source block tit
          (add-to-list
           (quote krista/config-org-files) (quote (,name . ,filename)) t))))
 #+END_SRC
-*** OS-specific garbage
-...is kept in another file:
-#+BEGIN_SRC emacs-lisp
-(krista/new-config-file macOS "macOS")
-(when (eq system-type 'darwin)
-  (org-babel-load-file krista/macOS-config-file))
-#+END_SRC
 ** Setting up my load-path
+*** TODO see if I can optimize startup by removing some of these?
+*** Config
 #+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
   (add-to-list 'load-path "~/.emacs.d/elisp/")
+  (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
   (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
-;; WTF why do i have ac-emoji. MOM!!!!!
-  ;(add-to-list 'load-path "~/.emacs.d/elpa/ac-emoji-20150823.11")
   (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
   (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
+  ;; mode-icons
+  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620")
+  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620/icons")
+  ;; custom tron theme
+  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
 #+END_SRC
 ** Package management management
 [[https://github.com/jwiegley/use-package][use-package github]]
@@ -61,6 +58,23 @@ How to: see spruce's config. Something something angle brackets source block tit
     (package-install 'use-package))
   ;; All packages in a use-package macro should be automagically installed
   (setq use-package-always-ensure t)
+#+END_SRC
+** Tangle external files
+- NOTE: It is important that [[*Tangle%20extrernal%20files][this (i.e. the current)]] block is after
+  [[*Package%20management%20management][this one (i.e. the previous block)]]
+- This is because my external files have "use-package" statements,
+  which won't work if use-package hasn't been loaded yet!
+*** OS-specific garbage
+...is kept in another file:
+#+BEGIN_SRC emacs-lisp
+(krista/new-config-file macOS "macOS")
+(when (eq system-type 'darwin)
+  (org-babel-load-file krista/macOS-config-file))
+#+END_SRC
+*** Modeline
+#+BEGIN_SRC emacs-lisp
+(krista/new-config-file modeline "modeline")
+(org-babel-load-file krista/modeline-config-file)
 #+END_SRC
 * Evolution
 This is where I put things that help me modify my emacs install more efficiently
@@ -95,13 +109,9 @@ This is where I put things that help me modify my emacs install more efficiently
   (add-hook 'emacs-lisp-mode-hook
             (lambda ()
               (global-set-key (kbd "C-c C-b") 'eval-region-or-buffer)))
-
-
-
 #+END_SRC
 ** achievements mode
 *** [[https://bitbucket.org/gvol/emacs-achievements/src/5b4b7b6816aaf105cd493f51b3860bd2f0c014a6/README.md?at=default&fileviewer=file-view-default][Bitbucket]]
-*** Config
 #+BEGIN_SRC emacs-lisp
   (use-package achievements
     :diminish achievements-mode
@@ -119,15 +129,15 @@ This is where I put things that help me modify my emacs install more efficiently
   #+BEGIN_SRC emacs-lisp
   (require 'benchmark-init)
   #+END_SRC
-** Keep as many \*Messages* around as you can!
+** Number of messages to store (increase if debugging lots of elisp!)
 #+BEGIN_SRC emacs-lisp
-(setq message-log-max t)
+(setq message-log-max 1000)
 #+END_SRC
-** Help me learn new keybindings!
+** Help me learn new keybindings
 #+BEGIN_SRC emacs-lisp
 (setq suggest-key-bindings t)
 #+END_SRC
-** Help me pick colors!
+** Help me pick colors
 #+BEGIN_SRC emacs-lisp
 (setq list-colors-sort 'luminance)
 #+END_SRC
@@ -137,8 +147,8 @@ Source: https://www.emacswiki.org/emacs/AlarmBell#toc3
 #+BEGIN_SRC emacs-lisp
  (setq ring-bell-function 'ignore)
 #+END_SRC
-** Buffer aesthetics
-*** Cursor
+** Basic buffer aesthetics
+*** Set the cursor type
 Note: changing the cursor-type does not take effect until emacs is restarted,
 because it only sets the /default/ cursor type. I have not yet figured
 out how to set it immediately, but this should suffice as startup config.
@@ -146,7 +156,7 @@ out how to set it immediately, but this should suffice as startup config.
 (setq-default cursor-type 'bar)
 (setq-default cursor-in-non-selected-windows 'hollow)
 #+END_SRC
-*** Fringe wrap indicators
+*** Change the fringe wrap indicators
 Replace the (fugly!) arrows that serve to indicate line continuation
 #+BEGIN_SRC emacs-lisp
   (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0]) 
@@ -172,72 +182,22 @@ Replace the (fugly!) arrows that serve to indicate line continuation
 
  (setq visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow)))
 #+END_SRC
-*** Mode line
-**** Display column number, do not display time
+*** Fonts
 #+BEGIN_SRC emacs-lisp
-(setq display-time-mode nil)
-(column-number-mode t)
-(setq display-time-default-load-average nil)
-#+END_SRC
-**** Display wordcount
-#+BEGIN_SRC emacs-lisp
-    (setq mode-line-position
-      (append
-       mode-line-position
-       '((wc-mode
-          (6 (:eval (if (use-region-p)
-                        (format " %d,%d,%d"
-                                (abs (- (point) (mark)))
-                                (count-words-region (point) (mark))
-                                (abs (- (line-number-at-pos (point))
-                                        (line-number-at-pos (mark)))))
-                      (format " %d,%d,%d"
-                              (- (point-max) (point-min))
-                              (count-words-region (point-min) (point-max))
-                              (line-number-at-pos (point-max))))))
-          nil))))
-#+END_SRC
-**** Diminish!
-Get the names of your minor-modes out of my mode line, dammit!
-Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
-#+BEGIN_SRC emacs-lisp
-  ;; Silence the minor modes!!!
-  (when (require 'diminish nil 'noerror)
-    (eval-after-load "auto-complete"
-      '(diminish 'auto-complete-mode ""))
-    (eval-after-load "undo-tree"
-      '(diminish 'undo-tree-mode ""))
-    (eval-after-load "Helm"
-      '(diminish 'helm-mode ""))
-    (eval-after-load "DocView"
-      '(diminish 'DocView-mode "PDF"))
-    (diminish 'auto-revert-mode "")
-    (diminish 'c++-mode "C++")
-    )
-#+END_SRC
-*** (Deprecated) Indentation depth guidelines
-[[https://github.com/DarthFennec/highlight-indent-guides][github page for highlight-indent-guides]]
-#+BEGIN_SRC emacs-lisp
-  ;; (use-package highlight-indent-guides
-  ;; :init
-  ;; (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
-  ;; :config
-  ;; ;; That's [[http://www.fileformat.info/info/unicode/char/23b9/index.htm][Unicode Character 'RIGHT VERTICAL BOX LINE' (U+23B9)]]
-  ;; (setq highlight-indent-guides-method 'character)
-  ;; (setq highlight-indent-guides-character ?\⎹)
-  ;; ;(setq highlight-indent-guides-method 'fill)
-  ;; ;(set-face-background 'highlight-indent-guides-odd-face "#002128")
-  ;; ;(set-face-background 'highlight-indent-guides-even-face "#002128")
-  ;; )
-#+END_SRC
-*** Font
-#+BEGIN_SRC emacs-lisp
-(set-face-attribute 'default nil :font "Fira Code-13")
-(set-frame-font "Fira Code-13")
-#+END_SRC
-*** Line numbers -- on by default
-#+BEGIN_SRC emacs-lisp
-(setq global-linum-mode t)
+  (set-face-attribute 'default nil :font "Fira Code-13")
+  (set-frame-font "Fira Code-13")
+  (set-face-attribute 'bold nil :weight 'extra-bold)
+
+  (set-face-attribute 'bold-italic nil
+                      :slant 'oblique
+                      :weight 'bold)
+
+  (set-face-attribute 'font-lock-doc-face nil
+                      :foreground "#58615a"
+                      :family "Fira Code")
+
+  (set-face-attribute 'region nil :background "#032929")
+  (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
 #+END_SRC
 *** TODO Hide the ugly title bar
 http://stackoverflow.com/questions/20405433/how-to-force-emacs-not-use-mountain-lions-full-screen-style
@@ -256,91 +216,41 @@ hrm. doesn't seem to work for me :P
 #+BEGIN_SRC emacs-lisp
     (tool-bar-mode -1)
 #+END_SRC
-*** Highlight corresponding paren whenever you mouse over its pair
-#+BEGIN_SRC emacs-lisp
-    (show-paren-mode 1)
-#+END_SRC
-*** Fonts
-#+BEGIN_SRC emacs-lisp
-    (set-face-attribute 'bold nil :weight 'extra-bold)
-
-    (set-face-attribute 'bold-italic nil
-                        :slant 'oblique
-                        :weight 'bold)
-
-    (set-face-attribute 'font-lock-doc-face nil
-                        :foreground "#58615a"
-                        :family "Fira Code")
-
-    (set-face-attribute 'region nil :background "#032929")
-    (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
-#+END_SRC
-*** Delete highlighted text if you start typing on top of it
-#+BEGIN_SRC emacs-lisp
- (delete-selection-mode 1)
-#+END_SRC
 *** Hide the scrollbar
 #+BEGIN_SRC emacs-lisp
   (scroll-bar-mode -1)
 #+END_SRC
-*** Organize autosaved backup files (put them someplace else!)
-[[http://stackoverflow.com/questions/2680389/how-to-remove-all-files-ending-with-made-by-emacs][source]]
+*** Highlight corresponding paren whenever you mouse over its pair
 #+BEGIN_SRC emacs-lisp
-  (setq backup-directory-alist '(("." . "~/.emacs.d/backup")))
-  (setq backup-by-copying t)    ; Don't delink hardlinks
-  (setq version-control t)      ; Use version numbers on backups
-  (setq delete-old-versions t)  ; Automatically delete excess backups
-  (setq kept-new-versions 20)   ; how many of the newest versions to keep
-  (setq kept-old-versions 5)    ; and how many of the old
+  (show-paren-mode 1)
 #+END_SRC
-
 ** Getting around
+*** Cycle backwards through buffers
+"C-x o", meet your new friend "C-c o"!
 #+BEGIN_SRC emacs-lisp
-  ;; Where to land when we start up
-  (setq initial-buffer-choice "~/core/scratch")
-
-  ; Cycle backwards through buffers
-  ; ..."C-x o", meet your new friend "C-c o"!
   (global-set-key (kbd "C-c o") 'previous-multiframe-window)
-
-  ; Backwards kill-line. It's the backwards version of C-k
-  ; Source: https://www.emacswiki.org/emacs/BackwardKillLine
+#+END_SRC
+*** Stop backing into the front of the modeline
+Thanks to http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
+#+BEGIN_SRC emacs-lisp
+  (customize-set-variable
+   'minibuffer-prompt-properties
+   (quote (read-only t cursor-intangible t face minibuffer-prompt)))
+#+END_SRC
+** Editing
+*** Backwards kill-line
+It's the backwards version of C-k
+Source: https://www.emacswiki.org/emacs/BackwardKillLine
+#+BEGIN_SRC emacs-lisp
   (defun backward-kill-line (arg)
     "Kill ARG lines backward."
     (interactive "p")
     (kill-line (- 1 arg)))
   (global-set-key (kbd "C-c k") 'backward-kill-line)
-
-  ;; Stop bumping into the end of the modeline!
-  ;; Thanks to http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
-  (customize-set-variable
-   'minibuffer-prompt-properties
-   (quote (read-only t cursor-intangible t face minibuffer-prompt)))
-
-  ;; Referrer: https://emacs.stackexchange.com/questions/368/how-do-i-make-org-beginning-of-line-move-cursor-to-the-first-text-in-heading-b
-  ;;
-  ;; Make C-a toggle between beginning of line and indentation
-  ;; https://github.com/lunaryorn/stante-pede/blob/master/init.el
-  (defun back-to-indentation-or-beginning-of-line (arg)
-    "Move point back to indentation of beginning of line.
-  Move point to the first non-whitespace character on this line.
-  If point is already there, move to the beginning of the line.
-  Effectively toggle between the first non-whitespace character and
-  the beginning of the line.
-  If ARG is not nil or 1, move forward ARG - 1 lines first.  If
-  point reaches the beginning or end of the buffer, stop there."
-    (interactive "^p")
-    (setq arg (or arg 1))
-
-    ;; Move lines first
-    (when (/= arg 1)
-      (let ((line-move-visual nil))
-        (forward-line (1- arg))))
-
-    (let ((orig-point (point)))
-      (back-to-indentation)
-      (when (= orig-point (point))
-        (move-beginning-of-line 1))))
+#+END_SRC
+*** Delete highlighted text if you start typing on top of it
+#+BEGIN_SRC emacs-lisp
+ (delete-selection-mode 1)
 #+END_SRC
 * cheatsheet
 ** What is cheatsheet?
@@ -894,89 +804,12 @@ Steam account
 #+BEGIN_SRC emacs-lisp
 ;(setq steam-username "xtajv")
 #+END_SRC
-* mode line
-** Battery display
-#+BEGIN_SRC emacs-lisp
-  (use-package fancy-battery
-    :diminish fancy-battery-mode
-    :config
-    (fancy-battery-mode t))
-
-  '(display-battery-mode nil)
-  '(fancy-battery-mode t)
-  '(fancy-battery-show-percentage t)
-  (setq battery-mode-line-format " %p")
-#+END_SRC
-** Fonts and colors
-#+BEGIN_SRC emacs-lisp
-  (set-face-attribute 'mode-line nil 
-                      :background "#000d0f" 
-                      :foreground "cyan" 
-                      :inverse-video nil 
-                      :box '(:line-width 1 :color "dark slate grey") 
-                      :family "Fira Code")
-
-  (set-face-attribute 'mode-line-buffer-id nil 
-                      :weight 'normal
-                      :family "Fira Code")
-
-  (set-face-attribute 'mode-line-emphasis nil
-                      :weight 'bold)
-
-  (set-face-attribute 'mode-line-inactive nil
-                      :background "#000d0f"
-                      :foreground "#888a85"
-                      :inverse-video nil)
-#+END_SRC
-** Display column number, do not display time
-#+BEGIN_SRC emacs-lisp
-(setq display-time-mode nil)
-(column-number-mode t)
-(setq display-time-default-load-average nil)
-#+END_SRC
-** Display wordcount
-#+BEGIN_SRC emacs-lisp
-    (setq mode-line-position
-      (append
-       mode-line-position
-       '((wc-mode
-          (6 (:eval (if (use-region-p)
-                        (format " %d,%d,%d"
-                                (abs (- (point) (mark)))
-                                (count-words-region (point) (mark))
-                                (abs (- (line-number-at-pos (point))
-                                        (line-number-at-pos (mark)))))
-                      (format " %d,%d,%d"
-                              (- (point-max) (point-min))
-                              (count-words-region (point-min) (point-max))
-                              (line-number-at-pos (point-max))))))
-          nil))))
-#+END_SRC
-** Diminish!
-Get the names of your minor-modes out of my mode line, dammit!
-Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
-#+BEGIN_SRC emacs-lisp
-  ;; Silence the minor modes!!!
-  (when (require 'diminish nil 'noerror)
-    (eval-after-load "auto-complete"
-      '(diminish 'auto-complete-mode ""))
-    (eval-after-load "undo-tree"
-      '(diminish 'undo-tree-mode ""))
-    (eval-after-load "Helm"
-      '(diminish 'helm-mode ""))
-    (eval-after-load "DocView"
-      '(diminish 'DocView-mode "PDF"))
-    (diminish 'auto-revert-mode "")
-    (diminish 'c++-mode "C++")
-    )
-#+END_SRC
-** TODO get an *X* when the buffer is modified
 * Helm
 ** Introduction
 - Definition of "helm": noun - a tiller or wheel and any associated
   equipment for steering a ship or boat.
   - "she stayed at the helm, alert for tankers"
-  - synonyms:	tiller, wheel; steering gear, rudder
+  - synonyms: tiller, wheel; steering gear, rudder
 - As you may have anticipated, it's also an Emacs package
 - I include the definition of the common word, because it sums up the
   package well; Helm is an interface for "steering" interactions. In
@@ -1121,16 +954,16 @@ the mark if it was set before search started.
       (when marked (activate-mark))))
   (advice-add 'helm-swoop :around #'krista/helm-swoop-mark-wrapper)
 #+END_SRC
-**** Swoop behavior
+**** behavior
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-behavior :tangle no
   ;; If you're at the bottom of the list of swoop matches, and you try
   ;; to go down another line, then you wrap around again
   (setq helm-swoop-move-to-line-cycle t)
 
   ;; Enable fuzzy matching
-  (setq helm-swoop-use-fuzzy-match t)
+  (setq helm-swoop-use-fuzzy-match nil)
 #+END_SRC
-**** helm swoop aesthetics
+**** aesthetics
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-aesthetics :tangle no
   (set-face-attribute 'helm-ff-directory nil
                       :background "#eeeeec"
@@ -1169,38 +1002,6 @@ the mark if it was set before search started.
   (global-set-key (kbd "C-;") 'auto-complete)
 
   (diminish auto-complete-mode)
-#+END_SRC
-* Set popup face
-Among other things, popup is used in autocomplete. But if I ever want to do more, it'll still look pretty :D
-#+BEGIN_SRC emacs-lisp
-  (set-face-attribute 'popup-face nil
-                      :background "#19343D"
-                      :foreground "#a0ffff"
-                      :weight 'light
-                      :family "Fira code")
-
-  (set-face-attribute 'popup-menu-face nil
-                      :inherit 'popup-face
-                      :family "Fira code")
-
-  (set-face-attribute 'popup-menu-selection-face nil
-                      :inherit 'default
-                      :background "#033021"
-                      :foreground "#3fffff"
-                      :weight 'light
-                      :family "Fira Code")
-
-  (set-face-attribute 'popup-scroll-bar-foreground-face nil
-                      :background "#19343D")
-
-  (set-face-attribute 'popup-summary-face nil
-                       :inherit 'popup-face
-                       :foreground "slate blue")
-
-  (set-face-attribute 'popup-tip-face nil
-                      :background "dark slate gray"
-                      :foreground "aquamarine"
-                      :family "Fira Code")
 #+END_SRC
 * Flycheck - syntax checking
 ** Config
@@ -1277,7 +1078,7 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
       (360 . "#99cc99"))))
   (setq vc-annotate-very-old-color nil)
 #+END_SRC
-* Programming languages
+* Programming
 ** C / C++
 #+BEGIN_SRC emacs-lisp
     (use-package cc-mode
@@ -1335,6 +1136,20 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
          (get-buffer-process (current-buffer))
          nil "_"))))
   #+END_SRC
+*** Press <tab> to indent with 4 spaces
+#+BEGIN_SRC emacs-lisp
+    (add-hook 'python-mode-hook
+              (lambda ()
+                (setq indent-tabs-mode nil)
+                (setq tab-width 4)
+                (setq python-indent 4)))
+#+END_SRC
+** Slime (lisp)
+#+BEGIN_SRC emacs-lisp
+;  (load (expand-file-name "~/core/fun/dev/builds_from_source/quicklisp/slime-helper.el"))
+  ;; The SBCL binary and command-line arguments
+;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
+#+END_SRC
 * LaTeX
 #+BEGIN_SRC emacs-lisp
   ;; auctex provides package tex
@@ -1367,12 +1182,6 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
       (setq LaTeX-math-menu-unicode t)
       (setq reftex-plug-into-AUCTeX t))
 #+END_SRC
-* Slime
-#+BEGIN_SRC emacs-lisp
-;  (load (expand-file-name "~/core/fun/dev/builds_from_source/quicklisp/slime-helper.el"))
-  ;; The SBCL binary and command-line arguments
-;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
-#+END_SRC
 * Emacs/W3 Configuration
 #+BEGIN_SRC emacs-lisp
 ;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
@@ -1402,6 +1211,38 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
                '("." . "~/.emacs.d/cache/undo"))
 #+END_SRC
 * Cosmetics
+** Popup face
+Among other things, popup is used in autocomplete. But if I ever want to do more, it'll still look pretty :D
+#+BEGIN_SRC emacs-lisp
+  (set-face-attribute 'popup-face nil
+                      :background "#19343D"
+                      :foreground "#a0ffff"
+                      :weight 'light
+                      :family "Fira code")
+
+  (set-face-attribute 'popup-menu-face nil
+                      :inherit 'popup-face
+                      :family "Fira code")
+
+  (set-face-attribute 'popup-menu-selection-face nil
+                      :inherit 'default
+                      :background "#033021"
+                      :foreground "#3fffff"
+                      :weight 'light
+                      :family "Fira Code")
+
+  (set-face-attribute 'popup-scroll-bar-foreground-face nil
+                      :background "#19343D")
+
+  (set-face-attribute 'popup-summary-face nil
+                       :inherit 'popup-face
+                       :foreground "slate blue")
+
+  (set-face-attribute 'popup-tip-face nil
+                      :background "dark slate gray"
+                      :foreground "aquamarine"
+                      :family "Fira Code")
+#+END_SRC
 ** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
 ;; Show trailing whitespace by default
@@ -1435,20 +1276,12 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (setq tab-width 8)
   ;(defvaralias 'c-basic-offset 'tab-width)
 #+END_SRC
-** Python: indent with a 4-space-wide tab
-#+BEGIN_SRC emacs-lisp
-    (add-hook 'python-mode-hook
-              (lambda ()
-                (setq indent-tabs-mode nil)
-                (setq tab-width 4)
-                (setq python-indent 4)))
-#+END_SRC
 * Keybindings and accessibility
 #+BEGIN_SRC emacs-lisp
   ;; Change "yes or no" prompts to "y or n" prompts
   (fset 'yes-or-no-p 'y-or-n-p)
   ;; Toggle fullscreen with meta-return
-  (global-set-key (kbd "H-<return>") 'toggle-frame-fullscreen)
+  (global-set-key (kbd "C-c C-<return>") 'toggle-frame-fullscreen)
   ;; Speedy eval-buffer
   (global-set-key (kbd "C-c b") 'eval-buffer)
 
@@ -1600,45 +1433,23 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+END_SRC
 * Stuff added by Custom
 #+BEGIN_SRC emacs-lisp :noweb tangle
-  ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-  ;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
-  ;; (load custom-file :noerror)
+    ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
+    (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+    ;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
+    ;; (load custom-file :noerror)
 
-    (custom-set-variables
-     <<ansi-colors>>
+      (custom-set-variables
+       <<ansi-colors>>
+       <<enable-tron-dark>>
+       '(gud-gdb-command-name "gdb --annotate=1")
+       )
 
-     '(custom-enabled-themes (quote (tron-dark)))
-     '(custom-safe-themes (quote
-        ("5fb8a3d4493189890e01c24fca16f54388a6cf2bcb77baff94050ca2df722428"
-         "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d"
-         default)))
-
-     '(gud-gdb-command-name "gdb --annotate=1")
-
-     ;; '(package-selected-packages
-     ;;   (quote
-     ;;    (undo-tree
-     ;;     smartparens
-     ;;     slime
-     ;;     reveal-in-osx-finder
-     ;;     pylint
-     ;;     org-bullets
-     ;;     magit
-     ;;     helm-swoop
-     ;;     auctex
-     ;;     benchmark-init
-     ;;     exec-path-from-shell
-     ;;     free-keys
-     ;;     steam)))
-     )
-
-    ;; custom-set-faces was added by Custom.
-    ;; If you edit it by hand, you could mess it up, so be careful.
-    ;; Your init file should contain only one such instance.
-    ;; If there is more than one, they won't work right.
-  (set-face-attribute 'fringe nil :background "#001519")
-  (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
+      ;; custom-set-faces was added by Custom.
+      ;; If you edit it by hand, you could mess it up, so be careful.
+      ;; Your init file should contain only one such instance.
+      ;; If there is more than one, they won't work right.
+    (set-face-attribute 'fringe nil :background "#001519")
+    (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
 #+END_SRC
 ** ANSI colors
 #+BEGIN_SRC emacs-lisp :noweb-ref ansi-colors :tangle yes
@@ -1674,6 +1485,14 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
      "#d3f9ee"
      ])
 #+END_SRC
+** Enable tron dark theme
+#+BEGIN_SRC emacs-lisp :noweb-ref enable-tron-dark :tangle yes
+  '(custom-enabled-themes (quote (tron-dark)))
+  '(custom-safe-themes
+    (quote ("d22659f2535a5e8000f50b3bd405f12ce918793191cda410a4f997c309b37247"
+            tron-dark
+            default)))
+#+END_SRC
 * Emacs help
 ** [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Commands.html][Keybinding instructions]]
 ** How to edit source code in org-mode file
@@ -1692,6 +1511,14 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 ;; To view:
 #+END_SRC
 ** Select all: C-xh
+** Moving a file into the 'literate' directory:
+Suppose you made a file called =new-thing=
+#+BEGIN_EXAMPLE 
+;; Macro to define a new external tangling file:
+(krista/new-config-file new-thing "new-thing")
+;; Actually load the external file:
+'(org-babel-load-file krista/my-new-config-file)
+#+END_EXAMPLE
 * Kinesis-specific keyboard issues
 My hands were hurting after long typing sessions. As a computer
 science student, I forsaw this as being a potentially-huge problem
@@ -1724,3 +1551,11 @@ Emacs to see what was broken. Here, I shall document those things.
   record.
 - Ideally, the package would output an org doc with an undo-tree -like
   interface for retracing my steps in debugging
+** Byte-compile external files
+- Over the years, it has occasionally been necessary to develop on
+  Windows. This is not the ideal platform for emacs or unix-like
+  utilities, but I make do. But one of the things that gets me the
+  most is my emacs performance. My windows emacs config is my sliver
+  of unixy heaven, but it's hard to enjoy it (and show my coworkers
+  what they're missing!) when it takes 10 seconds to start up every
+  time.

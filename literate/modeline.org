@@ -1,0 +1,171 @@
+#+TITLE: Krista's mode-line config
+* Mode line format
+** Mode line format
+#+BEGIN_SRC emacs-lisp
+  ;; Strings which display the buffer's modified status 
+  ;; 
+  ;; Some advice: make these the same length, so the name of your buffer
+  ;;              won't jump when you modify its contents!
+  (setq krista-buffer-modified-string "Δ")
+  (setq krista-buffer-readonly-string "R")
+  (setq krista-buffer-unchanged-string "≣")
+  ;; TODO: color the Git logo based on the value of vc-state
+  ;; Settings that I want:
+  ;; Greyed out:
+  ;; ‘unregistered’ - no vc 🤷
+  ;; ‘ignored’ - 🚫
+  ;; Bright yellow:
+  ;; ‘conflict’ - =><= ⇒⇐
+  ;; Normal:
+  ;; ‘removed’ - 'rm'd' ⌫
+  ;; ‘added’ - ✓
+  ;; ‘edited’ - Δ
+  ;; ‘up-to-date’ - 👌🆗
+  ;; Oh noes!!!!
+  ;; ‘needs-update’ - 🔂
+  ;; ‘needs-merge’ - 🔂 needs update, but red
+
+  ;; To customize the mode line, make a list of all of the things that
+  ;; should be displayed (listed in order from left to right)
+  ;; See also: https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Format.html#Mode-Line-Format
+  (setq-default
+   mode-line-format
+   (list
+
+    ;; Leading space so you don't run into the end of the mode line
+    mode-line-front-space
+
+    ;; Display buffer's local modified status
+    ;; --------------------------------
+    '(:eval
+      ;; What to display if the buffer is read-only
+      (if buffer-read-only
+          '((:eval (propertize krista-buffer-readonly-string
+                               'Face 'font-lock-keyword-face)))
+        ;; What to display if the buffer has been modified since the
+        ;; last save
+        (if (buffer-modified-p)
+            '((:eval (propertize krista-buffer-modified-string
+                                 'face 'font-lock-warning-face)))
+          ;; What to display if the buffer is not read-only, but also
+          ;; hasn't been modified
+          '(:eval (propertize krista-buffer-unchanged-string
+                              'face 'font-lock-comment-face)))
+        ))
+
+    ;; Padding
+    " "
+    ;; Git symbol
+    ;; TODO: see [[help:vc-state]] to get rid of this when not in a project dir
+    '(:eval (propertize "" 'face 'font-lock-builtin-face))
+    ;; Branch name (note: the value of vc-mode is modified later)
+    vc-mode
+    ;; Buffer/file name (just this file... not the whole path)
+    '(:eval (propertize " %12b" 'face '(:foreground "cyan")))
+    
+    ;; Line:column
+    " (%l,%2c)"
+
+    ;; Size of file, in human-readable terms (e.g. 43k)
+    " %I "
+
+    " "
+    mode-name
+    " "
+    "🔌"
+    mode-line-misc-info
+    mode-line-end-spaces))
+
+  ;; Reload the mode line config whenever you reload this file
+  ;; 
+  ;; IMPORTANT: uncomment when you're tweaking the modeline, so you
+  ;; don't have to restart emacs to see your changes take effect.
+  (force-mode-line-update t)
+#+END_SRC
+** Remove the word "Git" from my version-control string
+*** The config itself
+#+BEGIN_SRC emacs-lisp
+  (defadvice vc-mode-line (after krista-strip-backend () activate)
+    (when (stringp vc-mode)
+      (let ((vc-no-backend (replace-regexp-in-string "^ Git." " " vc-mode)))
+            (setq vc-mode vc-no-backend))))
+#+END_SRC
+*** For posterity: Possible other unicode symbols for the git logo:
+-  from reddit? Have not yet recovered source, although I might be
+  able to find it somewhere in [[http://www.whiteboardcoder.com/2016/03/sbt-customize-shell-prompt-with-git.html][here]]
+- ⎇ U+2387
+- ʮ U+02AE
+- ץ U+05E5
+- Ⴤ U+10C4
+- ป U+0E1B
+
+- ሗ U+1217
+- ሳ U+1233
+- ኂ U+1282
+- Ի U+053B 
+
+⤒ U+2912
+⤓ U+2913
+** Replace "Top" and "Bottom" in percentage string
+#+BEGIN_SRC emacs-lisp          
+  ;; (defadvice mode-line-position (after krista-rm-top() activate)
+      ;; (let ((better-position-string (replace-regexp-in-string 
+      ;;                                "Top"
+      ;;                                "⤒"
+      ;;                                mode-line-position)))
+      ;;   (setq mode-line-position better-position-string)))
+#+END_SRC
+* Fancy battery mode
+#+BEGIN_SRC emacs-lisp
+  (use-package fancy-battery
+    :diminish fancy-battery-mode
+    :config
+    ;; Turn on fancy battery display, turn off emacs default
+    (fancy-battery-mode t)
+    (display-battery-mode -1)
+    ;; Show a percentage instead of "remaining time to charge/discharge"
+    (setq fancy-battery-show-percentage t)
+    )
+#+END_SRC
+* Fonts and colors
+#+BEGIN_EXAMPLE
+  (set-face-attribute 'mode-line nil
+                      :background "#000d0f" 
+                      :foreground "cyan"
+                      :inverse-video nil
+                      :box '(:line-width 1 :color "dark slate grey") 
+                      :family "Fira Code")
+
+  (set-face-attribute 'mode-line-buffer-id nil
+                      :weight 'normal
+                      :family "Fira Code")
+
+  (set-face-attribute 'mode-line-emphasis nil
+                      :weight 'bold)
+
+  (set-face-attribute 'mode-line-inactive nil
+                      :background "#000d0f"
+                      :foreground "#888a85"
+                      :inverse-video nil)
+#+END_EXAMPLE
+* Diminish!
+Get the names of your minor-modes out of my mode line, dammit!
+Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
+** Do not display the following modes
+#+BEGIN_SRC emacs-lisp
+  (when (require 'diminish nil 'noerror)
+    (eval-after-load "auto-complete"
+      '(diminish 'auto-complete-mode ""))
+    (eval-after-load "undo-tree"
+      '(diminish 'undo-tree-mode ""))
+    (eval-after-load "Helm"
+      '(diminish 'helm-mode ""))
+    (diminish 'visual-line-mode "")
+    (eval-after-load "projectile"
+      '(diminish 'projectile-mode ""))
+    (eval-after-load "DocView"
+      '(diminish 'DocView-mode "PDF"))
+    (diminish 'auto-revert-mode "")
+    (diminish 'c++-mode "C++")
+    )
+#+END_SRC
