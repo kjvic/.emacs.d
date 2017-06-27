@@ -103,11 +103,11 @@ Semantic, and Ansi-Color faces are included.")
    `(trailing-whitespace ((,class (:background ,tron-orange))))
    ;; Mode line faces
    `(mode-line-buffer-id ((,class (:bold nil))))
-   `(mode-line ((,class (:background ,tron-berlin-darkest :foreground ,tron-white :box nil))))
+   `(mode-line ((,class (:background ,tron-berlin-darkest :foreground ,tron-gray-light :box nil))))
    `(mode-line-inactive ((,class (:background
                                   ,tron-berlin-darkest
                                   :foreground
-                                  ,tron-gray-light
+                                  ,tron-warm-metal
                                   :box nil))))
    `(compilation-mode-line-fail ((,class (:foreground ,tron-orange))))
    `(compilation-mode-line-run  ((,class (:foreground ,tron-orange-hot))))
