@@ -90,7 +90,8 @@
       (let ((vc-no-backend (replace-regexp-in-string "^ Git." " " vc-mode)))
             (setq vc-mode vc-no-backend))))
 #+END_SRC
-*** For posterity: Possible other unicode symbols for the git logo:
+*** For posterity: Possible other unicode symbols 
+**** for the git logo:
 -  from reddit? Have not yet recovered source, although I might be
   able to find it somewhere in [[http://www.whiteboardcoder.com/2016/03/sbt-customize-shell-prompt-with-git.html][here]]
 - ⎇ U+2387
@@ -98,14 +99,35 @@
 - ץ U+05E5
 - Ⴤ U+10C4
 - ป U+0E1B
-
 - ሗ U+1217
 - ሳ U+1233
 - ኂ U+1282
-- Ի U+053B 
-
-⤒ U+2912
-⤓ U+2913
+- Ի U+053B
+**** To replace "TOP / BOT" in the position string
+- ⤒ U+2912
+- ⤓ U+2913
+**** For the battery
+- ⚡ U+26A1
+- ⏚ U+23DA
+- ⎍ MONOSTABLE SYMBOL (U+238D)
+- ⎓ DIRECT CURRENT SYMBOL FORM TWO (U+2393)
+**** Line endings indicator
+- Mac: ⌘ PLACE OF INTEREST SIGN (U+2318)
+- UNIX/LINUX: ⌗ VIEWDATA SQUARE (U+2317)
+- Windows: ⊞ (U+229E) (in bold, italic)
+  - № Numero sign (U+2116)
+  - ⓦ Unicode number: U+24E6
+  - ⧉ Unicode number: U+29C9
+  - ⽥ - Unicode number: U+2F65
+  - ㎳ - Square Ms Unicode number: U+33B3
+  - 㘡 - Ideograph (same as 柙) a pen for wild beasts; a cage for prisoners CJK - Unicode number: U+3621
+  - 🗔 - U+1F5D4 Desktop window
+  - ⒨
+  - ⒲
+  - /⑃⑂/
+  - ₩
+  - Ｗ - Fullwidth Latin Capital Letter W - U+FF37
+  - 𝕎 - Unicode number U+1D54E
 ** Replace "Top" and "Bottom" in percentage string
 #+BEGIN_SRC emacs-lisp          
   ;; (defadvice mode-line-position (after krista-rm-top() activate)
