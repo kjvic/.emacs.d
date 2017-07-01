@@ -10,8 +10,9 @@
 * Flycheck
 This stuff is required for flycheck to work
 #+BEGIN_SRC emacs-lisp
-(package-install 'exec-path-from-shell)
-(exec-path-from-shell-initialize)
+(use-package exec-path-from-shell
+:diminish
+:config (exec-path-from-shell-initialize))
 #+END_SRC
 * Helm fuzzy matching
 Helm-locate kinda sucks. Whoops. Following [[https://github.com/syl20bnr/spacemacs/issues/3280][this]] fix makes it use =mdfind= instead
