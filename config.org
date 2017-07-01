@@ -90,7 +90,7 @@ This is where I put things that help me modify my emacs install more efficiently
     "Quickly evaluate my config file"
     (interactive)
     (load-file user-init-file))
-  (bind-key "H-e" 'krista/eval-config)
+  (global-set-key (kbd "C-c C-h") 'krista/eval-config)
 
   (defun eval-region-or-buffer ()
     "Let me eval either a region or a buffer at a time"
