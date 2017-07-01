@@ -29,7 +29,30 @@ How to: see spruce's config. Something something angle brackets source block tit
   ;; custom tron theme
   (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
 #+END_SRC
-** Tangling helpers
+** use-package: package management management
+[[https://github.com/jwiegley/use-package][use-package github]]
+#+BEGIN_SRC emacs-lisp
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  ;; All packages in a use-package macro should be automagically installed
+  (setq use-package-always-ensure t)
+#+END_SRC
+** Byte-compile external files (if necessary)
+- How to byte-compile your entire .emacs.d from the command line:
+  #+BEGIN_EXAMPLE 
+  emacs -batch -f batch-byte-compile ~/.emacs.d/**/*.el
+  #+END_EXAMPLE
+  - [[http://emacsredux.com/blog/2013/06/25/boost-performance-by-leveraging-byte-compilation/][Source]]
+- auto-compile mode
+  #+BEGIN_SRC emacs-lisp
+  ;;; init.el --- user init file      -*- no-byte-compile: t -*-
+  (use-package auto-compile
+    :config (auto-compile-on-load-mode))
+  (setq load-prefer-newer t)
+  #+END_SRC
+** Literate programming support
+*** Tangling helpers
 #+BEGIN_SRC emacs-lisp
   (setq-default krista/org-config-directory "literate")
   (setq-default krista/org-config-dirpath
@@ -49,33 +72,23 @@ How to: see spruce's config. Something something angle brackets source block tit
          (add-to-list
           (quote krista/config-org-files) (quote (,name . ,filename)) t))))
 #+END_SRC
-** use-package: package management management
-[[https://github.com/jwiegley/use-package][use-package github]]
-#+BEGIN_SRC emacs-lisp
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
-  ;; All packages in a use-package macro should be automagically installed
-  (setq use-package-always-ensure t)
-#+END_SRC
-** Tangle external files
+*** Tangle external files
 - NOTE: It is important that use-package has been loaded before this
   block is executed
 - This is because my external files have "use-package" statements,
   which won't work if use-package hasn't been loaded yet!
-*** OS-specific garbage
+**** OS-specific garbage
 ...is kept in another file:
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file macOS "macOS")
 (when (eq system-type 'darwin)
   (org-babel-load-file krista/macOS-config-file))
 #+END_SRC
-*** Modeline
+**** Modeline
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file modeline "modeline")
 (org-babel-load-file krista/modeline-config-file)
 #+END_SRC
-** Byte-compile external files (if necessary)
 ** Initial buffer to show at startup
 - When I start up emacs, I want to see my core directory instead of
   the ugly default startup screen. However, I also want to be able to
