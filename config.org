@@ -14,8 +14,22 @@
 How to: see spruce's config. Something something angle brackets source block titles
 * Bootstrap
  Get emacs off the ground!
-** Set up tangling macros
-*** Tangling helpers
+** Load-path
+*** TODO see if I can optimize startup by removing some of these?
+*** Config
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/elisp/")
+  (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
+  (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
+  (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
+  (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
+  ;; mode-icons
+  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620")
+  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620/icons")
+  ;; custom tron theme
+  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
+#+END_SRC
+** Tangling helpers
 #+BEGIN_SRC emacs-lisp
   (setq-default krista/org-config-directory "literate")
   (setq-default krista/org-config-dirpath
@@ -35,22 +49,7 @@ How to: see spruce's config. Something something angle brackets source block tit
          (add-to-list
           (quote krista/config-org-files) (quote (,name . ,filename)) t))))
 #+END_SRC
-** Setting up my load-path
-*** TODO see if I can optimize startup by removing some of these?
-*** Config
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/elisp/")
-  (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
-  (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
-  (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
-  (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
-  ;; mode-icons
-  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620")
-  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620/icons")
-  ;; custom tron theme
-  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
-#+END_SRC
-** Package management management
+** use-package: package management management
 [[https://github.com/jwiegley/use-package][use-package github]]
 #+BEGIN_SRC emacs-lisp
   (unless (package-installed-p 'use-package)
@@ -60,8 +59,8 @@ How to: see spruce's config. Something something angle brackets source block tit
   (setq use-package-always-ensure t)
 #+END_SRC
 ** Tangle external files
-- NOTE: It is important that [[*Tangle%20extrernal%20files][this (i.e. the current)]] block is after
-  [[*Package%20management%20management][this one (i.e. the previous block)]]
+- NOTE: It is important that use-package has been loaded before this
+  block is executed
 - This is because my external files have "use-package" statements,
   which won't work if use-package hasn't been loaded yet!
 *** OS-specific garbage
@@ -137,7 +136,7 @@ This is where I put things that help me modify my emacs install more efficiently
 #+BEGIN_SRC emacs-lisp
 (setq suggest-key-bindings t)
 #+END_SRC
-** Help me pick colors
+** Order in which to display colors
 #+BEGIN_SRC emacs-lisp
 (setq list-colors-sort 'luminance)
 #+END_SRC
