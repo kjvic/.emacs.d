@@ -72,8 +72,9 @@
     " "
     mode-name
     " "
-    "🔌"
     mode-line-misc-info
+    " "
+    '(:eval (propertize "𝔞𝔩𝔩 𝔞𝔡𝔳𝔢𝔯𝔰𝔦𝔱𝔶 𝔦𝔰 𝔱𝔯𝔞𝔦𝔫𝔦𝔫𝔤" 'face '(:foreground "#033021"))); #134031 #0a1519 #0d1719 "#001519" "#134031" "#043d18"))) ;#306158""#3465a4" #42071d")))
     mode-line-end-spaces))
 
   ;; Reload the mode line config whenever you reload this file
