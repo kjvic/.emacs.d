@@ -688,7 +688,7 @@ the display until you restart Emacs.
           ("g" "git-gotchas" entry (file+olp "~/core/lists/git-gotchas.org" "The gotchas")
            "* %?\n %i\n")
           ("f" "grammar feud" entry
-           (file+headline "~/fun/dev/spruce/grammar_feud.org" "Disagreements")
+           (file+headline "~/core/fun/spruce/grammar_feud.org" "Disagreements")
            "* Summary: %?
          Disagreed-upon snippet: %^{snippet}
          Link to source: %^{link}")))
@@ -1146,7 +1146,7 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 #+END_SRC
 ** Slime (lisp)
 #+BEGIN_SRC emacs-lisp
-;  (load (expand-file-name "~/core/fun/dev/builds_from_source/quicklisp/slime-helper.el"))
+;  (load (expand-file-name "~/core/fun/builds_from_source/quicklisp/slime-helper.el"))
   ;; The SBCL binary and command-line arguments
 ;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
 #+END_SRC
