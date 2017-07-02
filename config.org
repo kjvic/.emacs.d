@@ -45,13 +45,12 @@ How to: see spruce's config. Something something angle brackets source block tit
   #+END_EXAMPLE
   - [[http://emacsredux.com/blog/2013/06/25/boost-performance-by-leveraging-byte-compilation/][Source]]
 - auto-compile mode
-  #+BEGIN_EXAMPLE
+  #+BEGIN_SRC emacs-lisp
     ;;; init.el --- user init file      -*- no-byte-compile: t -*-
     (use-package auto-compile
-      ;:config (auto-compile-on-load-mode)
-      )
+      :config (auto-compile-on-load-mode))
     (setq load-prefer-newer t)
-  #+END_EXAMPLE
+  #+END_SRC
 ** Literate programming support
 *** Tangling helpers
 #+BEGIN_SRC emacs-lisp
@@ -916,7 +915,7 @@ Steam account
 ;(setq steam-username "xtajv")
 #+END_EXAMPLE
 * Helm
-** Introduction
+** Introduction to helm
 - Definition of "helm": noun - a tiller or wheel and any associated
   equipment for steering a ship or boat.
   - "she stayed at the helm, alert for tankers"
