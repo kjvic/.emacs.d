@@ -52,6 +52,8 @@ How to: see spruce's config. Something something angle brackets source block tit
     (setq load-prefer-newer t)
   #+END_SRC
 ** Literate programming support
+Note: you /must/ have each tangle block on a new line in order for it to
+be tangled correctly!!!!
 *** Tangling helpers
 #+BEGIN_SRC emacs-lisp
   (setq-default krista/org-config-directory "literate")
@@ -936,21 +938,22 @@ Steam account
   - M-x commands (the default binding for execute-extended-command)
 ** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
-  (message "[krista] Loading helm...")
-  (use-package helm
-    :diminish helm-mode
-    ;; helm-config is a bootstrapping package. According to
-    ;;   https://github.com/emacs-helm/helm/issues/744 it's not
-    ;;   required, but I checked out the source, and it looks like it
-    ;;   provides some core niceties that I've enjoyed
-    :init (require 'helm-config)
-    :config
-    ;; Enable Helm globally
-    (helm-mode t)
-    <<helm-behavior>>
-    <<helm-window-choices>>
-    :bind <<helm-replace-defaults>>
-    )
+    (message "[krista] Loading helm...")
+    (use-package helm
+      :diminish helm-mode
+      ;; helm-config is a bootstrapping package. According to
+      ;;   https://github.com/emacs-helm/helm/issues/744 it's not
+      ;;   required, but I checked out the source, and it looks like it
+      ;;   provides some core niceties that I've enjoyed
+      :init (require 'helm-config)
+      :config
+      ;; Enable Helm globally
+      (helm-mode t)
+      <<helm-behavior>>
+      <<helm-window-choices>>
+      :bind (
+             <<helm-replace-defaults>>)
+      )
 #+END_SRC
 *** Helm behavior
 Sometimes, I just want to tweak something about how Helm functions.
@@ -972,7 +975,7 @@ This is the place to put it
 I like Helm so much that I'm willing to override the corresponding
 default Emacs functions. Also, Emacs defaults are "meh".
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-replace-defaults :tangle no
-  (("M-x" . helm-M-x)
+  ("M-x" . helm-M-x)
   ("C-x C-f" . helm-find-files)
 
   ;; helm-mini shows recentf, the buffers list, and a "create buffer" prompt
@@ -982,7 +985,7 @@ default Emacs functions. Also, Emacs defaults are "meh".
   ("C-x C-b" . helm-buffers-list)
 
   ;; Display bookmarks for frequently-visited spots on my file system
-  ("C-x r l" . helm-bookmarks))
+  ("C-x r l" . helm-bookmarks)
 #+END_SRC
 ** Helm descbinds (*desc*-ribe *bind*-ings)
 - Helm descbinds is a smarter replacement for "C-h k" to look up
