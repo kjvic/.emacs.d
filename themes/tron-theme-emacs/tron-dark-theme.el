@@ -122,7 +122,7 @@ Semantic, and Ansi-Color faces are included.")
    `(font-lock-builtin-face
      ((,class (:foreground ,tron-salad-bright :background ,tron-brown-dark))))
    `(font-lock-comment-face ((,class (:foreground ,tron-metal))))
-   `(font-lock-doc-face ((,class (:foreground ,tron-metal :background nil))))
+   `(font-lock-doc-face ((,class (:foreground ,tron-warm-metal :background nil))))
    `(font-lock-doc-string-face ((,class (:foreground ,tron-warm-metal :background nil))))
    `(font-lock-constant-face
      ((,class (:foreground ,tron-plum-light :background ,tron-brown-dark))))
