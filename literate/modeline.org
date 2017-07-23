@@ -41,7 +41,7 @@
       ;; What to display if the buffer is read-only
       (if buffer-read-only
           '((:eval (propertize krista-buffer-readonly-string
-                               'Face 'font-lock-keyword-face)))
+                               'face 'font-lock-keyword-face)))
         ;; What to display if the buffer has been modified since the
         ;; last save
         (if (buffer-modified-p)
