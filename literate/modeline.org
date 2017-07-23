@@ -2,6 +2,36 @@
 * Mode line format
 ** Mode line format
 #+BEGIN_SRC emacs-lisp
+  ;; https://emacs.stackexchange.com/a/16660
+  (defun mode-line-align (left center right &optional lpad rpad)
+    "Return a string the width of the current window with
+      LEFT, CENTER, and RIGHT spaced out accordingly, LPAD and RPAD,
+      can be used to add a number of spaces to the front and back of the string."
+    (condition-case err
+        (let* ((left (if lpad (concat (make-string lpad ?\s) left) left))
+               (right (if rpad (concat right (make-string rpad ?\s)) right))
+               (width (apply '+ (window-width)
+                             (let ((m (window-margins)))
+                               (list (or (car m) 0) (or (cdr m) 0)))))
+               (total-length (+ (length left) (length center) (length right) 2)))
+          (when (> total-length width) (setq left "" right ""))
+          (let ((left-space (/ (- width (length center)) 2))
+                (make-result #'(lambda (lspaces rspaces)
+                                 (concat left (make-string lspaces ?\s)
+                                         center
+                                         (make-string rspaces ?\s)
+                                         right))))
+            (if (> (length left) left-space)
+                (let* ((center-space (+ (- width total-length) 2))
+                       (lspaces (max (/ center-space 2) 1))
+                       (rspaces (max (- center-space lspaces) 1)))
+                  (funcall make-result lspaces rspaces))
+              (let* ((right-space (- width left-space (length center)))
+                     (lspaces (max (- left-space (length left)) 1))
+                     (rspaces (max (- right-space (length right)) 1 0)))
+                (funcall make-result lspaces rspaces)))))
+      (error (format "[%s]: (%s) (%s) (%s)" err left center right))))
+
   ;; Strings which display the buffer's modified status 
   ;; 
   ;; Some advice: make these the same length, so the name of your buffer
@@ -9,36 +39,9 @@
   (setq krista-buffer-modified-string "Δ")
   (setq krista-buffer-readonly-string "R")
   (setq krista-buffer-unchanged-string "≣")
-  ;; TODO: color the Git logo based on the value of vc-state
-  ;; Settings that I want:
-  ;; Greyed out:
-  ;; ‘unregistered’ - no vc 🤷
-  ;; ‘ignored’ - 🚫
-  ;; Bright yellow:
-  ;; ‘conflict’ - =><= ⇒⇐
-  ;; Normal:
-  ;; ‘removed’ - 'rm'd' ⌫
-  ;; ‘added’ - ✓
-  ;; ‘edited’ - Δ
-  ;; ‘up-to-date’ - 👌🆗
-  ;; Oh noes!!!!
-  ;; ‘needs-update’ - 🔂
-  ;; ‘needs-merge’ - 🔂 needs update, but red
-
-  ;; To customize the mode line, make a list of all of the things that
-  ;; should be displayed (listed in order from left to right)
-  ;; See also: https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Format.html#Mode-Line-Format
-  (setq-default
-   mode-line-format
-   (list
-
-    ;; Leading space so you don't run into the end of the mode line
-    mode-line-front-space
-
-    ;; Display buffer's local modified status
-    ;; --------------------------------
+  (defun krista-get-buffer-modified-status() 
+    ;; What to display if the buffer is read-only
     '(:eval
-      ;; What to display if the buffer is read-only
       (if buffer-read-only
           '((:eval (propertize krista-buffer-readonly-string
                                'Face 'font-lock-keyword-face)))
@@ -50,33 +53,60 @@
           ;; What to display if the buffer is not read-only, but also
           ;; hasn't been modified
           '(:eval (propertize krista-buffer-unchanged-string
-                              'face 'font-lock-comment-face)))
-        ))
+                              'face 'font-lock-comment-face))))))
 
-    ;; Padding
-    " "
-    ;; Git symbol
-    ;; TODO: see [[help:vc-state]] to get rid of this when not in a project dir
-    '(:eval (propertize "" 'face 'font-lock-builtin-face))
-    ;; Branch name (note: the value of vc-mode is modified later)
-    vc-mode
-    ;; Buffer/file name (just this file... not the whole path)
-    '(:eval (propertize " %12b" 'face '(:foreground "cyan")))
-    
-    ;; Line:column
-    " (%l,%2c)"
+  ;; To customize the mode line, make a list of all of the things that
+  ;; should be displayed (listed in order from left to right)
+  ;; See also: https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Format.html#Mode-Line-Format
+  (defvar krista-modeline-format
+    (list
 
-    ;; Size of file, in human-readable terms (e.g. 43k)
-    " %I "
+     ;; Leading space so you don't run into the end of the mode line
+     mode-line-front-space
 
-    " "
-    mode-name
-    " "
-    mode-line-misc-info
-    " "
-    '(:eval (propertize "𝔞𝔩𝔩 𝔞𝔡𝔳𝔢𝔯𝔰𝔦𝔱𝔶 𝔦𝔰 𝔱𝔯𝔞𝔦𝔫𝔦𝔫𝔤" 'face '(:foreground "#033021"))); #134031 #0a1519 #0d1719 "#001519" "#134031" "#043d18"))) ;#306158""#3465a4" #42071d")))
-    mode-line-end-spaces))
+     ;; Display buffer's local modified status
+     ;; --------------------------------
+     '(:eval
+      (if buffer-read-only
+          '((:eval (propertize krista-buffer-readonly-string
+                               'Face 'font-lock-keyword-face)))
+        ;; What to display if the buffer has been modified since the
+        ;; last save
+        (if (buffer-modified-p)
+            '((:eval (propertize krista-buffer-modified-string
+                                 'face 'font-lock-warning-face)))
+          ;; What to display if the buffer is not read-only, but also
+          ;; hasn't been modified
+          '(:eval (propertize krista-buffer-unchanged-string
+                              'face 'font-lock-comment-face)))))
 
+     ;; Padding
+     " "
+     ;; Git symbol
+     ;; TODO: see [[help:vc-state]] to get rid of this when not in a project dir
+     '(:eval (propertize "" 'face 'font-lock-builtin-face))
+     ;; Branch name (note: the value of vc-mode is modified later)
+     vc-mode
+     ;; Buffer/file name (just this file... not the whole path)
+     '(:eval (propertize " %12b" 'face '(:foreground "cyan")))
+
+
+     ;; Line:column
+     " (%l,%2c)"
+
+     ;; Size of file, in human-readable terms (e.g. 43k)
+     " %I "
+
+     " "
+     mode-name
+     " "
+     mode-line-misc-info
+     " "
+     '(:eval (propertize "𝔞𝔩𝔩 𝔞𝔡𝔳𝔢𝔯𝔰𝔦𝔱𝔶 𝔦𝔰 𝔱𝔯𝔞𝔦𝔫𝔦𝔫𝔤" 'face '(:foreground "#033021")))
+     mode-line-end-spaces))
+
+
+  (setq-default mode-line-format '(:eval krista-modeline-format))
   ;; Reload the mode line config whenever you reload this file
   ;; 
   ;; IMPORTANT: uncomment when you're tweaking the modeline, so you
@@ -91,44 +121,6 @@
       (let ((vc-no-backend (replace-regexp-in-string "^ Git." " " vc-mode)))
             (setq vc-mode vc-no-backend))))
 #+END_SRC
-*** For posterity: Possible other unicode symbols 
-**** for the git logo:
--  from reddit? Have not yet recovered source, although I might be
-  able to find it somewhere in [[http://www.whiteboardcoder.com/2016/03/sbt-customize-shell-prompt-with-git.html][here]]
-- ⎇ U+2387
-- ʮ U+02AE
-- ץ U+05E5
-- Ⴤ U+10C4
-- ป U+0E1B
-- ሗ U+1217
-- ሳ U+1233
-- ኂ U+1282
-- Ի U+053B
-**** To replace "TOP / BOT" in the position string
-- ⤒ U+2912
-- ⤓ U+2913
-**** For the battery
-- ⚡ U+26A1
-- ⏚ U+23DA
-- ⎍ MONOSTABLE SYMBOL (U+238D)
-- ⎓ DIRECT CURRENT SYMBOL FORM TWO (U+2393)
-**** Line endings indicator
-- Mac: ⌘ PLACE OF INTEREST SIGN (U+2318)
-- UNIX/LINUX: ⌗ VIEWDATA SQUARE (U+2317)
-- Windows: ⊞ (U+229E) (in bold, italic)
-  - № Numero sign (U+2116)
-  - ⓦ Unicode number: U+24E6
-  - ⧉ Unicode number: U+29C9
-  - ⽥ - Unicode number: U+2F65
-  - ㎳ - Square Ms Unicode number: U+33B3
-  - 㘡 - Ideograph (same as 柙) a pen for wild beasts; a cage for prisoners CJK - Unicode number: U+3621
-  - 🗔 - U+1F5D4 Desktop window
-  - ⒨
-  - ⒲
-  - /⑃⑂/
-  - ₩
-  - Ｗ - Fullwidth Latin Capital Letter W - U+FF37
-  - 𝕎 - Unicode number U+1D54E
 ** Replace "Top" and "Bottom" in percentage string
 #+BEGIN_SRC emacs-lisp          
   ;; (defadvice mode-line-position (after krista-rm-top() activate)
@@ -139,6 +131,16 @@
       ;;   (setq mode-line-position better-position-string)))
 #+END_SRC
 * Fancy battery mode
+** TODO switch from fancy-battery-mode to an indicator
+I want to see:
+- fancy-battery-charging
+  - yellow when level is != 100%
+  - green when level is == 100%
+- fancy-battery-discharging
+  - yellow when level is != 100%
+  - green when level is == 100%
+- fancy-battery-critical
+** Current config
 #+BEGIN_SRC emacs-lisp
   (use-package fancy-battery
     :diminish fancy-battery-mode
@@ -151,26 +153,14 @@
     )
 #+END_SRC
 * Fonts and colors
-#+BEGIN_EXAMPLE
-  (set-face-attribute 'mode-line nil
+#+BEGIN_SRC emacs-lisp
+  (set-face-attribute 'mode-line-highlight nil
                       :background "#000d0f" 
-                      :foreground "cyan"
+                      :foreground "#75dbb7"
                       :inverse-video nil
-                      :box '(:line-width 1 :color "dark slate grey") 
+                      :box nil
                       :family "Fira Code")
-
-  (set-face-attribute 'mode-line-buffer-id nil
-                      :weight 'normal
-                      :family "Fira Code")
-
-  (set-face-attribute 'mode-line-emphasis nil
-                      :weight 'bold)
-
-  (set-face-attribute 'mode-line-inactive nil
-                      :background "#000d0f"
-                      :foreground "#888a85"
-                      :inverse-video nil)
-#+END_EXAMPLE
+#+END_SRC
 * Diminish!
 Get the names of your minor-modes out of my mode line, dammit!
 Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
@@ -192,3 +182,57 @@ Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
     (diminish 'c++-mode "C++")
     )
 #+END_SRC
+* Helpful: unicode symbols to possibly use in modeline 
+** Git status
+  ;; TODO: color the Git logo based on the value of vc-state
+  ;; Settings that I want:
+  ;; Greyed out:
+  ;; ‘unregistered’ - no vc 🤷
+  ;; ‘ignored’ - 🚫
+  ;; Bright yellow:
+  ;; ‘conflict’ - =><= ⇒⇐
+  ;; Normal:
+  ;; ‘removed’ - 'rm'd' ⌫
+  ;; ‘added’ - ✓
+  ;; ‘edited’ - Δ
+  ;; ‘up-to-date’ - 👌🆗
+  ;; Oh noes!!!!
+  ;; ‘needs-update’ - 🔂
+  ;; ‘needs-merge’ - 🔂 needs update, but red
+** for the git logo:
+-  from reddit? Have not yet recovered source, although I might be
+  able to find it somewhere in [[http://www.whiteboardcoder.com/2016/03/sbt-customize-shell-prompt-with-git.html][here]]
+- ⎇ U+2387
+- ʮ U+02AE
+- ץ U+05E5
+- Ⴤ U+10C4
+- ป U+0E1B
+- ሗ U+1217
+- ሳ U+1233
+- ኂ U+1282
+- Ի U+053B
+** To replace "TOP / BOT" in the position string
+- ⤒ U+2912
+- ⤓ U+2913
+** For the battery
+- ⚡ U+26A1
+- ⏚ U+23DA
+- ⎍ MONOSTABLE SYMBOL (U+238D)
+- ⎓ DIRECT CURRENT SYMBOL FORM TWO (U+2393)
+** Line endings indicator
+- Mac: ⌘ PLACE OF INTEREST SIGN (U+2318)
+- UNIX/LINUX: ⌗ VIEWDATA SQUARE (U+2317)
+- Windows: ⊞ (U+229E) (in bold, italic)
+  - № Numero sign (U+2116)
+  - ⓦ Unicode number: U+24E6
+  - ⧉ Unicode number: U+29C9
+  - ⽥ - Unicode number: U+2F65
+  - ㎳ - Square Ms Unicode number: U+33B3
+  - 㘡 - Ideograph (same as 柙) a pen for wild beasts; a cage for prisoners CJK - Unicode number: U+3621
+  - 🗔 - U+1F5D4 Desktop window
+  - ⒨
+  - ⒲
+  - /⑃⑂/
+  - ₩
+  - Ｗ - Fullwidth Latin Capital Letter W - U+FF37
+  - 𝕎 - Unicode number U+1D54E
