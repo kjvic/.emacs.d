@@ -72,6 +72,11 @@ Note: tangling should be performed _AFTER_ use-package is installed
 (krista/new-config-file modeline "modeline")
 (org-babel-load-file krista/modeline-config-file)
 #+END_SRC
+*** LaTeX
+#+BEGIN_SRC emacs-lisp
+;(krista/new-config-file latex "latex")
+;(org-babel-load-file krista/latex-config-file)
+#+END_SRC
 * Evolution
 This is where I put things that help me modify my emacs install more efficiently
 ** Speedy-keys to open and eval my config file
@@ -177,6 +182,11 @@ Replace the (fugly!) arrows that serve to indicate line continuation
      #b00000000])
 
  (setq visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow)))
+#+END_SRC
+*** Fringe and border faces
+#+BEGIN_SRC emacs-lisp
+ (set-face-attribute 'fringe nil :background "#001519")
+ (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
 #+END_SRC
 *** Fonts
 #+BEGIN_SRC emacs-lisp
@@ -745,6 +755,10 @@ the display until you restart Emacs.
   ;; <http://orgmode.org/manual/Clean-view.html>
   (setq org-startup-indented t)
 
+  ;; in org mode C-a/e moves to beginning of text in line, after header asterisks
+  ;; however you can press it again to go all the way
+  (setq org-special-ctrl-a/e t)
+
   (set-face-attribute 'org-code nil
                       :inherit 'shadow
                       :foreground "dark sea green"
@@ -962,6 +976,11 @@ This is the place to put it
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-window-choices :tangle no
 (setq helm-full-frame nil)
 (setq helm-show-action-window-other-window nil)
+
+;; Don't let helm hijack your window!
+;; Source: https://github.com/emacs-helm/helm/issues/169
+(setq helm-split-window-default-side 'same)
+#+END_SRC
 *** helm-recentf
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-recentf :tangle no
   (message "[krista] Loading helm-recentf...")
@@ -1274,39 +1293,11 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
   ;; The SBCL binary and command-line arguments
 ;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
 #+END_SRC
-* LaTeX
+** haskell
 #+BEGIN_SRC emacs-lisp
-  ;; auctex provides package tex
-  (use-package tex
-    :ensure auctex
-    :config
-    (setq TeX-auto-save t)
-    (setq TeX-PDF-mode t)
-    (setq TeX-view-program-selection '((output-pdf "Emacs")))
-    (setq TeX-parse-self t)
-    (setq-default TeX-master t)
-    
-    (defun krista/TeX-open-output-buffer ()
-      (interactive)
-      (let ((output-file (with-current-buffer TeX-command-buffer
-                           (expand-file-name
-                            (TeX-active-master
-                             (TeX-output-extension))))))
-        (find-file output-file)))
-
-    (add-to-list 'TeX-view-program-list
-                 (list "Emacs" #'krista/TeX-open-output-buffer)))
-
-    (use-package latex
-      :ensure nil
-      :config
-      (setq visual-line-mode t)
-      (setq LaTeX-math-mode t)
-      (setq turn-on-reftex t)
-      (setq LaTeX-math-menu-unicode t)
-      (setq reftex-plug-into-AUCTeX t))
+(use-package haskell-mode)
 #+END_SRC
-* Emacs/W3 Configuration
+* TODO Emacs/W3 Configuration
 #+BEGIN_SRC emacs-lisp
 ;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
 ;    (condition-case () (require 'w3-auto "w3-auto") (error nil))
@@ -1315,15 +1306,6 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 #+BEGIN_SRC emacs-lisp
   ;(use-package multiple-cursors
   ;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
-#+END_SRC
-* Recentf
-#+BEGIN_SRC emacs-lisp
-    (require 'recentf)
-    (recentf-mode t)
-    (setq recentf-max-menu-items 100)
-    (setq helm-recentf-max-menu-items 100)
-    ;;; Fast access to them recently-opened files
-    (global-set-key "\C-x\ \C-r" 'helm-recentf)
 #+END_SRC
 * Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
@@ -1402,92 +1384,6 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
   (setq-default indent-tabs-mode nil)
   (setq tab-width 8)
   ;(defvaralias 'c-basic-offset 'tab-width)
-#+END_SRC
-
-  ;; Spruce's Latex stuff: https://gist.github.com/spruceb/4209965bb7c335894b436002c720bf35
-  ;; latex
-  ;; TODO: fucks up prettify for some reason?
-  ;; (company-auctex-init)
-  ;; save buffer style info
-  (setq TeX-auto-save t)
-  ;; automatically parse style info
-  (setq TeX-parse-self t)
-  ;; no tabs
-  (setq TeX-auto-untabify t)
-
-  ;; (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  (setq reftex-plug-into-AUCTeX t)
-  (setq TeX-PDF-mode t)
-  ;; better name for local variable
-  (setq TeX-auto-local ".auctex-auto")
-  ;; auto revert pdf buffer
-  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
-  ;; show errors if there were any
-  (setq TeX-error-overview-open-after-TeX-run t)
-  ;; autocompletion
-  ;; don't confirm before cleaning files
-  (setq TeX-clean-confirm nil)
-  (defun tex-runall-clean ()
-    (interactive)
-    (TeX-command-run-all nil)
-    (TeX-clean))
-
-
-  (defun TeX-insert-pair (arg open-str close-str)
-    "Like TeX-insert-brackes but for any pair"
-    (interactive "P")
-    (if (TeX-active-mark)
-        (progn
-          (if (< (point) (mark)) (exchange-point-and-mark))
-          (insert close-str)
-          (save-excursion (goto-char (mark)) (insert open-str)))
-      (insert open-str)
-      (save-excursion
-        (if arg (forward-sexp (prefix-numeric-value arg)))
-        (insert close-str))))
-
-  ;; Make it so that I can insert inline/display math quickly
-  (defun LaTeX-insert-inline-math (arg)
-    (interactive "P")
-    (TeX-insert-pair arg "\\( " " \\)"))
-  (defun LaTeX-insert-display-math (arg)
-    (interactive "P")
-    (TeX-insert-pair arg "\\[ " " \\]"))
-  (defun LaTeX-mode-keybindings ()
-    (local-set-key (kbd "H-C-j") #'LaTeX-insert-inline-math)
-    (local-set-key (kbd "H-C-k") #'LaTeX-insert-display-math))
-  (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
-
-  (defun TeX-mode-keybindings ()
-    (local-set-key (kbd "C-c b") #'tex-runall-clean)
-    (local-set-key (kbd "H b") #'LaTeX-math-bar))
-  (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
-
-  (setq TeX-save-query nil)
-
-  ;; TODO: wtf is this
-  (setq latex-templates-directory "~/.emacs.d/templates/latex-templates/")
-  (defun latex-template ()
-    (interactive)
-    (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
-           (selection (completing-read "LaTeX Template: "
-                                       (mapcar #'file-name-base files))))
-      (insert-file-contents (concat latex-templates-directory selection ".tex"))))
-
-  (setq TeX-electric-sub-and-superscript t)
-  (setq LaTeX-math-menu-unicode t)
-  (defun my-latex-settings (interactive)
-    (latex-electric-env-pair-mode t) ; Highlight other (closing/opening) paren
-    (set-fill-column 70) ;Wrap lines at n characters
-    (turn-on-auto-fill) ; Automatically wrap lines when I go past n characters
-    (prettify-symbols-mode) ; Automatically render unicode
-    )
-  (add-hook 'LaTeX-mode-hook 'my-latex-settings)
-
-  (put 'TeX-command-extra-options 'safe-local-variable
-       (lambda (x) (string-equal x "-shell-escape")))
 #+END_SRC
 * Dealing with Custom
 #+BEGIN_SRC emacs-lisp :noweb tangle
