@@ -60,12 +60,8 @@ How to: see spruce's config. Something something angle brackets source block tit
   (setq use-package-always-ensure t)
 #+END_SRC
 ** Tangle external files
-- NOTE: It is important that [[*Tangle%20extrernal%20files][this (i.e. the current)]] block is after
-  [[*Package%20management%20management][this one (i.e. the previous block)]]
-- This is because my external files have "use-package" statements,
-  which won't work if use-package hasn't been loaded yet!
-*** OS-specific garbage
-...is kept in another file:
+Note: tangling should be performed _AFTER_ use-package is installed
+*** OS-specific config
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file macOS "macOS")
 (when (eq system-type 'darwin)
@@ -610,8 +606,7 @@ the display until you restart Emacs.
   (use-package org-bullets
     :diminish
     :config
-    (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
-    )
+    (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝"))))
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
 
   ;; Setting this to `t' will automatically render LaTeX special
@@ -780,8 +775,7 @@ work? God I /love/ shitty docs.
      (python . t)
      (emacs-lisp . t)
      (C . t)
-     (lisp . t)
-     ))
+     (lisp . t)))
 #+END_SRC
 ** Links
 Org link workflow:
@@ -900,7 +894,7 @@ default Emacs functions. Also, Emacs defaults are "meh".
     :config (setq helm-descbinds-mode t))
 #+END_SRC
 ** Helm swoop
-- Swoop is like isearch, but less shitty. Works really nicely with helm.
+- Swoop is like a better isearch. Works really nicely with helm.
 - [[https://github.com/ShingoFukuyama/helm-swoop][ShingoFukuyama's super-fancy helm config]]
 - Editing from Helm swoop. When doing C-s, you can
   - do "C-c C-e" to edit all matching lines
@@ -1037,13 +1031,11 @@ Surround things with quotes/paren easily!
 * Projectile
 ** Projectile proper
 #+BEGIN_SRC emacs-lisp
-  ;; Absolute necessity
   (use-package projectile
     :diminish
     :config
     (setq projectile-completion-system 'helm)
-    (projectile-global-mode)
-    )
+    (projectile-global-mode))
 #+END_SRC
 ** Config
 
@@ -1202,7 +1194,7 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 ;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
 ;    (condition-case () (require 'w3-auto "w3-auto") (error nil))
 #+END_SRC
-* multiple-cursors
+* TODO multiple-cursors
 #+BEGIN_SRC emacs-lisp
   ;(use-package multiple-cursors
   ;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
@@ -1446,7 +1438,7 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
   (put 'TeX-command-extra-options 'safe-local-variable
        (lambda (x) (string-equal x "-shell-escape")))
 #+END_SRC
-* Stuff added by Custom
+* Dealing with Custom
 #+BEGIN_SRC emacs-lisp :noweb tangle
     ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
     (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -1456,15 +1448,7 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
       (custom-set-variables
        <<ansi-colors>>
        <<enable-tron-dark>>
-       '(gud-gdb-command-name "gdb --annotate=1")
-       )
-
-      ;; custom-set-faces was added by Custom.
-      ;; If you edit it by hand, you could mess it up, so be careful.
-      ;; Your init file should contain only one such instance.
-      ;; If there is more than one, they won't work right.
-    (set-face-attribute 'fringe nil :background "#001519")
-    (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
+       '(gud-gdb-command-name "gdb --annotate=1"))
 #+END_SRC
 ** ANSI colors
 #+BEGIN_SRC emacs-lisp :noweb-ref ansi-colors :tangle yes
