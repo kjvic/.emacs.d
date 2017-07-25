@@ -850,10 +850,15 @@ Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to
   ;;                   'smarter-move-beginning-of-line)
 
 #+END_SRC
-** Convenience functions
-Org source blocks
-#+BEGIN_SRC emacs-lisp :noweb-ref org-convenience :tangle no
-  ;; Start a new elisp block in org mode by typing <el and then pressing TAB
+** Code snippets in org
+#+BEGIN_SRC emacs-lisp :noweb-ref org-code-snippets :noweb tangle :tangle yes
+<<org-quick-source-blocks>>
+<<org-babel-config>>
+#+END_SRC
+*** Quickly add source blocks
+Example: Start a new elisp block in org mode by typing <el and then pressing TAB
+**** Config
+#+BEGIN_SRC emacs-lisp :noweb-ref org-quick-source-blocks :tangle no
   (add-to-list 'org-structure-template-alist
                '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
   (add-to-list 'org-structure-template-alist
@@ -862,19 +867,12 @@ Org source blocks
                '("cpp" "#+BEGIN_SRC C++\n?\n#+END_SRC" ""))
   (add-to-list 'org-structure-template-alist
                '("p" "#+BEGIN_SRC python\n?\n#+END_SRC" ""))
-
-  ;; Start a new elisp block in org mode by typing <el and then pressing TAB
+  ;; "Example" block for plaintext
   (add-to-list 'org-structure-template-alist
                '("ex" "#+BEGIN_EXAMPLE \n?\n#+END_EXAMPLE" ""))
 #+END_SRC
-** Babel / Languages
-Mannnn I don't understand this shit. But I extracted some elisp from
-some (utterly incoherent!) stackoverflow comments, and it seems to
-work? God I /love/ shitty docs.
-#+BEGIN_SRC emacs-lisp :noweb-ref org-langs :tangle no
-  ;; Problem: When editing a TeX file, C-c C-c results in
-  ;; "org-babel-execute-src-block: No org-babel-execute function for LaTeX!"
-  ;; Solution: This, apparently
+*** Babel / Languages
+#+BEGIN_SRC emacs-lisp :noweb-ref org-babel-config :tangle no
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((latex . t)
