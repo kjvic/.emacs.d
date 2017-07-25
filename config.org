@@ -59,12 +59,11 @@ How to: see spruce's config. Something something angle brackets source block tit
   (setq use-package-always-ensure t)
 #+END_SRC
 ** Tangle external files
-- NOTE: It is important that use-package has been loaded before this
-  block is executed
+- Note: tangling should be performed _AFTER_ use-package is installed
 - This is because my external files have "use-package" statements,
   which won't work if use-package hasn't been loaded yet!
-*** OS-specific garbage
-...is kept in another file:
+*** OS-specific config
+>>>>>>> mode-line-config
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file macOS "macOS")
 (when (eq system-type 'darwin)
@@ -74,6 +73,11 @@ How to: see spruce's config. Something something angle brackets source block tit
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file modeline "modeline")
 (org-babel-load-file krista/modeline-config-file)
+#+END_SRC
+*** LaTeX
+#+BEGIN_SRC emacs-lisp
+;(krista/new-config-file latex "latex")
+;(org-babel-load-file krista/latex-config-file)
 #+END_SRC
 ** Byte-compile external files (if necessary)
 ** Initial buffer to show at startup
@@ -200,6 +204,11 @@ Replace the (fugly!) arrows that serve to indicate line continuation
 
  (setq visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow)))
 #+END_SRC
+*** Fringe and border faces
+#+BEGIN_SRC emacs-lisp
+ (set-face-attribute 'fringe nil :background "#001519")
+ (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
+#+END_SRC
 *** Fonts
 #+BEGIN_SRC emacs-lisp
   (set-face-attribute 'default nil :font "Fira Code-13")
@@ -270,6 +279,103 @@ Source: https://www.emacswiki.org/emacs/BackwardKillLine
 #+BEGIN_SRC emacs-lisp
  (delete-selection-mode 1)
 #+END_SRC
+** Organize backup files
+*** Backups, proper
+#+BEGIN_SRC emacs-lisp
+(setq
+   backup-by-copying t      ; don't clobber symlinks
+   backup-directory-alist
+    '(("." . "~/.emacs.d/backup"))    ; don't litter my filesystem
+   delete-old-versions t
+   kept-new-versions 50
+   kept-old-versions 50
+   version-control t)       ; use versioned backups
+#+END_SRC
+*** Autosaves
+#+BEGIN_SRC emacs-lisp
+(setq auto-save-file-name-transforms
+      `((".*" "~/.emacs.d/autosaves" t)))
+(setq auto-save-interval 1000) ; 1000 characters
+(setq auto-save-timeout 60)    ; or 60 seconds
+#+END_SRC
+* Keybindings and accessibility
+#+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading keybindings and accessibility...")
+  ;; Change "yes or no" prompts to "y or n" prompts
+  (fset 'yes-or-no-p 'y-or-n-p)
+  ;; Toggle fullscreen with meta-return
+  (global-set-key (kbd "C-c C-<return>") 'toggle-frame-fullscreen)
+  ;; Speedy eval-buffer
+  (global-set-key (kbd "C-c b") 'eval-buffer)
+
+  ;; Go to *Messages* buffer
+  (defun switch-to-messages-buffer ()
+    "Open up the *Messages* buffer in a new frame"
+    (interactive)
+    (switch-to-buffer-other-window "*Messages*"))
+  (global-set-key (kbd "C-c m") 'switch-to-messages-buffer)
+
+  ;; count words in selected region
+  (global-set-key (kbd "C-c w") 'count-words)
+
+  ;; Speedy-open melpa
+  (global-set-key (kbd "C-c C-p") 'package-list-packages)
+
+  ;; Transpose line up or down
+  (defun move-line-up ()
+    "Move up the current line."
+    (interactive)
+    (transpose-lines 1)
+    (forward-line -2)
+    (indent-according-to-mode))
+  (defun move-line-down ()
+    "Move down the current line."
+    (interactive)
+    (forward-line 1)
+    (transpose-lines 1)
+    (forward-line -1)
+    (indent-according-to-mode))
+  (global-set-key [(meta p)]  'move-line-up)
+  (global-set-key [(meta n)]  'move-line-down)
+
+  ;; Don't add 2 spaces after my period, dammit!
+  (setq sentence-end-double-space nil)
+
+  ;; Enable "C-x u" for upcase-region, "C-x l" for downcase-region
+  (put 'upcase-region 'disabled nil)
+  (put 'downcase-region 'disabled nil)
+
+  ;; Comment line with M-;
+  ;; Source:
+  ;; <http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html>
+  (defun comment-dwim-line (&optional arg)
+    "Replacement for the comment-dwim command.
+         If no region is selected and current line is not blank and we are not at the end of the line,
+         then comment current line.
+         Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
+    (interactive "*P")
+    (comment-normalize-vars)
+    (if (and (not (region-active-p))
+             (not (looking-at "[ \t]*$")))
+        (comment-or-uncomment-region (line-beginning-position)
+                                     (line-end-position))
+      (comment-dwim arg)))
+  (global-set-key (kbd "M-;") 'comment-dwim-line)
+
+  ;; Make C-K clear text AND newline
+  (setq kill-whole-line t)
+
+      ;;; Start & end recording new keyboard macro
+  (global-set-key (kbd "M-[") 'kmacro-start-macro)
+  (global-set-key (kbd "M-]") 'kmacro-end-macro)
+      ;;; (TODO https://www.emacswiki.org/emacs/KeyboardMacros)
+  (global-set-key (kbd "C-l") 'call-last-kbd-macro)
+
+
+  ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
+  ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
+  (global-set-key (kbd "M-j") 'join-line)
+#+END_SRC
 * cheatsheet
 ** What is cheatsheet?
 Cheatsheet gives quick access to read-only buffers.
@@ -289,6 +395,7 @@ Here's an example cheat. Follow this format in your config
 #+END_SRC
 ** Krista's cheatsheet entries
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading cheatsheet...")
   (use-package cheatsheet
     :config
     <<common-cheats>>
@@ -564,6 +671,7 @@ the display until you restart Emacs.
 ** [[https://joaotavora.github.io/yasnippet/snippet-organization.html#sec-1][Joatoavora tutorial (better)]]
 ** Configuration
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading yasnippet...")
   (use-package yasnippet
     :diminish yas-minor-mode
     :config
@@ -571,16 +679,23 @@ the display until you restart Emacs.
 #+END_SRC
 * Org
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading org-mode settings...")
   (use-package org
     :diminish org-indent-mode
     :config
+    (message "[krista] Loading org-aesthetics...")
     <<org-aesthetics>>
+    (message "[krista] Loading org-capture...")
     <<org-capture>>
+    (message "[krista] Loading org-agenda...")
     <<org-agenda>>
+    (message "[krista] Loading org-inline-images...")
     <<org-inline-images>>
+    (message "[krista] Loading org-tree-behavior...")
     <<org-tree-behavior>>
-    <<org-convenience>>
-    <<org-langs>>
+    (message "[krista] Loading org-code-snippets...")
+    <<org-code-snippets>>
+    (message "[krista] Loading org-links...")
     <<org-links>>
     :bind (
            ;; For use with my capture templates
@@ -628,8 +743,7 @@ the display until you restart Emacs.
   (use-package org-bullets
     :diminish
     :config
-    (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝")))
-    )
+    (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝"))))
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
 
   ;; Setting this to `t' will automatically render LaTeX special
@@ -661,6 +775,10 @@ the display until you restart Emacs.
   ;; Org mode clean view
   ;; <http://orgmode.org/manual/Clean-view.html>
   (setq org-startup-indented t)
+
+  ;; in org mode C-a/e moves to beginning of text in line, after header asterisks
+  ;; however you can press it again to go all the way
+  (setq org-special-ctrl-a/e t)
 
   (set-face-attribute 'org-code nil
                       :inherit 'shadow
@@ -767,10 +885,15 @@ Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to
   ;;                   'smarter-move-beginning-of-line)
 
 #+END_SRC
-** Convenience functions
-Org source blocks
-#+BEGIN_SRC emacs-lisp :noweb-ref org-convenience :tangle no
-  ;; Start a new elisp block in org mode by typing <el and then pressing TAB
+** Code snippets in org
+#+BEGIN_SRC emacs-lisp :noweb-ref org-code-snippets :noweb tangle :tangle yes
+<<org-quick-source-blocks>>
+<<org-babel-config>>
+#+END_SRC
+*** Quickly add source blocks
+Example: Start a new elisp block in org mode by typing <el and then pressing TAB
+**** Config
+#+BEGIN_SRC emacs-lisp :noweb-ref org-quick-source-blocks :tangle no
   (add-to-list 'org-structure-template-alist
                '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
   (add-to-list 'org-structure-template-alist
@@ -779,27 +902,19 @@ Org source blocks
                '("cpp" "#+BEGIN_SRC C++\n?\n#+END_SRC" ""))
   (add-to-list 'org-structure-template-alist
                '("p" "#+BEGIN_SRC python\n?\n#+END_SRC" ""))
-
-  ;; Start a new elisp block in org mode by typing <el and then pressing TAB
+  ;; "Example" block for plaintext
   (add-to-list 'org-structure-template-alist
                '("ex" "#+BEGIN_EXAMPLE \n?\n#+END_EXAMPLE" ""))
 #+END_SRC
-** Babel / Languages
-Mannnn I don't understand this shit. But I extracted some elisp from
-some (utterly incoherent!) stackoverflow comments, and it seems to
-work? God I /love/ shitty docs.
-#+BEGIN_SRC emacs-lisp :noweb-ref org-langs :tangle no
-  ;; Problem: When editing a TeX file, C-c C-c results in
-  ;; "org-babel-execute-src-block: No org-babel-execute function for LaTeX!"
-  ;; Solution: This, apparently
+*** Babel / Languages
+#+BEGIN_SRC emacs-lisp :noweb-ref org-babel-config :tangle no
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((latex . t)
      (python . t)
      (emacs-lisp . t)
      (C . t)
-     (lisp . t)
-     ))
+     (lisp . t)))
 #+END_SRC
 ** Links
 Org link workflow:
@@ -844,6 +959,7 @@ Steam account
   - M-x commands (the default binding for execute-extended-command)
 ** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading helm...")
   (use-package helm
     :diminish helm-mode
     ;; helm-config is a bootstrapping package. According to
@@ -854,9 +970,16 @@ Steam account
     :config
     ;; Enable Helm globally
     (helm-mode t)
+    ;; (message "[krista] Loading helm-behavior...")
     <<helm-behavior>>
+    ;; (message "[krista] Loading helm-recentf...")
+    <<helm-recentf>>
+    ;; (message "[krista] Loading helm-window-choices...")
     <<helm-window-choices>>
-    :bind <<helm-replace-defaults>>
+    :bind 
+    <<helm-replace-defaults>>
+    ;; I know that having a paren on its own line is bad style. But it's
+    ;; necessary to have the org-tangle reference on its own line.
     )
 #+END_SRC
 *** Helm behavior
@@ -874,6 +997,42 @@ This is the place to put it
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-window-choices :tangle no
 (setq helm-full-frame nil)
 (setq helm-show-action-window-other-window nil)
+
+;; Don't let helm hijack your window!
+;; Source: https://github.com/emacs-helm/helm/issues/169
+(setq helm-split-window-default-side 'same)
+#+END_SRC
+*** helm-recentf
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-recentf :tangle no
+  (message "[krista] Loading helm-recentf...")
+  (require 'recentf)
+  (recentf-mode t)
+  (setq recentf-max-menu-items 100)
+  (setq helm-recentf-max-menu-items 100)
+  ;;; Fast access to them recently-opened files
+  (global-set-key "\C-x\ \C-r" 'helm-recentf)
+
+  ;; Auto-save a list of recently-opened files
+  ;; NOTE: This ensures accurate recentf info in case of a
+  ;; less-than-graceful exit
+  (setq krista/recentf-save-interval 300)
+  (run-at-time (current-time) krista/recentf-save-interval 'recentf-save-list)
+#+END_SRC
+*** helm-recentf
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-recentf :tangle no
+  (message "[krista] Loading helm-recentf...")
+  (require 'recentf)
+  (recentf-mode t)
+  (setq recentf-max-menu-items 100)
+  (setq helm-recentf-max-menu-items 100)
+  ;;; Fast access to them recently-opened files
+  (global-set-key "\C-x\ \C-r" 'helm-recentf)
+
+  ;; Auto-save a list of recently-opened files
+  ;; NOTE: This ensures accurate recentf info in case of a
+  ;; less-than-graceful exit
+  (setq krista/recentf-save-interval 300)
+  (run-at-time (current-time) krista/recentf-save-interval 'recentf-save-list)
 #+END_SRC
 *** Override global keybindings (replace defaults)
 I like Helm so much that I'm willing to override the corresponding
@@ -898,18 +1057,20 @@ default Emacs functions. Also, Emacs defaults are "meh".
 - Press TAB for options (e.g. execute the selected command, look up
   documentation, etc.)
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading helm-descbinds...")
   (use-package helm-descbinds
     :diminish helm-descbinds-mode
     :config (setq helm-descbinds-mode t))
 #+END_SRC
 ** Helm swoop
-- Swoop is like isearch, but less shitty. Works really nicely with helm.
+- Swoop is like a better isearch. Works really nicely with helm.
 - [[https://github.com/ShingoFukuyama/helm-swoop][ShingoFukuyama's super-fancy helm config]]
 - Editing from Helm swoop. When doing C-s, you can
   - do "C-c C-e" to edit all matching lines
   - select lines with C-<space>, and /then/ do "C-c C-e" to edit just
     the /selected/ lines
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading helm-swoop...")
   (use-package helm-swoop
     :config <<helm-swoop-syntax-highlighting>>
     <<helm-swoop-window-splitting>>
@@ -1008,6 +1169,7 @@ the mark if it was set before search started.
 ** TODO migrate this into a use-package statement
 [[http://stackoverflow.com/questions/27474936/color-schema-of-emacs-auto-complete-mode][color scheme]]
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading auto-complete...")
   (require 'auto-complete)
   (ac-config-default)
   (setq global-auto-complete-mode t)
@@ -1040,16 +1202,13 @@ Surround things with quotes/paren easily!
 * Projectile
 ** Projectile proper
 #+BEGIN_SRC emacs-lisp
-  ;; Absolute necessity
+  (message "[krista] Loading projectile...")
   (use-package projectile
     :diminish
     :config
     (setq projectile-completion-system 'helm)
-    (projectile-global-mode)
-    )
+    (projectile-global-mode))
 #+END_SRC
-** Config
-
 ** Helm projectile
 #+BEGIN_SRC emacs-lisp
   (use-package helm-projectile
@@ -1062,6 +1221,7 @@ Surround things with quotes/paren easily!
 ** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
 ** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading magit...")
   (use-package magit
     :config
     <<magit-color-scheme>>
@@ -1099,6 +1259,7 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 * Programming
 ** C / C++
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading cc-mode...")
     (use-package cc-mode
       :bind (:map
              c-mode-base-map
@@ -1131,6 +1292,7 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 ** Python
 *** Pylint minor mode
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading python config...")
   (autoload 'pylint "pylint")
   (add-hook 'python-mode-hook 'pylint-add-menu-items)
   (add-hook 'python-mode-hook 'pylint-add-key-bindings)
@@ -1168,60 +1330,24 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
   ;; The SBCL binary and command-line arguments
 ;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
 #+END_SRC
-* LaTeX
+** haskell
 #+BEGIN_SRC emacs-lisp
-  ;; auctex provides package tex
-  (use-package tex
-    :ensure auctex
-    :config
-    (setq TeX-auto-save t)
-    (setq TeX-PDF-mode t)
-    (setq TeX-view-program-selection '((output-pdf "Emacs")))
-    (setq TeX-parse-self t)
-    (setq-default TeX-master t)
-    
-    (defun krista/TeX-open-output-buffer ()
-      (interactive)
-      (let ((output-file (with-current-buffer TeX-command-buffer
-                           (expand-file-name
-                            (TeX-active-master
-                             (TeX-output-extension))))))
-        (find-file output-file)))
-
-    (add-to-list 'TeX-view-program-list
-                 (list "Emacs" #'krista/TeX-open-output-buffer)))
-
-    (use-package latex
-      :ensure nil
-      :config
-      (setq visual-line-mode t)
-      (setq LaTeX-math-mode t)
-      (setq turn-on-reftex t)
-      (setq LaTeX-math-menu-unicode t)
-      (setq reftex-plug-into-AUCTeX t))
+(use-package haskell-mode)
 #+END_SRC
-* Emacs/W3 Configuration
+* TODO Emacs/W3 Configuration
 #+BEGIN_SRC emacs-lisp
 ;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
 ;    (condition-case () (require 'w3-auto "w3-auto") (error nil))
 #+END_SRC
-* multiple-cursors
+* TODO multiple-cursors
 #+BEGIN_SRC emacs-lisp
   ;(use-package multiple-cursors
   ;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
 #+END_SRC
-* Recentf
-#+BEGIN_SRC emacs-lisp
-    (require 'recentf)
-    (recentf-mode t)
-    (setq recentf-max-menu-items 100)
-    (setq helm-recentf-max-menu-items 100)
-    ;;; Fast access to them recently-opened files
-    (global-set-key "\C-x\ \C-r" 'helm-recentf)
-#+END_SRC
 * Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading undo-tree...")
   (require 'undo-tree)
   (setq undo-tree-auto-save-history t)
   (global-undo-tree-mode)
@@ -1232,6 +1358,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 ** Popup face
 Among other things, popup is used in autocomplete. But if I ever want to do more, it'll still look pretty :D
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading popup-face...")
   (set-face-attribute 'popup-face nil
                       :background "#19343D"
                       :foreground "#a0ffff"
@@ -1264,6 +1391,7 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
 ** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
 ;; Show trailing whitespace by default
+(message "[krista] Loading whitespace preferences...")
 (use-package whitespace)
 (setq-default show-trailing-whitespace nil)
 ;(add-hook 'before-save-hook 'delete-trailing-whitespace)
@@ -1294,162 +1422,7 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
   (setq tab-width 8)
   ;(defvaralias 'c-basic-offset 'tab-width)
 #+END_SRC
-* Keybindings and accessibility
-#+BEGIN_SRC emacs-lisp
-  ;; Change "yes or no" prompts to "y or n" prompts
-  (fset 'yes-or-no-p 'y-or-n-p)
-  ;; Toggle fullscreen with meta-return
-  (global-set-key (kbd "C-c C-<return>") 'toggle-frame-fullscreen)
-  ;; Speedy eval-buffer
-  (global-set-key (kbd "C-c b") 'eval-buffer)
-
-  ;; count words in selected region
-  (global-set-key (kbd "C-c w") 'count-words)
-
-  ;; Speedy-open melpa
-  (global-set-key (kbd "H-p") 'package-list-packages)
-
-  ;; Transpose line up or down
-  (defun move-line-up ()
-    "Move up the current line."
-    (interactive)
-    (transpose-lines 1)
-    (forward-line -2)
-    (indent-according-to-mode))
-  (defun move-line-down ()
-    "Move down the current line."
-    (interactive)
-    (forward-line 1)
-    (transpose-lines 1)
-    (forward-line -1)
-    (indent-according-to-mode))
-  (global-set-key [(meta p)]  'move-line-up)
-  (global-set-key [(meta n)]  'move-line-down)
-
-  ;; Don't add 2 spaces after my period, dammit!
-  (setq sentence-end-double-space nil)
-
-  ;; Enable "C-x u" for upcase-region, "C-x l" for downcase-region
-  (put 'upcase-region 'disabled nil)
-  (put 'downcase-region 'disabled nil)
-
-  ;; Comment line with M-;
-  ;; Source:
-  ;; <http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html>
-  (defun comment-dwim-line (&optional arg)
-    "Replacement for the comment-dwim command.
-         If no region is selected and current line is not blank and we are not at the end of the line,
-         then comment current line.
-         Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
-    (interactive "*P")
-    (comment-normalize-vars)
-    (if (and (not (region-active-p))
-             (not (looking-at "[ \t]*$")))
-        (comment-or-uncomment-region (line-beginning-position)
-                                     (line-end-position))
-      (comment-dwim arg)))
-  (global-set-key (kbd "M-;") 'comment-dwim-line)
-
-  ;; Make C-K clear text AND newline
-  (setq kill-whole-line t)
-
-      ;;; Start & end recording new keyboard macro
-  (global-set-key (kbd "M-[") 'kmacro-start-macro)
-  (global-set-key (kbd "M-]") 'kmacro-end-macro)
-      ;;; (TODO https://www.emacswiki.org/emacs/KeyboardMacros)
-  (global-set-key (kbd "C-l") 'call-last-kbd-macro)
-
-
-  ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
-  ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
-  (global-set-key (kbd "M-j") 'join-line)
-
-  ;; Spruce's Latex stuff: https://gist.github.com/spruceb/4209965bb7c335894b436002c720bf35
-  ;; latex
-  ;; TODO: fucks up prettify for some reason?
-  ;; (company-auctex-init)
-  ;; save buffer style info
-  (setq TeX-auto-save t)
-  ;; automatically parse style info
-  (setq TeX-parse-self t)
-  ;; no tabs
-  (setq TeX-auto-untabify t)
-
-  ;; (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  (setq reftex-plug-into-AUCTeX t)
-  (setq TeX-PDF-mode t)
-  ;; better name for local variable
-  (setq TeX-auto-local ".auctex-auto")
-  ;; auto revert pdf buffer
-  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
-  ;; show errors if there were any
-  (setq TeX-error-overview-open-after-TeX-run t)
-  ;; autocompletion
-  ;; don't confirm before cleaning files
-  (setq TeX-clean-confirm nil)
-  (defun tex-runall-clean ()
-    (interactive)
-    (TeX-command-run-all nil)
-    (TeX-clean))
-
-
-  (defun TeX-insert-pair (arg open-str close-str)
-    "Like TeX-insert-brackes but for any pair"
-    (interactive "P")
-    (if (TeX-active-mark)
-        (progn
-          (if (< (point) (mark)) (exchange-point-and-mark))
-          (insert close-str)
-          (save-excursion (goto-char (mark)) (insert open-str)))
-      (insert open-str)
-      (save-excursion
-        (if arg (forward-sexp (prefix-numeric-value arg)))
-        (insert close-str))))
-
-  ;; Make it so that I can insert inline/display math quickly
-  (defun LaTeX-insert-inline-math (arg)
-    (interactive "P")
-    (TeX-insert-pair arg "\\( " " \\)"))
-  (defun LaTeX-insert-display-math (arg)
-    (interactive "P")
-    (TeX-insert-pair arg "\\[ " " \\]"))
-  (defun LaTeX-mode-keybindings ()
-    (local-set-key (kbd "H-C-j") #'LaTeX-insert-inline-math)
-    (local-set-key (kbd "H-C-k") #'LaTeX-insert-display-math))
-  (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
-
-  (defun TeX-mode-keybindings ()
-    (local-set-key (kbd "C-c b") #'tex-runall-clean)
-    (local-set-key (kbd "H b") #'LaTeX-math-bar))
-  (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
-
-  (setq TeX-save-query nil)
-
-  ;; TODO: wtf is this
-  (setq latex-templates-directory "~/.emacs.d/templates/latex-templates/")
-  (defun latex-template ()
-    (interactive)
-    (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
-           (selection (completing-read "LaTeX Template: "
-                                       (mapcar #'file-name-base files))))
-      (insert-file-contents (concat latex-templates-directory selection ".tex"))))
-
-  (setq TeX-electric-sub-and-superscript t)
-  (setq LaTeX-math-menu-unicode t)
-  (defun my-latex-settings (interactive)
-    (latex-electric-env-pair-mode t) ; Highlight other (closing/opening) paren
-    (set-fill-column 70) ;Wrap lines at n characters
-    (turn-on-auto-fill) ; Automatically wrap lines when I go past n characters
-    (prettify-symbols-mode) ; Automatically render unicode
-    )
-  (add-hook 'LaTeX-mode-hook 'my-latex-settings)
-
-  (put 'TeX-command-extra-options 'safe-local-variable
-       (lambda (x) (string-equal x "-shell-escape")))
-#+END_SRC
-* Stuff added by Custom
+* Dealing with Custom
 #+BEGIN_SRC emacs-lisp :noweb tangle
     ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
     (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -1459,15 +1432,7 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
       (custom-set-variables
        <<ansi-colors>>
        <<enable-tron-dark>>
-       '(gud-gdb-command-name "gdb --annotate=1")
-       )
-
-      ;; custom-set-faces was added by Custom.
-      ;; If you edit it by hand, you could mess it up, so be careful.
-      ;; Your init file should contain only one such instance.
-      ;; If there is more than one, they won't work right.
-    (set-face-attribute 'fringe nil :background "#001519")
-    (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
+       '(gud-gdb-command-name "gdb --annotate=1"))
 #+END_SRC
 ** ANSI colors
 #+BEGIN_SRC emacs-lisp :noweb-ref ansi-colors :tangle yes
@@ -1537,15 +1502,19 @@ Suppose you made a file called =new-thing=
 ;; Actually load the external file:
 '(org-babel-load-file krista/my-new-config-file)
 #+END_EXAMPLE
-* Kinesis-specific keyboard issues
-My hands were hurting after long typing sessions. As a computer
-science student, I forsaw this as being a potentially-huge problem
-later on in life. So I decided to get a Kinesis Advantage 2 while I
-was still young, springy, and stupid enough to consider adapting my
-muscle memory to a new keyboard style. (...but fuck Dvorak. I ain't
-crazy enough for Dvorak.)  2 weeks later, my new Kinesis arrived. I
-plugged her into my Mac, and with a perverse glee, I started up
-Emacs to see what was broken. Here, I shall document those things.
+** Tangling issues
+If you don't know why your emacs is breaking, but suspect a tangling
+issue, then CHECK CONFIG.EL
+* TODO Kinesis-specific keyboard issues
+- NOTE: This section is WIP.
+- My hands were hurting after long typing sessions. As a computer
+  science student, I forsaw this as being a potentially-huge problem
+  later on in life. So I decided to get a Kinesis Advantage 2 while I
+  was still young, springy, and stupid enough to consider adapting my
+  muscle memory to a new keyboard style. (...but fuck Dvorak. I ain't
+  crazy enough for Dvorak.) 2 weeks later, my new Kinesis arrived. I
+  plugged her into my Mac, and with a perverse glee, I started up
+  Emacs to see what was broken. Here, I shall document those things.
 - First, I live in the U.S. This keyboard therefore shipped with a
   P.C. layout. I followed the instructions for "Mac Mode", as per
   the quickstart guide. It should be noted that before switching, my
