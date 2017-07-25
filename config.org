@@ -77,6 +77,24 @@ Note: tangling should be performed _AFTER_ use-package is installed
 ;(krista/new-config-file latex "latex")
 ;(org-babel-load-file krista/latex-config-file)
 #+END_SRC
+** Initial buffer to show at startup
+- When I start up emacs, I want to see my core directory instead of
+  the ugly default startup screen. However, I also want to be able to
+  run =emacs somefile.txt= and start editing =somefile.txt= right away. As
+  a compromise, I check if there were arguments passed in to emacs at
+  startup. If not, set the initial-buffer-choice to my core directory.
+  - [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Entering-Emacs.html#Entering-Emacs][More on initial buffers]]
+  - [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Command_002dLine-Arguments.html][More on command line arguments]]
+- Config (via [[https://emacs.stackexchange.com/a/21106][stackexchange]])
+  #+BEGIN_SRC emacs-lisp
+    (setq default-initial-buffer-choice "~/.emacs.d/config.org")
+    (defun my-after-init-hook ()
+      "Set initial buffer ONLY if no file is specified in command line args"
+      (when (eq 1 (length command-line-args))
+        (message "[krista] Setting initial buffer to default value")
+        (setq initial-buffer-choice default-initial-buffer-choice)))
+    (add-hook 'after-init-hook 'my-after-init-hook)
+  #+END_SRC
 * Evolution
 This is where I put things that help me modify my emacs install more efficiently
 ** Speedy-keys to open and eval my config file
