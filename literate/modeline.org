@@ -142,15 +142,15 @@ I want to see:
 - fancy-battery-critical
 ** Current config
 #+BEGIN_SRC emacs-lisp
-  (use-package fancy-battery
-    :diminish fancy-battery-mode
-    :config
+  ;(use-package fancy-battery
+  ;  :diminish fancy-battery-mode
+  ;  :config
     ;; Turn on fancy battery display, turn off emacs default
-    (fancy-battery-mode t)
-    (display-battery-mode -1)
+  ;  (fancy-battery-mode t)
+  ;  (display-battery-mode -1)
     ;; Show a percentage instead of "remaining time to charge/discharge"
-    (setq fancy-battery-show-percentage t)
-    )
+  ;  (setq fancy-battery-show-percentage t)
+  ;  )
 #+END_SRC
 * Fonts and colors
 #+BEGIN_SRC emacs-lisp

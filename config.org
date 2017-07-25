@@ -14,22 +14,8 @@
 How to: see spruce's config. Something something angle brackets source block titles
 * Bootstrap
  Get emacs off the ground!
-** Load-path
-*** TODO see if I can optimize startup by removing some of these?
-*** Config
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/elisp/")
-  (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
-  (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
-  (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
-  (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
-  ;; mode-icons
-  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620")
-  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620/icons")
-  ;; custom tron theme
-  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
-#+END_SRC
-** Tangling helpers
+** Set up tangling macros
+*** Tangling helpers
 #+BEGIN_SRC emacs-lisp
   (setq-default krista/org-config-directory "literate")
   (setq-default krista/org-config-dirpath
@@ -49,7 +35,22 @@ How to: see spruce's config. Something something angle brackets source block tit
          (add-to-list
           (quote krista/config-org-files) (quote (,name . ,filename)) t))))
 #+END_SRC
-** use-package: package management management
+** Setting up my load-path
+*** TODO see if I can optimize startup by removing some of these?
+*** Config
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/elisp/")
+  (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
+  (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
+  (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
+  (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
+  ;; mode-icons
+  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620")
+  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620/icons")
+  ;; custom tron theme
+  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
+#+END_SRC
+** Package management management
 [[https://github.com/jwiegley/use-package][use-package github]]
 #+BEGIN_SRC emacs-lisp
   (unless (package-installed-p 'use-package)
@@ -63,7 +64,6 @@ How to: see spruce's config. Something something angle brackets source block tit
 - This is because my external files have "use-package" statements,
   which won't work if use-package hasn't been loaded yet!
 *** OS-specific config
->>>>>>> mode-line-config
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file macOS "macOS")
 (when (eq system-type 'darwin)
@@ -159,7 +159,7 @@ This is where I put things that help me modify my emacs install more efficiently
 #+BEGIN_SRC emacs-lisp
 (setq suggest-key-bindings t)
 #+END_SRC
-** Order in which to display colors
+** Help me pick colors
 #+BEGIN_SRC emacs-lisp
 (setq list-colors-sort 'luminance)
 #+END_SRC
@@ -822,12 +822,7 @@ the display until you restart Emacs.
           ("h" "hw-style-guide" entry (file+olp "~/core/lists/tacky_hw_things.org" "tacky!")
            "* %?\n %i\n")
           ("g" "git-gotchas" entry (file+olp "~/core/lists/git-gotchas.org" "The gotchas")
-           "* %?\n %i\n")
-          ("f" "grammar feud" entry
-           (file+headline "~/core/fun/spruce/grammar_feud.org" "Disagreements")
-           "* Summary: %?
-         Disagreed-upon snippet: %^{snippet}
-         Link to source: %^{link}")))
+           "* %?\n %i\n")))
 #+END_SRC
 ** Org agenda
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
@@ -1326,7 +1321,7 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 #+END_SRC
 ** Slime (lisp)
 #+BEGIN_SRC emacs-lisp
-;  (load (expand-file-name "~/core/fun/builds_from_source/quicklisp/slime-helper.el"))
+;  (load (expand-file-name "~/core/dev/builds_from_source/quicklisp/slime-helper.el"))
   ;; The SBCL binary and command-line arguments
 ;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
 #+END_SRC
