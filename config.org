@@ -248,6 +248,103 @@ Source: https://www.emacswiki.org/emacs/BackwardKillLine
 #+BEGIN_SRC emacs-lisp
  (delete-selection-mode 1)
 #+END_SRC
+** Organize backup files
+*** Backups, proper
+#+BEGIN_SRC emacs-lisp
+(setq
+   backup-by-copying t      ; don't clobber symlinks
+   backup-directory-alist
+    '(("." . "~/.emacs.d/backup"))    ; don't litter my filesystem
+   delete-old-versions t
+   kept-new-versions 50
+   kept-old-versions 50
+   version-control t)       ; use versioned backups
+#+END_SRC
+*** Autosaves
+#+BEGIN_SRC emacs-lisp
+(setq auto-save-file-name-transforms
+      `((".*" "~/.emacs.d/autosaves" t)))
+(setq auto-save-interval 1000) ; 1000 characters
+(setq auto-save-timeout 60)    ; or 60 seconds
+#+END_SRC
+* Keybindings and accessibility
+#+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading keybindings and accessibility...")
+  ;; Change "yes or no" prompts to "y or n" prompts
+  (fset 'yes-or-no-p 'y-or-n-p)
+  ;; Toggle fullscreen with meta-return
+  (global-set-key (kbd "C-c C-<return>") 'toggle-frame-fullscreen)
+  ;; Speedy eval-buffer
+  (global-set-key (kbd "C-c b") 'eval-buffer)
+
+  ;; Go to *Messages* buffer
+  (defun switch-to-messages-buffer ()
+    "Open up the *Messages* buffer in a new frame"
+    (interactive)
+    (switch-to-buffer-other-window "*Messages*"))
+  (global-set-key (kbd "C-c m") 'switch-to-messages-buffer)
+
+  ;; count words in selected region
+  (global-set-key (kbd "C-c w") 'count-words)
+
+  ;; Speedy-open melpa
+  (global-set-key (kbd "C-c C-p") 'package-list-packages)
+
+  ;; Transpose line up or down
+  (defun move-line-up ()
+    "Move up the current line."
+    (interactive)
+    (transpose-lines 1)
+    (forward-line -2)
+    (indent-according-to-mode))
+  (defun move-line-down ()
+    "Move down the current line."
+    (interactive)
+    (forward-line 1)
+    (transpose-lines 1)
+    (forward-line -1)
+    (indent-according-to-mode))
+  (global-set-key [(meta p)]  'move-line-up)
+  (global-set-key [(meta n)]  'move-line-down)
+
+  ;; Don't add 2 spaces after my period, dammit!
+  (setq sentence-end-double-space nil)
+
+  ;; Enable "C-x u" for upcase-region, "C-x l" for downcase-region
+  (put 'upcase-region 'disabled nil)
+  (put 'downcase-region 'disabled nil)
+
+  ;; Comment line with M-;
+  ;; Source:
+  ;; <http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html>
+  (defun comment-dwim-line (&optional arg)
+    "Replacement for the comment-dwim command.
+         If no region is selected and current line is not blank and we are not at the end of the line,
+         then comment current line.
+         Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
+    (interactive "*P")
+    (comment-normalize-vars)
+    (if (and (not (region-active-p))
+             (not (looking-at "[ \t]*$")))
+        (comment-or-uncomment-region (line-beginning-position)
+                                     (line-end-position))
+      (comment-dwim arg)))
+  (global-set-key (kbd "M-;") 'comment-dwim-line)
+
+  ;; Make C-K clear text AND newline
+  (setq kill-whole-line t)
+
+      ;;; Start & end recording new keyboard macro
+  (global-set-key (kbd "M-[") 'kmacro-start-macro)
+  (global-set-key (kbd "M-]") 'kmacro-end-macro)
+      ;;; (TODO https://www.emacswiki.org/emacs/KeyboardMacros)
+  (global-set-key (kbd "C-l") 'call-last-kbd-macro)
+
+
+  ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
+  ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
+  (global-set-key (kbd "M-j") 'join-line)
+#+END_SRC
 * cheatsheet
 ** What is cheatsheet?
 Cheatsheet gives quick access to read-only buffers.
@@ -565,8 +662,9 @@ the display until you restart Emacs.
     <<org-inline-images>>
     (message "[krista] Loading org-tree-behavior...")
     <<org-tree-behavior>>
-    <<org-convenience>>
-    <<org-langs>>
+    (message "[krista] Loading org-code-snippets...")
+    <<org-code-snippets>>
+    (message "[krista] Loading org-links...")
     <<org-links>>
     :bind (
            ;; For use with my capture templates
@@ -1307,75 +1405,6 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
   (setq tab-width 8)
   ;(defvaralias 'c-basic-offset 'tab-width)
 #+END_SRC
-* Keybindings and accessibility
-#+BEGIN_SRC emacs-lisp
-  ;; Change "yes or no" prompts to "y or n" prompts
-  (fset 'yes-or-no-p 'y-or-n-p)
-  ;; Toggle fullscreen with meta-return
-  (global-set-key (kbd "C-c C-<return>") 'toggle-frame-fullscreen)
-  ;; Speedy eval-buffer
-  (global-set-key (kbd "C-c b") 'eval-buffer)
-
-  ;; count words in selected region
-  (global-set-key (kbd "C-c w") 'count-words)
-
-  ;; Speedy-open melpa
-  (global-set-key (kbd "H-p") 'package-list-packages)
-
-  ;; Transpose line up or down
-  (defun move-line-up ()
-    "Move up the current line."
-    (interactive)
-    (transpose-lines 1)
-    (forward-line -2)
-    (indent-according-to-mode))
-  (defun move-line-down ()
-    "Move down the current line."
-    (interactive)
-    (forward-line 1)
-    (transpose-lines 1)
-    (forward-line -1)
-    (indent-according-to-mode))
-  (global-set-key [(meta p)]  'move-line-up)
-  (global-set-key [(meta n)]  'move-line-down)
-
-  ;; Don't add 2 spaces after my period, dammit!
-  (setq sentence-end-double-space nil)
-
-  ;; Enable "C-x u" for upcase-region, "C-x l" for downcase-region
-  (put 'upcase-region 'disabled nil)
-  (put 'downcase-region 'disabled nil)
-
-  ;; Comment line with M-;
-  ;; Source:
-  ;; <http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html>
-  (defun comment-dwim-line (&optional arg)
-    "Replacement for the comment-dwim command.
-         If no region is selected and current line is not blank and we are not at the end of the line,
-         then comment current line.
-         Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
-    (interactive "*P")
-    (comment-normalize-vars)
-    (if (and (not (region-active-p))
-             (not (looking-at "[ \t]*$")))
-        (comment-or-uncomment-region (line-beginning-position)
-                                     (line-end-position))
-      (comment-dwim arg)))
-  (global-set-key (kbd "M-;") 'comment-dwim-line)
-
-  ;; Make C-K clear text AND newline
-  (setq kill-whole-line t)
-
-      ;;; Start & end recording new keyboard macro
-  (global-set-key (kbd "M-[") 'kmacro-start-macro)
-  (global-set-key (kbd "M-]") 'kmacro-end-macro)
-      ;;; (TODO https://www.emacswiki.org/emacs/KeyboardMacros)
-  (global-set-key (kbd "C-l") 'call-last-kbd-macro)
-
-
-  ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
-  ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
-  (global-set-key (kbd "M-j") 'join-line)
 
   ;; Spruce's Latex stuff: https://gist.github.com/spruceb/4209965bb7c335894b436002c720bf35
   ;; latex
@@ -1542,15 +1571,19 @@ Suppose you made a file called =new-thing=
 ;; Actually load the external file:
 '(org-babel-load-file krista/my-new-config-file)
 #+END_EXAMPLE
-* Kinesis-specific keyboard issues
-My hands were hurting after long typing sessions. As a computer
-science student, I forsaw this as being a potentially-huge problem
-later on in life. So I decided to get a Kinesis Advantage 2 while I
-was still young, springy, and stupid enough to consider adapting my
-muscle memory to a new keyboard style. (...but fuck Dvorak. I ain't
-crazy enough for Dvorak.)  2 weeks later, my new Kinesis arrived. I
-plugged her into my Mac, and with a perverse glee, I started up
-Emacs to see what was broken. Here, I shall document those things.
+** Tangling issues
+If you don't know why your emacs is breaking, but suspect a tangling
+issue, then CHECK CONFIG.EL
+* TODO Kinesis-specific keyboard issues
+- NOTE: This section is WIP.
+- My hands were hurting after long typing sessions. As a computer
+  science student, I forsaw this as being a potentially-huge problem
+  later on in life. So I decided to get a Kinesis Advantage 2 while I
+  was still young, springy, and stupid enough to consider adapting my
+  muscle memory to a new keyboard style. (...but fuck Dvorak. I ain't
+  crazy enough for Dvorak.) 2 weeks later, my new Kinesis arrived. I
+  plugged her into my Mac, and with a perverse glee, I started up
+  Emacs to see what was broken. Here, I shall document those things.
 - First, I live in the U.S. This keyboard therefore shipped with a
   P.C. layout. I followed the instructions for "Mac Mode", as per
   the quickstart guide. It should be noted that before switching, my
