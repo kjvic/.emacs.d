@@ -856,6 +856,21 @@ This is the place to put it
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-window-choices :tangle no
 (setq helm-full-frame nil)
 (setq helm-show-action-window-other-window nil)
+*** helm-recentf
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-recentf :tangle no
+  (message "[krista] Loading helm-recentf...")
+  (require 'recentf)
+  (recentf-mode t)
+  (setq recentf-max-menu-items 100)
+  (setq helm-recentf-max-menu-items 100)
+  ;;; Fast access to them recently-opened files
+  (global-set-key "\C-x\ \C-r" 'helm-recentf)
+
+  ;; Auto-save a list of recently-opened files
+  ;; NOTE: This ensures accurate recentf info in case of a
+  ;; less-than-graceful exit
+  (setq krista/recentf-save-interval 300)
+  (run-at-time (current-time) krista/recentf-save-interval 'recentf-save-list)
 #+END_SRC
 *** Override global keybindings (replace defaults)
 I like Helm so much that I'm willing to override the corresponding
