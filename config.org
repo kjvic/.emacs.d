@@ -267,6 +267,7 @@ Here's an example cheat. Follow this format in your config
 #+END_SRC
 ** Krista's cheatsheet entries
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading cheatsheet...")
   (use-package cheatsheet
     :config
     <<common-cheats>>
@@ -542,6 +543,7 @@ the display until you restart Emacs.
 ** [[https://joaotavora.github.io/yasnippet/snippet-organization.html#sec-1][Joatoavora tutorial (better)]]
 ** Configuration
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading yasnippet...")
   (use-package yasnippet
     :diminish yas-minor-mode
     :config
@@ -549,13 +551,19 @@ the display until you restart Emacs.
 #+END_SRC
 * Org
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading org-mode settings...")
   (use-package org
     :diminish org-indent-mode
     :config
+    (message "[krista] Loading org-aesthetics...")
     <<org-aesthetics>>
+    (message "[krista] Loading org-capture...")
     <<org-capture>>
+    (message "[krista] Loading org-agenda...")
     <<org-agenda>>
+    (message "[krista] Loading org-inline-images...")
     <<org-inline-images>>
+    (message "[krista] Loading org-tree-behavior...")
     <<org-tree-behavior>>
     <<org-convenience>>
     <<org-langs>>
@@ -820,6 +828,7 @@ Steam account
   - M-x commands (the default binding for execute-extended-command)
 ** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading helm...")
   (use-package helm
     :diminish helm-mode
     ;; helm-config is a bootstrapping package. According to
@@ -830,9 +839,16 @@ Steam account
     :config
     ;; Enable Helm globally
     (helm-mode t)
+    ;; (message "[krista] Loading helm-behavior...")
     <<helm-behavior>>
+    ;; (message "[krista] Loading helm-recentf...")
+    <<helm-recentf>>
+    ;; (message "[krista] Loading helm-window-choices...")
     <<helm-window-choices>>
-    :bind <<helm-replace-defaults>>
+    :bind 
+    <<helm-replace-defaults>>
+    ;; I know that having a paren on its own line is bad style. But it's
+    ;; necessary to have the org-tangle reference on its own line.
     )
 #+END_SRC
 *** Helm behavior
@@ -889,6 +905,7 @@ default Emacs functions. Also, Emacs defaults are "meh".
 - Press TAB for options (e.g. execute the selected command, look up
   documentation, etc.)
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading helm-descbinds...")
   (use-package helm-descbinds
     :diminish helm-descbinds-mode
     :config (setq helm-descbinds-mode t))
@@ -901,6 +918,7 @@ default Emacs functions. Also, Emacs defaults are "meh".
   - select lines with C-<space>, and /then/ do "C-c C-e" to edit just
     the /selected/ lines
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading helm-swoop...")
   (use-package helm-swoop
     :config <<helm-swoop-syntax-highlighting>>
     <<helm-swoop-window-splitting>>
@@ -999,6 +1017,7 @@ the mark if it was set before search started.
 ** TODO migrate this into a use-package statement
 [[http://stackoverflow.com/questions/27474936/color-schema-of-emacs-auto-complete-mode][color scheme]]
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading auto-complete...")
   (require 'auto-complete)
   (ac-config-default)
   (setq global-auto-complete-mode t)
@@ -1031,14 +1050,13 @@ Surround things with quotes/paren easily!
 * Projectile
 ** Projectile proper
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading projectile...")
   (use-package projectile
     :diminish
     :config
     (setq projectile-completion-system 'helm)
     (projectile-global-mode))
 #+END_SRC
-** Config
-
 ** Helm projectile
 #+BEGIN_SRC emacs-lisp
   (use-package helm-projectile
@@ -1051,6 +1069,7 @@ Surround things with quotes/paren easily!
 ** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
 ** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[krista] Loading magit...")
   (use-package magit
     :config
     <<magit-color-scheme>>
@@ -1088,6 +1107,7 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 * Programming
 ** C / C++
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading cc-mode...")
     (use-package cc-mode
       :bind (:map
              c-mode-base-map
@@ -1120,6 +1140,7 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 ** Python
 *** Pylint minor mode
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading python config...")
   (autoload 'pylint "pylint")
   (add-hook 'python-mode-hook 'pylint-add-menu-items)
   (add-hook 'python-mode-hook 'pylint-add-key-bindings)
@@ -1211,6 +1232,7 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 * Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading undo-tree...")
   (require 'undo-tree)
   (setq undo-tree-auto-save-history t)
   (global-undo-tree-mode)
@@ -1221,6 +1243,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 ** Popup face
 Among other things, popup is used in autocomplete. But if I ever want to do more, it'll still look pretty :D
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading popup-face...")
   (set-face-attribute 'popup-face nil
                       :background "#19343D"
                       :foreground "#a0ffff"
@@ -1253,6 +1276,7 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
 ** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
 ;; Show trailing whitespace by default
+(message "[krista] Loading whitespace preferences...")
 (use-package whitespace)
 (setq-default show-trailing-whitespace nil)
 ;(add-hook 'before-save-hook 'delete-trailing-whitespace)
