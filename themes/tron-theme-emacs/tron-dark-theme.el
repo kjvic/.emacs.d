@@ -74,11 +74,14 @@ Semantic, and Ansi-Color faces are included.")
       ;; Tango colors, these are used in Gnus-related faces, need yet to see
       ;; what it looks like
       (butter-2 "#edd400")
-      (orange-1 "#fcaf3e") (orange-2 "#f57900")
+      (orange-1 "#fcaf3e")
+      (orange-2 "#f57900")
       (choc-2 "#c17d11")
-      (cham-1 "#8ae234") (cham-2 "#73d216")
+      (cham-1 "#8ae234")
+      (cham-2 "#73d216")
       (blue-2 "#3465a4")
-      (plum-1 "#ad7fa8") (plum-2 "#75507b")
+      (plum-1 "#ad7fa8")
+      (plum-2 "#75507b")
       (plum-0 "#e6a8df"))
 
   (custom-theme-set-faces
@@ -209,7 +212,9 @@ Semantic, and Ansi-Color faces are included.")
       ,tron-gray-light
       ,tron-butter
       ,tron-seruline
-      ,tron-plum-light ,tron-green ,tron-teal])))
+      ,tron-plum-light
+      ,tron-green
+      ,tron-teal])))
 
 (setq fancy-splash-image (expand-file-name "~/.emacs.d/themes/emac-tron-logo-600.png"))
 (provide-theme 'tron-dark)
