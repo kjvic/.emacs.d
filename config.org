@@ -14,7 +14,50 @@
 How to: see spruce's config. Something something angle brackets source block titles
 * Bootstrap
  Get emacs off the ground!
-** Set up tangling macros
+** Load-path
+*** TODO see if I can optimize startup by removing some of these?
+*** Config
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/elisp/")
+  (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
+  (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
+  (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
+  (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
+  ;; mode-icons
+  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620")
+  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620/icons")
+  ;; custom tron theme
+  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
+#+END_SRC
+** use-package: package management management
+[[https://github.com/jwiegley/use-package][use-package github]]
+#+BEGIN_SRC emacs-lisp
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  ;; All packages in a use-package macro should be automagically installed
+  (setq use-package-always-ensure t)
+#+END_SRC
+** Byte-compile external files (if necessary)
+- How to byte-compile your entire .emacs.d from the command line:
+  #+BEGIN_EXAMPLE 
+  emacs -batch -f batch-byte-compile ~/.emacs.d/**/*.el
+  #+END_EXAMPLE
+  - [[http://emacsredux.com/blog/2013/06/25/boost-performance-by-leveraging-byte-compilation/][Source]]
+- auto-compile mode
+  #+BEGIN_SRC emacs-lisp
+    ;;; init.el --- user init file      -*- no-byte-compile: t -*-
+    (use-package auto-compile
+      :config (auto-compile-on-load-mode))
+    (setq load-prefer-newer t)
+  #+END_SRC
+** Literate programming support
+- NOTE: you /must/ have each tangle block on a new line in order for it
+  to be tangled correctly!!!!
+- NOTE: It is important that use-package has been loaded before this
+  block is executed
+- This is because my external files have "use-package" statements,
+  which won't work if use-package hasn't been loaded yet!
 *** Tangling helpers
 #+BEGIN_SRC emacs-lisp
   (setq-default krista/org-config-directory "literate")
@@ -35,51 +78,27 @@ How to: see spruce's config. Something something angle brackets source block tit
          (add-to-list
           (quote krista/config-org-files) (quote (,name . ,filename)) t))))
 #+END_SRC
-** Setting up my load-path
-*** TODO see if I can optimize startup by removing some of these?
-*** Config
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/elisp/")
-  (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
-  (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
-  (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
-  (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
-  ;; mode-icons
-  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620")
-  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620/icons")
-  ;; custom tron theme
-  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
-#+END_SRC
-** Package management management
-[[https://github.com/jwiegley/use-package][use-package github]]
-#+BEGIN_SRC emacs-lisp
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
-  ;; All packages in a use-package macro should be automagically installed
-  (setq use-package-always-ensure t)
-#+END_SRC
-** Tangle external files
-- Note: tangling should be performed _AFTER_ use-package is installed
+*** Now actually tangle the external files
+- NOTE: It is important that use-package has been loaded before this
+  block is executed
 - This is because my external files have "use-package" statements,
   which won't work if use-package hasn't been loaded yet!
-*** OS-specific config
+**** OS-specific config
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file macOS "macOS")
 (when (eq system-type 'darwin)
   (org-babel-load-file krista/macOS-config-file))
 #+END_SRC
-*** Modeline
+**** Modeline
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file modeline "modeline")
 (org-babel-load-file krista/modeline-config-file)
 #+END_SRC
-*** LaTeX
+**** LaTeX
 #+BEGIN_SRC emacs-lisp
 ;(krista/new-config-file latex "latex")
 ;(org-babel-load-file krista/latex-config-file)
 #+END_SRC
-** Byte-compile external files (if necessary)
 ** Initial buffer to show at startup
 - When I start up emacs, I want to see my core directory instead of
   the ugly default startup screen. However, I also want to be able to
@@ -724,7 +743,7 @@ the display until you restart Emacs.
            )
     )
 #+END_SRC
-** Help! Tips from http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html
+** Tips from http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html
 *** todo / schedule / deadline
 **** C-c C-t :: org-todo
 **** C-c C-s :: org-schedule
@@ -867,13 +886,11 @@ Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to
   ;;       ;  (forward-line (- 1 arg))
   ;;         (move-to-column (+ outline-level 2))
   ;; ;)
-
   ;;       ))
-
   ;;   (let ((orig-point (point)))
   ;;     (back-to-indentation)
   ;;     (when (= orig-point (point))
-  ;;       (move-beginning-of-line 1))))
+  ;;       (move-beginning-of-line 1)))
 
   ;;   ;; remap C-a to `smarter-move-beginning-of-line'
   ;;   (global-set-key [remap move-beginning-of-line]
@@ -928,7 +945,7 @@ Org link workflow:
   (setf org-make-link-description-function #'org-link-describe)
 #+END_SRC
 * Helm
-** Introduction
+** Introduction to helm
 - Definition of "helm": noun - a tiller or wheel and any associated
   equipment for steering a ship or boat.
   - "she stayed at the helm, alert for tankers"
@@ -1390,15 +1407,15 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
 #+END_SRC
 * Dealing with Custom
 #+BEGIN_SRC emacs-lisp :noweb tangle
-    ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
-    (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-    ;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
-    ;; (load custom-file :noerror)
+  ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  ;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
+  ;; (load custom-file :noerror)
 
-      (custom-set-variables
-       <<ansi-colors>>
-       <<enable-tron-dark>>
-       '(gud-gdb-command-name "gdb --annotate=1"))
+  (custom-set-variables
+   <<ansi-colors>>
+   <<enable-tron-dark>>
+   '(gud-gdb-command-name "gdb --annotate=1"))
 #+END_SRC
 ** ANSI colors
 #+BEGIN_SRC emacs-lisp :noweb-ref ansi-colors :tangle yes
