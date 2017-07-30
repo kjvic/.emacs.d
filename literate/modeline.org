@@ -32,13 +32,6 @@
                 (funcall make-result lspaces rspaces)))))
       (error (format "[%s]: (%s) (%s) (%s)" err left center right))))
 
-  ;; Strings which display the buffer's modified status 
-  ;; 
-  ;; Some advice: make these the same length, so the name of your buffer
-  ;;              won't jump when you modify its contents!
-  (setq krista-buffer-modified-string "Δ")
-  (setq krista-buffer-readonly-string "R")
-  (setq krista-buffer-unchanged-string "≣")
   (defun krista-get-buffer-modified-status() 
     ;; What to display if the buffer is read-only
     '(:eval
@@ -54,12 +47,21 @@
           ;; hasn't been modified
           '(:eval (propertize krista-buffer-unchanged-string
                               'face 'font-lock-comment-face))))))
+    ;; Strings which display the buffer's modified status 
+    ;; 
+    ;; Some advice: make these the same length, so the name of your buffer
+    ;;              won't jump when you modify its contents!
 
   ;; To customize the mode line, make a list of all of the things that
   ;; should be displayed (listed in order from left to right)
   ;; See also: https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Format.html#Mode-Line-Format
   (defvar krista-modeline-format
     (list
+    ;; See also: https://gist.github.com/lateau/4511988
+    ;; (setq krista-buffer-modified-string "Δ △")
+    (setq krista-buffer-modified-string "≠") ; ≇ ≠
+    (setq krista-buffer-readonly-string "≝") ; ≝, ↯, ≔, ⟂, ∅, , ※
+    (setq krista-buffer-unchanged-string "=") ; ≅ =
 
      ;; Leading space so you don't run into the end of the mode line
      mode-line-front-space
