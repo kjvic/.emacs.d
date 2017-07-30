@@ -1173,22 +1173,8 @@ the mark if it was set before search started.
 
   (diminish auto-complete-mode)
 #+END_SRC
-* Flycheck - syntax checking
-** Config
 #+BEGIN_SRC emacs-lisp
-  ;;   (use-package flycheck
-  ;;     :init (global-flycheck-mode)
-  ;;     :diminish)
-  ;; ;; Permanently enable syntax checking
-  ;; (add-hook 'after-init-hook #'global-flycheck-mode)
 #+END_SRC
-** Usage
-via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
-- =C-c ! n= :: go forward to next error
-- =C-c ! p= :: go backward to prev. error
-- =C-c ! l= :: show a popup list of errors
-* TODO install ~Corral~
-Surround things with quotes/paren easily!
 * Projectile
 ** Projectile proper
 #+BEGIN_SRC emacs-lisp
@@ -1323,16 +1309,6 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 ** haskell
 #+BEGIN_SRC emacs-lisp
 (use-package haskell-mode)
-#+END_SRC
-* TODO Emacs/W3 Configuration
-#+BEGIN_SRC emacs-lisp
-;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
-;    (condition-case () (require 'w3-auto "w3-auto") (error nil))
-#+END_SRC
-* TODO multiple-cursors
-#+BEGIN_SRC emacs-lisp
-  ;(use-package multiple-cursors
-  ;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
 #+END_SRC
 * Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
@@ -1495,7 +1471,8 @@ Suppose you made a file called =new-thing=
 ** Tangling issues
 If you don't know why your emacs is breaking, but suspect a tangling
 issue, then CHECK CONFIG.EL
-* TODO Kinesis-specific keyboard issues
+* Further plans / WIP
+** Add Kinesis-specific keyboard issues
 - NOTE: This section is WIP.
 - My hands were hurting after long typing sessions. As a computer
   science student, I forsaw this as being a potentially-huge problem
@@ -1510,7 +1487,6 @@ issue, then CHECK CONFIG.EL
   the quickstart guide. It should be noted that before switching, my
   layout was modified from the stock OS X layout as follows:
 - Global modifications:
-* Further plans
 ** More granular version control
 - I've noticed that when coding in a compiled language such as C/C++,
   I often end up in this workflow:
@@ -1528,12 +1504,34 @@ issue, then CHECK CONFIG.EL
   record.
 - Ideally, the package would output an org doc with an undo-tree -like
   interface for retracing my steps in debugging
-** Byte-compile external files
-- Over the years, it has occasionally been necessary to develop on
-  Windows. This is not the ideal platform for emacs or unix-like
-  utilities, but I make do. But one of the things that gets me the
-  most is my emacs performance. My windows emacs config is my sliver
-  of unixy heaven, but it's hard to enjoy it (and show my coworkers
-  what they're missing!) when it takes 10 seconds to start up every
-  time.
 ** Set up steam integration with emacs
+** Flycheck
+*** Config
+#+BEGIN_EXAMPLE
+  ;;   (use-package flycheck
+  ;;     :init (global-flycheck-mode)
+  ;;     :diminish)
+  ;; ;; Permanently enable syntax checking
+  ;; (add-hook 'after-init-hook #'global-flycheck-mode)
+#+END_EXAMPLE
+*** Usage
+via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
+- =C-c ! n= :: go forward to next error
+- =C-c ! p= :: go backward to prev. error
+- =C-c ! l= :: show a popup list of errors
+** Emacs/W3
+#+BEGIN_SRC emacs-lisp
+;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
+;    (condition-case () (require 'w3-auto "w3-auto") (error nil))
+#+END_SRC
+** multiple-cursors
+#+BEGIN_SRC emacs-lisp
+  ;(use-package multiple-cursors
+  ;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
+#+END_SRC
+
+** Install Corral
+- Surround things with quotes/paren easily!
+- Note: the reason why I don't have this installed now is because the
+  default kbds interfere with my kbds for recording macros
+** Add more to yasnippet
