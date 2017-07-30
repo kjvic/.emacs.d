@@ -1548,3 +1548,6 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
 - Note: the reason why I don't have this installed now is because the
   default kbds interfere with my kbds for recording macros
 ** Add more to yasnippet
+** Install the alert package
+- provides Growl-like notifications
+- would be useful for org-calendar
