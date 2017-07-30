@@ -1467,7 +1467,7 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
 #+BEGIN_SRC emacs-lisp :noweb-ref enable-tron-dark :tangle yes
   '(custom-enabled-themes (quote (tron-dark)))
   '(custom-safe-themes
-    (quote ("d22659f2535a5e8000f50b3bd405f12ce918793191cda410a4f997c309b37247"
+    (quote ("e6489cbe9a810a2b1e0693e3e1f63dd7ce12a95347fbaa3d382494ca7393102c"
             tron-dark
             default)))
 #+END_SRC
