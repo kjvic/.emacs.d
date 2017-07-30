@@ -1188,7 +1188,38 @@ the mark if it was set before search started.
 
   (diminish auto-complete-mode)
 #+END_SRC
+** Popup face
+Among other things, popup is used in autocomplete. But if I ever want to do more, it'll still look pretty :D
 #+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading popup-face...")
+  (set-face-attribute 'popup-face nil
+                      :background "#19343D"
+                      :foreground "#a0ffff"
+                      :weight 'light
+                      :family "Fira code")
+
+  (set-face-attribute 'popup-menu-face nil
+                      :inherit 'popup-face
+                      :family "Fira code")
+
+  (set-face-attribute 'popup-menu-selection-face nil
+                      :inherit 'default
+                      :background "#033021"
+                      :foreground "#3fffff"
+                      :weight 'light
+                      :family "Fira Code")
+
+  (set-face-attribute 'popup-scroll-bar-foreground-face nil
+                      :background "#19343D")
+
+  (set-face-attribute 'popup-summary-face nil
+                       :inherit 'popup-face
+                       :foreground "slate blue")
+
+  (set-face-attribute 'popup-tip-face nil
+                      :background "dark slate gray"
+                      :foreground "aquamarine"
+                      :family "Fira Code")
 #+END_SRC
 * Projectile
 ** Projectile proper
@@ -1336,39 +1367,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
                '("." . "~/.emacs.d/cache/undo"))
 #+END_SRC
 * Cosmetics
-** Popup face
-Among other things, popup is used in autocomplete. But if I ever want to do more, it'll still look pretty :D
-#+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading popup-face...")
-  (set-face-attribute 'popup-face nil
-                      :background "#19343D"
-                      :foreground "#a0ffff"
-                      :weight 'light
-                      :family "Fira code")
-
-  (set-face-attribute 'popup-menu-face nil
-                      :inherit 'popup-face
-                      :family "Fira code")
-
-  (set-face-attribute 'popup-menu-selection-face nil
-                      :inherit 'default
-                      :background "#033021"
-                      :foreground "#3fffff"
-                      :weight 'light
-                      :family "Fira Code")
-
-  (set-face-attribute 'popup-scroll-bar-foreground-face nil
-                      :background "#19343D")
-
-  (set-face-attribute 'popup-summary-face nil
-                       :inherit 'popup-face
-                       :foreground "slate blue")
-
-  (set-face-attribute 'popup-tip-face nil
-                      :background "dark slate gray"
-                      :foreground "aquamarine"
-                      :family "Fira Code")
-#+END_SRC
 ** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
 ;; Show trailing whitespace by default
