@@ -966,28 +966,22 @@ Org link workflow:
   - M-x commands (the default binding for execute-extended-command)
 ** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
-  (message "[krista] Loading helm...")
-  (use-package helm
-    :diminish helm-mode
-    ;; helm-config is a bootstrapping package. According to
-    ;;   https://github.com/emacs-helm/helm/issues/744 it's not
-    ;;   required, but I checked out the source, and it looks like it
-    ;;   provides some core niceties that I've enjoyed
-    :init (require 'helm-config)
-    :config
-    ;; Enable Helm globally
-    (helm-mode t)
-    ;; (message "[krista] Loading helm-behavior...")
-    <<helm-behavior>>
-    ;; (message "[krista] Loading helm-recentf...")
-    <<helm-recentf>>
-    ;; (message "[krista] Loading helm-window-choices...")
-    <<helm-window-choices>>
-    :bind 
-    <<helm-replace-defaults>>
-    ;; I know that having a paren on its own line is bad style. But it's
-    ;; necessary to have the org-tangle reference on its own line.
-    )
+    (message "[krista] Loading helm...")
+    (use-package helm
+      :diminish helm-mode
+      ;; helm-config is a bootstrapping package. According to
+      ;;   https://github.com/emacs-helm/helm/issues/744 it's not
+      ;;   required, but I checked out the source, and it looks like it
+      ;;   provides some core niceties that I've enjoyed
+      :init (require 'helm-config)
+      :config
+      ;; Enable Helm globally
+      (helm-mode t)
+      <<helm-behavior>>
+      <<helm-recentf>>
+      :bind (
+             <<helm-replace-defaults>>
+             ))
 #+END_SRC
 *** Helm behavior
 Sometimes, I just want to tweak something about how Helm functions.
@@ -998,17 +992,6 @@ This is the place to put it
 ;; Note: ff is *F*ind *F*ile
 (setq helm-ff-auto-update-initial-value t)
 #+END_SRC
-*** Helm windows
-**** TODO document these settings better
-**** Config
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-window-choices :tangle no
-(setq helm-full-frame nil)
-(setq helm-show-action-window-other-window nil)
-
-;; Don't let helm hijack your window!
-;; Source: https://github.com/emacs-helm/helm/issues/169
-(setq helm-split-window-default-side 'same)
-#+END_SRC
 *** helm-recentf
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-recentf :tangle no
   (message "[krista] Loading helm-recentf...")
@@ -1016,24 +999,6 @@ This is the place to put it
   (recentf-mode t)
   (setq recentf-max-menu-items 100)
   (setq helm-recentf-max-menu-items 100)
-  ;;; Fast access to them recently-opened files
-  (global-set-key "\C-x\ \C-r" 'helm-recentf)
-
-  ;; Auto-save a list of recently-opened files
-  ;; NOTE: This ensures accurate recentf info in case of a
-  ;; less-than-graceful exit
-  (setq krista/recentf-save-interval 300)
-  (run-at-time (current-time) krista/recentf-save-interval 'recentf-save-list)
-#+END_SRC
-*** helm-recentf
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-recentf :tangle no
-  (message "[krista] Loading helm-recentf...")
-  (require 'recentf)
-  (recentf-mode t)
-  (setq recentf-max-menu-items 100)
-  (setq helm-recentf-max-menu-items 100)
-  ;;; Fast access to them recently-opened files
-  (global-set-key "\C-x\ \C-r" 'helm-recentf)
 
   ;; Auto-save a list of recently-opened files
   ;; NOTE: This ensures accurate recentf info in case of a
@@ -1047,6 +1012,7 @@ default Emacs functions. Also, Emacs defaults are "meh".
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-replace-defaults :tangle no
   ("M-x" . helm-M-x)
   ("C-x C-f" . helm-find-files)
+  ("C-x C-r" . helm-recentf)
 
   ;; helm-mini shows recentf, the buffers list, and a "create buffer" prompt
   ("C-x b" . helm-mini)
@@ -1080,13 +1046,12 @@ default Emacs functions. Also, Emacs defaults are "meh".
   (message "[krista] Loading helm-swoop...")
   (use-package helm-swoop
     :config <<helm-swoop-syntax-highlighting>>
-    <<helm-swoop-window-splitting>>
     <<helm-swoop-reactivate-mark>>
     <<helm-swoop-behavior>>
     <<helm-swoop-aesthetics>>
     :bind 
     ;; Use swoop instead of isearch
-    ("C-s" . helm-swoop-without-pre-input)
+    (("C-s" . helm-swoop-without-pre-input)
     ;; r is for "Reuse", b/c this reuses the input from the last query
     ("C-r" . helm-swoop)
 
@@ -1097,7 +1062,7 @@ default Emacs functions. Also, Emacs defaults are "meh".
     ;; Bindings so I can still use isearch (if for some crazy reason, I
     ;; want to use isearch rather than swoop)
     ("C-c s" . isearch-forward)
-    ("C-c r" . isearch-backward)
+    ("C-c r" . isearch-backward))
     )
 #+END_SRC
 *** config
@@ -1106,25 +1071,6 @@ Retain syntax highlighting in swoop. It's a tradeoff between this and
 speed, but I think that it's worth the (teeny!) speed hit.
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-syntax-highlighting :tangle no
   (setq helm-swoop-speed-or-color t)
-#+END_SRC
-**** Swoop Window Splitting
-Match the window-splitting conventions from helm proper.
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-window-splitting :tangle no
-
-  ;; Split windows in half like *this*:
-  ;; ------------
-  ;; |          |
-  ;; |  Buffer  |
-  ;; |          |
-  ;; ------------
-  ;; |   Helm   |
-  ;; ------------
-  (setq helm-swoop-split-direction 'split-window-vertically)
-
-  ;; Even if there are multiple windows open, /still/ split the window
-  ;; in half
-  (setq helm-swoop-split-with-multiple-windows t)
-
 #+END_SRC
 **** Mark Reactivation
 Source: Spruce Bondera's fabulous config page For some reason
@@ -1170,7 +1116,59 @@ the mark if it was set before search started.
   (set-face-attribute 'helm-swoop-target-word-face nil
                       :background "#7700ff"
                       :foreground "white")
+#+END_SRC
+** Helm window splitting
+#+BEGIN_SRC emacs-lisp
+  ;; nil => split within this window
+  ;;(setq helm-full-frame nil)
+  ;; If nil don’t split and replace helm-buffer by the action buffer
+  ;; in same window.
+  ;;(setq helm-show-action-window-other-window nil)
 
+  ;; If you have your frame like this:
+  ;;  --------------
+  ;;  |      |     |
+  ;;  |      |     |
+  ;;  |  *   |     |
+  ;;  |active|other|
+  ;;  --------------
+  ;;
+  ;; and then do M-x, I do NOT want helm to do this:
+  ;;  --------------
+  ;;  |      |     |
+  ;;  |      |     |
+  ;;  |      |  *  |
+  ;;  |active|helm |
+  ;;  --------------
+  ;; 
+  ;; Instead, I want helm to do THIS:
+  ;;  --------------
+  ;;  |      |     |
+  ;;  |active|     |
+  ;;  |------|     |
+  ;;  |helm *|other|
+  ;;  --------------
+  ;;
+  ;; Source: https://github.com/emacs-helm/helm/issues/169
+  ;; This line keeps helm on the same side
+  ;; (setq helm-split-window-default-side 'same)
+  ;; open helm buffer inside current window, don't occupy whole other window
+  (setq helm-split-window-in-side-p t)
+
+    ;; Split windows in half like *this*:
+    ;; ------------
+    ;; |          |
+    ;; |  Buffer  |
+    ;; |          |
+    ;; ------------
+    ;; |   Helm   |
+    ;; ------------
+    ;;(setq helm-swoop-split-direction 'split-window-horizontally)
+
+    ;; Even if there are multiple windows open, /still/ split the window
+    ;; in half
+    ;;(setq helm-swoop-split-with-multiple-windows t)
+  (setq-default helm-display-function 'helm-default-display-buffer)
 #+END_SRC
 * Auto-complete
 ** TODO migrate this into a use-package statement
