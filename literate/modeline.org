@@ -2,126 +2,137 @@
 * Mode line format
 ** Mode line format
 #+BEGIN_SRC emacs-lisp
-  ;; https://emacs.stackexchange.com/a/16660
-  (defun mode-line-align (left center right &optional lpad rpad)
-    "Return a string the width of the current window with
-      LEFT, CENTER, and RIGHT spaced out accordingly, LPAD and RPAD,
-      can be used to add a number of spaces to the front and back of the string."
-    (condition-case err
-        (let* ((left (if lpad (concat (make-string lpad ?\s) left) left))
-               (right (if rpad (concat right (make-string rpad ?\s)) right))
-               (width (apply '+ (window-width)
-                             (let ((m (window-margins)))
-                               (list (or (car m) 0) (or (cdr m) 0)))))
-               (total-length (+ (length left) (length center) (length right) 2)))
-          (when (> total-length width) (setq left "" right ""))
-          (let ((left-space (/ (- width (length center)) 2))
-                (make-result #'(lambda (lspaces rspaces)
-                                 (concat left (make-string lspaces ?\s)
-                                         center
-                                         (make-string rspaces ?\s)
-                                         right))))
-            (if (> (length left) left-space)
-                (let* ((center-space (+ (- width total-length) 2))
-                       (lspaces (max (/ center-space 2) 1))
-                       (rspaces (max (- center-space lspaces) 1)))
-                  (funcall make-result lspaces rspaces))
-              (let* ((right-space (- width left-space (length center)))
-                     (lspaces (max (- left-space (length left)) 1))
-                     (rspaces (max (- right-space (length right)) 1 0)))
-                (funcall make-result lspaces rspaces)))))
-      (error (format "[%s]: (%s) (%s) (%s)" err left center right))))
+    ;; https://emacs.stackexchange.com/a/16660
+    (defun mode-line-align (left center right &optional lpad rpad)
+      "Return a string the width of the current window with
+          LEFT, CENTER, and RIGHT spaced out accordingly, LPAD and RPAD,
+          can be used to add a number of spaces to the front and back of the string."
+      (condition-case err
+          (let* ((left (if lpad (concat (make-string lpad ?\s) left) left))
+                 (right (if rpad (concat right (make-string rpad ?\s)) right))
+                 (width (apply '+ (window-width)
+                               (let ((m (window-margins)))
+                                 (list (or (car m) 0) (or (cdr m) 0)))))
+                 (total-length (+ (length left) (length center) (length right) 2)))
+            (when (> total-length width) (setq left "" right ""))
+            (let ((left-space (/ (- width (length center)) 2))
+                  (make-result #'(lambda (lspaces rspaces)
+                                   (concat left (make-string lspaces ?\s)
+                                           center
+                                           (make-string rspaces ?\s)
+                                           right))))
+              (if (> (length left) left-space)
+                  (let* ((center-space (+ (- width total-length) 2))
+                         (lspaces (max (/ center-space 2) 1))
+                         (rspaces (max (- center-space lspaces) 1)))
+                    (funcall make-result lspaces rspaces))
+                (let* ((right-space (- width left-space (length center)))
+                       (lspaces (max (- left-space (length left)) 1))
+                       (rspaces (max (- right-space (length right)) 1 0)))
+                  (funcall make-result lspaces rspaces)))))
+        (error (format "[%s]: (%s) (%s) (%s)" err left center right))))
 
-  (defun krista-get-buffer-modified-status() 
-    ;; What to display if the buffer is read-only
-    '(:eval
-      (if buffer-read-only
-          '((:eval (propertize krista-buffer-readonly-string
-                               'Face 'font-lock-keyword-face)))
-        ;; What to display if the buffer has been modified since the
-        ;; last save
-        (if (buffer-modified-p)
-            '((:eval (propertize krista-buffer-modified-string
-                                 'face 'font-lock-warning-face)))
-          ;; What to display if the buffer is not read-only, but also
-          ;; hasn't been modified
-          '(:eval (propertize krista-buffer-unchanged-string
-                              'face 'font-lock-comment-face))))))
     ;; Strings which display the buffer's modified status 
     ;; 
     ;; Some advice: make these the same length, so the name of your buffer
     ;;              won't jump when you modify its contents!
 
-  ;; To customize the mode line, make a list of all of the things that
-  ;; should be displayed (listed in order from left to right)
-  ;; See also: https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Format.html#Mode-Line-Format
-  (defvar krista-modeline-format
-    (list
     ;; See also: https://gist.github.com/lateau/4511988
     ;; (setq krista-buffer-modified-string "Δ △")
     (setq krista-buffer-modified-string "≠") ; ≇ ≠
     (setq krista-buffer-readonly-string "≝") ; ≝, ↯, ≔, ⟂, ∅, , ※
     (setq krista-buffer-unchanged-string "=") ; ≅ =
 
-     ;; Leading space so you don't run into the end of the mode line
-     mode-line-front-space
+    (defun krista-get-buffer-modified-status() 
+      ;; What to display if the buffer is read-only
+      '(:eval
+        (if buffer-read-only
+            '((:eval (propertize krista-buffer-readonly-string
+                                 'face 'font-lock-keyword-face)))
+          ;; What to display if the buffer has been modified since the
+          ;; last save
+          (if (buffer-modified-p)
+              '((:eval (propertize krista-buffer-modified-string
+                                   'face 'font-lock-warning-face)
+                       (set-face-attribute 'krista-buffer-modified-string nil
+                                           :width "expanded")))
+            ;; What to display if the buffer is not read-only, but also
+            ;; hasn't been modified
+            '(:eval (propertize krista-buffer-unchanged-string
+                                'face 'font-lock-comment-face))))))
 
-     ;; Display buffer's local modified status
-     ;; --------------------------------
-     '(:eval
-      (if buffer-read-only
-          '((:eval (propertize krista-buffer-readonly-string
-                               'Face 'font-lock-keyword-face)))
-        ;; What to display if the buffer has been modified since the
-        ;; last save
-        (if (buffer-modified-p)
-            '((:eval (propertize krista-buffer-modified-string
-                                 'face 'font-lock-warning-face)))
-          ;; What to display if the buffer is not read-only, but also
-          ;; hasn't been modified
-          '(:eval (propertize krista-buffer-unchanged-string
-                              'face 'font-lock-comment-face)))))
+    ;; To customize the mode line, make a list of all of the things that
+    ;; should be displayed (listed in order from left to right)
+    ;; See also: https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Format.html#Mode-Line-Format
+    (defvar krista-modeline-format
+      (list
 
-     ;; Padding
-     " "
-     ;; Git symbol
-     ;; TODO: see [[help:vc-state]] to get rid of this when not in a project dir
-     '(:eval (propertize "" 'face 'font-lock-builtin-face))
-     ;; Branch name (note: the value of vc-mode is modified later)
-     vc-mode
-     ;; Buffer/file name (just this file... not the whole path)
-     '(:eval (propertize " %12b" 'face '(:foreground "cyan")))
+       ;; Leading space so you don't run into the end of the mode line
+       mode-line-front-space
+
+       ;; Display buffer's local modified status
+       ;; --------------------------------
+       '(:eval
+         (if buffer-read-only
+             '((:eval (propertize krista-buffer-readonly-string
+                                  'face 'font-lock-doc-face)))
+           ;; What to display if the buffer has been modified since the
+           ;; last save
+           (if (buffer-modified-p)
+               '((:eval (propertize krista-buffer-modified-string
+                                    'face 'font-lock-warning-face)))
+             ;; What to display if the buffer is not read-only, but also
+             ;; hasn't been modified
+             '(:eval (propertize krista-buffer-unchanged-string
+                                 'face 'font-lock-comment-face)))))
+
+       ;; Padding
+       " "
+       ;; Version control string
+       '(:eval (propertize (if (stringp vc-mode) vc-mode
+                             (format "%-12s" "\ ")) ; Default case (no version control)
+                             'face 'font-lock-builtin-face))
+       ;; Buffer/file name (just this file... not the whole path)
+       '(:eval (propertize " %12b" 'face '(:foreground "cyan")))
+       ;; Line:column
+       '(:eval (propertize " %4l | %2c" 'face 'font-lock-comment-face))
+       "    "
+       '(:eval (propertize "𝔞𝔩𝔩 𝔞𝔡𝔳𝔢𝔯𝔰𝔦𝔱𝔶 𝔦𝔰 𝔱𝔯𝔞𝔦𝔫𝔦𝔫𝔤" 
+                           'face '(:foreground "#033021")))
+
+       ;; Size of file, in human-readable terms (e.g. 43k)
+       " %I "
+
+       " "
+       mode-name
+       " "
+       mode-line-misc-info
+       " "
+       mode-line-end-spaces))
 
 
-     ;; Line:column
-     " (%l,%2c)"
-
-     ;; Size of file, in human-readable terms (e.g. 43k)
-     " %I "
-
-     " "
-     mode-name
-     " "
-     mode-line-misc-info
-     " "
-     '(:eval (propertize "𝔞𝔩𝔩 𝔞𝔡𝔳𝔢𝔯𝔰𝔦𝔱𝔶 𝔦𝔰 𝔱𝔯𝔞𝔦𝔫𝔦𝔫𝔤" 'face '(:foreground "#033021")))
-     mode-line-end-spaces))
-
-
-  (setq-default mode-line-format '(:eval krista-modeline-format))
-  ;; Reload the mode line config whenever you reload this file
-  ;; 
-  ;; IMPORTANT: uncomment when you're tweaking the modeline, so you
-  ;; don't have to restart emacs to see your changes take effect.
-  (force-mode-line-update t)
+    (setq-default mode-line-format '(:eval krista-modeline-format))
+    ;; Reload the mode line config whenever you reload this file
+    ;; 
+    ;; IMPORTANT: uncomment when you're tweaking the modeline, so you
+    ;; don't have to restart emacs to see your changes take effect.
+    (force-mode-line-update t)
 #+END_SRC
 ** Remove the word "Git" from my version-control string
 *** The config itself
 #+BEGIN_SRC emacs-lisp
   (defadvice vc-mode-line (after krista-strip-backend () activate)
     (when (stringp vc-mode)
-      (let ((vc-no-backend (replace-regexp-in-string "^ Git." " " vc-mode)))
-            (setq vc-mode vc-no-backend))))
+        (let ((vc-no-backend
+               ;; NOTE: these 2 formatting strings should be changed together
+               ;; TODO: assign ^^^ to a variable, for a single point of maintenance
+               ;; The %12s formatter makes the field 12 chars wide
+               ;; Adding the `-' to make `%-12s' makes it so you pad on the right (i.e. left-justify)
+               ;; See also: https://ftp.gnu.org/pub/old-gnu/Manuals/elisp-manual-20-2.5/html_chapter/elisp_5.html
+               (format "%-12s" (replace-regexp-in-string "^ Git." ":" vc-mode))))
+               (message (concat "[krista] vc-mode: " vc-mode))
+               (message (concat "[krista] vc-no-backend: " vc-no-backend))
+               (setq vc-mode vc-no-backend))))
 #+END_SRC
 ** Replace "Top" and "Bottom" in percentage string
 #+BEGIN_SRC emacs-lisp          
