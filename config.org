@@ -927,11 +927,6 @@ Org link workflow:
       (read-string "Description: " nil)))
   (setf org-make-link-description-function #'org-link-describe)
 #+END_SRC
-** TODO set up & refile this:
-Steam account
-#+BEGIN_SRC emacs-lisp
-;(setq steam-username "xtajv")
-#+END_SRC
 * Helm
 ** Introduction
 - Definition of "helm": noun - a tiller or wheel and any associated
@@ -1541,3 +1536,4 @@ issue, then CHECK CONFIG.EL
   of unixy heaven, but it's hard to enjoy it (and show my coworkers
   what they're missing!) when it takes 10 seconds to start up every
   time.
+** Set up steam integration with emacs
