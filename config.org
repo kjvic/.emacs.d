@@ -1349,6 +1349,8 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
 
   ;; Speedy-open
   (global-set-key (kbd "C-c g") 'magit-status)
+  ;; Default arguments to magit log
+  (setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
 #+END_SRC
 ** Color scheme
 Note: "vc" stands for *V*-ersion *C*-ontrol
