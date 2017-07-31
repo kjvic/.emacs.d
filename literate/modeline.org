@@ -130,8 +130,6 @@
                ;; Adding the `-' to make `%-12s' makes it so you pad on the right (i.e. left-justify)
                ;; See also: https://ftp.gnu.org/pub/old-gnu/Manuals/elisp-manual-20-2.5/html_chapter/elisp_5.html
                (format "%-12s" (replace-regexp-in-string "^ Git." ":" vc-mode))))
-               (message (concat "[krista] vc-mode: " vc-mode))
-               (message (concat "[krista] vc-no-backend: " vc-no-backend))
                (setq vc-mode vc-no-backend))))
 #+END_SRC
 ** Replace "Top" and "Bottom" in percentage string
