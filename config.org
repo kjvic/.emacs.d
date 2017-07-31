@@ -338,7 +338,7 @@ Source: https://www.emacswiki.org/emacs/BackwardKillLine
   (global-set-key (kbd "C-c w") 'count-words)
 
   ;; Speedy-open melpa
-  (global-set-key (kbd "C-c C-p") 'package-list-packages)
+  (global-set-key (kbd "H-p") 'package-list-packages)
 
   ;; Transpose line up or down
   (defun move-line-up ()
@@ -1097,25 +1097,33 @@ the mark if it was set before search started.
 #+END_SRC
 **** aesthetics
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-aesthetics :tangle no
-  (set-face-attribute 'helm-ff-directory nil
-                      :background "#eeeeec"
-                      :foreground "#42071d")
+   ;; Face for directories in the find-file popup
+   (set-face-attribute 'helm-ff-directory nil
+                       :foreground "#42071d"
+                       :background "#00a890")
+   (set-face-attribute 'helm-ff-executable nil
+                       :foreground "green"
+                       :underline t)
 
-  (set-face-attribute 'helm-selection nil
-                      :background "#75dbb7"
-                      :distant-foreground "#000d0f"
-                      :foreground "#804532")
+   (set-face-attribute 'helm-source-header nil
+                       :background "turquoise4"
+                       :foreground "#f0ffff"
+                       :weight 'semi-bold
+                       :height 1.3
+                       :family "Fira Code")
 
-  (set-face-attribute 'helm-source-header nil
-                      :background "turquoise4"
-                      :foreground "#f0ffff"
-                      :weight 'semi-bold
-                      :height 1.3
-                      :family "Fira Code")
+   (set-face-attribute 'helm-swoop-target-word-face nil
+                       :background "#00d4d4"
+                       :foreground "#f0ffff")
+   (set-face-attribute 'helm-selection nil
+                       :foreground "#f0ffff"
+                       :background "#cf7a00"
+                       :weight 'semi-bold)
+   (set-face-attribute 'helm-swoop-target-line-face nil
+                       :foreground "#f0ffff"
+                       :background "#804532"
+                       :weight 'semi-bold)
 
-  (set-face-attribute 'helm-swoop-target-word-face nil
-                      :background "#7700ff"
-                      :foreground "white")
 #+END_SRC
 ** Helm window splitting
 #+BEGIN_SRC emacs-lisp
@@ -1163,63 +1171,191 @@ the mark if it was set before search started.
     ;; ------------
     ;; |   Helm   |
     ;; ------------
-    ;;(setq helm-swoop-split-direction 'split-window-horizontally)
+  (setq helm-swoop-split-direction 'split-window-vertically)
 
     ;; Even if there are multiple windows open, /still/ split the window
     ;; in half
-    ;;(setq helm-swoop-split-with-multiple-windows t)
+  (setq helm-swoop-split-with-multiple-windows t)
   (setq-default helm-display-function 'helm-default-display-buffer)
 #+END_SRC
 * Auto-complete
+** Giving company a whirl
+#+BEGIN_SRC emacs-lisp
+  (use-package company 
+    :diminish
+    :config
+    (global-company-mode))
+  (global-set-key (kbd "C-;") 'company-complete)
+
+  ;; Scroll through completion options with C-n and C-p (instead of M-n
+  ;; and M-p)
+  ;; Source: https://emacs.stackexchange.com/a/2990
+  (with-eval-after-load 'company
+    (define-key company-active-map (kbd "M-n") nil)
+    (define-key company-active-map (kbd "M-p") nil)
+    (define-key company-active-map (kbd "C-n") #'company-select-next)
+    (define-key company-active-map (kbd "C-p") #'company-select-previous))
+
+  (custom-set-faces
+   '(company-preview
+     ((t (:foreground "darkgray" :underline t :family "Fira Code"))))
+   '(company-preview-common
+     ((t (:inherit company-tooltip :foreground "#cc4700"))))
+   '(company-scrollbar-fg
+     ((t (:background "#19343D"))))
+    '(company-scrollbar-bg
+     ((t (:background "#19343D"))))
+
+   '(company-tooltip
+     ((t (:background "lightgray" :foreground "black"))))
+   '(company-tooltip-selection
+     ((t (:background "steelblue" :foreground "white"))))
+   '(company-tooltip-common
+     ((((type x)) (:inherit company-tooltip :weight bold))
+      (t (:inherit company-tooltip))))
+   '(company-tooltip-common-selection
+     ((((type x)) (:inherit company-tooltip-selection :weight bold))
+      (t (:inherit company-tooltip-selection)))))
+
+  ;; (set-face-attribute 'company-preview nil
+  ;;                     :foreground "darkgray"
+  ;;                     :underline t
+  ;;                     :family "Fira Code")
+
+  ;; If you sit and wait a while until auto-completion suggestions pop
+  ;; up, and if there's only one completion, then this is the face for
+  ;; the letters that would be added by auto-completing
+
+  ;; (set-face-attribute 'company-preview-common nil
+  ;;                     :inherit company-tooltip
+  ;;                     :foreground "#cc4700")
+
+  ;; Scrollbar
+
+  ;; (set-face-attribute 'company-scrollbar-fg nil
+  ;;                     :background "#19343D")
+  ;; (set-face-attribute 'company-scrollbar-bg nil
+  ;;                     :background "#19343D")
+
+
+  ;; Tooltips
+  ;; -----------
+  ;; In case you're wondering, this is what a "tooltip" looks like
+  ;; http://www.goldsborough.me/images/emacs-java/correcting.png
+
+  ;; Face for any tooltip
+
+  ;; (set-face-attribute 'company-tooltip nil
+  ;;                     :background "lightgray"
+  ;;                     :foreground "black")
+
+  ;; Face for the selected tooltip
+
+  ;; (set-face-attribute 'company-tooltip-selection nil
+  ;;                     :background "steelblue"
+  ;;                     :foreground "white")
+
+  ;; ???
+
+  ;; (set-face-attribute 'company-tooltip-common nil
+  ;;                     :inherit company-tooltip
+  ;;                     :weight bold)
+  ;; (set-face-attribute 'company-tooltip-common-selection nil
+  ;;                     :inherit company-tooltip-selection
+  ;;                     :weight bold)
+#+END_SRC
+** TODO helm-company
+#+BEGIN_SRC emacs-lisp
+  ;; company
+  ;; (use-package helm-company
+  ;;   :diminish
+  ;;   :bind
+  ;;   (("C-;" 'helm-company company-mode-map)
+  ;;    ("C-;" 'helm-company company-active-map)))
+#+END_SRC
+** auto-complete
+#+BEGIN_SRC emacs-lisp
+  ;; (require 'auto-complete)
+  ;; (require 'ac-helm)
+  ;; (require 'auto-complete-config)
+  ;; (ac-config-default)
+  ;; (defun ac-complete-with-helm-Select ()
+  ;;   "auto `auto-complete' candidates by `helm'.
+  ;; It is useful to narrow candidates."
+  ;;   (interactive)
+  ;;   (let ((c (ac-candidates)))
+  ;;     (if (= (length c) 1)
+  ;;         (ac-expand)
+  ;;       (when ac-completing
+  ;;         (with-helm-show-completion ac-point ac-last-point
+  ;;           (helm :sources 'helm-source-auto-complete-candidates
+  ;;                 :buffer  "*helm auto-complete*"))))))
+  ;; (defun complete-with-helm ()
+  ;;   (interactive)
+  ;;   (ignore-errors
+  ;;     (call-interactively 'auto-complete)
+  ;;     (call-interactively 'ac-complete-with-helm-auto)))
+  ;; (global-set-key (kbd "C-;") 'complete-with-helm)
+#+END_SRC
 ** TODO migrate this into a use-package statement
 [[http://stackoverflow.com/questions/27474936/color-schema-of-emacs-auto-complete-mode][color scheme]]
 #+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading auto-complete...")
-  (require 'auto-complete)
-  (ac-config-default)
-  (setq global-auto-complete-mode t)
+  ;; (message "[krista] Loading auto-complete...")
+  ;; (require 'auto-complete)
+  ;; (ac-config-default)
+  ;; (setq global-auto-complete-mode t)
 
-  ;; Enable auto-complete-mode globally, and don't do it in the minibuffer
-  ;; Source: https://stackoverflow.com/questions/8095715/emacs-auto-complete-mode-at-startup
-  (defun auto-complete-mode-maybe ()
-    (unless (minibufferp (current-buffer))
-      (auto-complete-mode t)))
-  (global-set-key (kbd "C-;") 'auto-complete)
-
-  (diminish auto-complete-mode)
+  ;; ;; Enable auto-complete-mode globally, and don't do it in the minibuffer
+  ;; ;; Source: https://stackoverflow.com/questions/8095715/emacs-auto-complete-mode-at-startup
+  ;; (defun auto-complete-mode-maybe ()
+  ;;   (unless (minibufferp (current-buffer))
+  ;;     (auto-complete-mode t)))
+  ;; ;; (global-set-key (kbd "C-;") 'auto-complete)
+  ;; (diminish auto-complete-mode)
+#+END_SRC
+** Helm autocomplete
+I used the auto-complete package for a long time, but it caused
+problems in my settings for helm window splitting. So instead, I'm
+going to use the helm
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package ac-helm
+  ;;   :diminish
+  ;;   :bind
+  ;;   (("C-;" 'ac-complete-with-helm)))
+  ;; (global-set-key (kbd "C-;") 'ac-complete-with-helm)
 #+END_SRC
 ** Popup face
 Among other things, popup is used in autocomplete. But if I ever want to do more, it'll still look pretty :D
 #+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading popup-face...")
-  (set-face-attribute 'popup-face nil
-                      :background "#19343D"
-                      :foreground "#a0ffff"
-                      :weight 'light
-                      :family "Fira code")
+    ;; (message "[krista] Loading popup-face...")
+    ;; (set-face-attribute 'popup-face nil
+    ;;                     :background "#19343D"
+    ;;                     :foreground "#a0ffff"
+    ;;                     :weight 'light
+    ;;                     :family "Fira code")
 
-  (set-face-attribute 'popup-menu-face nil
-                      :inherit 'popup-face
-                      :family "Fira code")
+    ;; (set-face-attribute 'popup-menu-face nil
+    ;;                     :inherit 'popup-face
+    ;;                     :family "Fira code")
 
-  (set-face-attribute 'popup-menu-selection-face nil
-                      :inherit 'default
-                      :background "#033021"
-                      :foreground "#3fffff"
-                      :weight 'light
-                      :family "Fira Code")
+    ;; (set-face-attribute 'popup-menu-selection-face nil
+    ;;                     :inherit 'default
+    ;;                     :background "#033021"
+    ;;                     :foreground "#3fffff"
+    ;;                     :weight 'light
+    ;;                     :family "Fira Code")
 
-  (set-face-attribute 'popup-scroll-bar-foreground-face nil
-                      :background "#19343D")
+    ;; (set-face-attribute 'popup-scroll-bar-foreground-face nil
+    ;;                     :background "#19343D")
 
-  (set-face-attribute 'popup-summary-face nil
-                       :inherit 'popup-face
-                       :foreground "slate blue")
+    ;; (set-face-attribute 'popup-summary-face nil
+    ;;                      :inherit 'popup-face
+    ;;                      :foreground "slate blue")
 
-  (set-face-attribute 'popup-tip-face nil
-                      :background "dark slate gray"
-                      :foreground "aquamarine"
-                      :family "Fira Code")
+    ;; (set-face-attribute 'popup-tip-face nil
+    ;;                     :background "dark slate gray"
+    ;;                     :family "Fira Code")
+    ;;                     :foreground "aquamarine"
 #+END_SRC
 * Projectile
 ** Projectile proper
@@ -1449,11 +1585,12 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+END_SRC
 ** Enable tron dark theme
 #+BEGIN_SRC emacs-lisp :noweb-ref enable-tron-dark :tangle yes
-  '(custom-enabled-themes (quote (tron-dark)))
-  '(custom-safe-themes
-    (quote ("e6489cbe9a810a2b1e0693e3e1f63dd7ce12a95347fbaa3d382494ca7393102c"
-            tron-dark
-            default)))
+  ;; (load-theme tron-dark)
+    '(custom-enabled-themes (quote (tron-dark)))
+    '(custom-safe-themes
+      (quote ("eaea41bdabeb5774c69380170a580ba81f5fba28b5442e89c3f6c06fd3be6ff2"
+              tron-dark
+              default)))
 #+END_SRC
 * Emacs help
 ** [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Commands.html][Keybinding instructions]]
@@ -1551,3 +1688,6 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
 ** Install the alert package
 - provides Growl-like notifications
 - would be useful for org-calendar
+* Gurus
+- https://emacsdojo.github.io/
+- http://pages.sachachua.com/.emacs.d/Sacha.html
