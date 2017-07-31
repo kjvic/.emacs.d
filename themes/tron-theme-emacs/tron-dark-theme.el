@@ -97,7 +97,7 @@ Semantic, and Ansi-Color faces are included.")
    ;; Highlighting faces
    `(fringe ((,class (:background ,tron-berlin-blue))))
    `(highlight ((,class (:foreground ,tron-night :background ,tron-teal-super))))
-   `(region ((,class (:background ,tron-turquize))))
+   `(region ((,class (:foreground ,tron-teal-brighter :background ,tron-turquize))))
    `(secondary-selection ((,class (:background ,tron-green))))
    `(isearch ((,class (:foreground ,tron-teal-brighter :background ,tron-olive-greek))))
    `(lazy-highlight ((,class (:background ,tron-cold-olive

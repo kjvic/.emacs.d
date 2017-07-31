@@ -1588,7 +1588,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   ;; (load-theme tron-dark)
     '(custom-enabled-themes (quote (tron-dark)))
     '(custom-safe-themes
-      (quote ("eaea41bdabeb5774c69380170a580ba81f5fba28b5442e89c3f6c06fd3be6ff2"
+      (quote ("356352b8ff6ba2b6601c6b37bd7d7a6ae5802926eb2b250fb17d8a73464e27af"
               tron-dark
               default)))
 #+END_SRC
