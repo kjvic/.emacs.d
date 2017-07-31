@@ -1197,72 +1197,34 @@ the mark if it was set before search started.
     (define-key company-active-map (kbd "C-p") #'company-select-previous))
 
   (custom-set-faces
+   ;; Auto-completion preview (for the case where there's a unique suggestion)
+   ;; ------------------------------------------------------------------------
    '(company-preview
      ((t (:foreground "darkgray" :underline t :family "Fira Code"))))
    '(company-preview-common
-     ((t (:inherit company-tooltip :foreground "#cc4700"))))
+     ((t (:inherit company-preview :foreground "#cf7a00"))))
+   
+   ;; Scrollbar
+   ;; ----------
    '(company-scrollbar-fg
-     ((t (:background "#19343D"))))
-    '(company-scrollbar-bg
+     ((t (:background "#804532"))))
+   '(company-scrollbar-bg
      ((t (:background "#19343D"))))
 
+   ;; Tooltips
+   ;; -----------
+   ;; In case you're wondering, this is what a "tooltip" looks like
+   ;; http://www.goldsborough.me/images/emacs-java/correcting.png
    '(company-tooltip
-     ((t (:background "lightgray" :foreground "black"))))
+     ((t (:background "#19343D" :foreground "#306158"))))
    '(company-tooltip-selection
-     ((t (:background "steelblue" :foreground "white"))))
+     ((t (:background "#cf7a00" :foreground "#a0ffff" :weight bold))))
    '(company-tooltip-common
      ((((type x)) (:inherit company-tooltip :weight bold))
       (t (:inherit company-tooltip))))
    '(company-tooltip-common-selection
      ((((type x)) (:inherit company-tooltip-selection :weight bold))
       (t (:inherit company-tooltip-selection)))))
-
-  ;; (set-face-attribute 'company-preview nil
-  ;;                     :foreground "darkgray"
-  ;;                     :underline t
-  ;;                     :family "Fira Code")
-
-  ;; If you sit and wait a while until auto-completion suggestions pop
-  ;; up, and if there's only one completion, then this is the face for
-  ;; the letters that would be added by auto-completing
-
-  ;; (set-face-attribute 'company-preview-common nil
-  ;;                     :inherit company-tooltip
-  ;;                     :foreground "#cc4700")
-
-  ;; Scrollbar
-
-  ;; (set-face-attribute 'company-scrollbar-fg nil
-  ;;                     :background "#19343D")
-  ;; (set-face-attribute 'company-scrollbar-bg nil
-  ;;                     :background "#19343D")
-
-
-  ;; Tooltips
-  ;; -----------
-  ;; In case you're wondering, this is what a "tooltip" looks like
-  ;; http://www.goldsborough.me/images/emacs-java/correcting.png
-
-  ;; Face for any tooltip
-
-  ;; (set-face-attribute 'company-tooltip nil
-  ;;                     :background "lightgray"
-  ;;                     :foreground "black")
-
-  ;; Face for the selected tooltip
-
-  ;; (set-face-attribute 'company-tooltip-selection nil
-  ;;                     :background "steelblue"
-  ;;                     :foreground "white")
-
-  ;; ???
-
-  ;; (set-face-attribute 'company-tooltip-common nil
-  ;;                     :inherit company-tooltip
-  ;;                     :weight bold)
-  ;; (set-face-attribute 'company-tooltip-common-selection nil
-  ;;                     :inherit company-tooltip-selection
-  ;;                     :weight bold)
 #+END_SRC
 ** TODO helm-company
 #+BEGIN_SRC emacs-lisp
