@@ -697,6 +697,7 @@ the display until you restart Emacs.
     (yas-global-mode t))
 #+END_SRC
 * Org
+** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
   (message "[krista] Loading org-mode settings...")
   (use-package org
