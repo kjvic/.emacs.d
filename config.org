@@ -991,7 +991,7 @@ This is the place to put it
 ;; Make it so that Helm auto-selects the only match for a query
 ;; Source: https://emacs.stackexchange.com/questions/13273/how-can-i-quickly-enter-a-directory-in-helm-find-file-when-there-is-only-one-to
 ;; Note: ff is *F*ind *F*ile
-(setq helm-ff-auto-update-initial-value t)
+;; (setq helm-ff-auto-update-initial-value t)
 #+END_SRC
 *** helm-recentf
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-recentf :tangle no
