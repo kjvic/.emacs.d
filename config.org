@@ -1457,6 +1457,14 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 #+BEGIN_SRC emacs-lisp
 (use-package haskell-mode)
 #+END_SRC
+* Interfacing with other customizations
+** BetterTouchTool (BTT)
+Unbind Ctrl+meta+<right>, Ctrl+meta+<left> so BTT can use that to
+bring a window to a new desktop
+#+BEGIN_SRC emacs-lisp
+(global-unset-key (kbd "C-M-<left>"))
+(global-unset-key (kbd "C-M-<right>"))
+#+END_SRC
 * Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+BEGIN_SRC emacs-lisp
