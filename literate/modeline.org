@@ -5,8 +5,8 @@
     ;; https://emacs.stackexchange.com/a/16660
     (defun mode-line-align (left center right &optional lpad rpad)
       "Return a string the width of the current window with
-          LEFT, CENTER, and RIGHT spaced out accordingly, LPAD and RPAD,
-          can be used to add a number of spaces to the front and back of the string."
+            LEFT, CENTER, and RIGHT spaced out accordingly, LPAD and RPAD,
+            can be used to add a number of spaces to the front and back of the string."
       (condition-case err
           (let* ((left (if lpad (concat (make-string lpad ?\s) left) left))
                  (right (if rpad (concat right (make-string rpad ?\s)) right))
@@ -42,6 +42,16 @@
     (setq krista-buffer-modified-string "≠") ; ≇ ≠
     (setq krista-buffer-readonly-string "≝") ; ≝, ↯, ≔, ⟂, ∅, , ※
     (setq krista-buffer-unchanged-string "=") ; ≅ =
+
+    ;; Show the time
+    (display-time-mode 1)
+;; Don't show the load average
+    (setq display-time-default-load-average nil)
+;; Do show the date
+(setq display-time-day-and-date t)
+(setq display-time-24hr-format nil)
+(setq display-time-format "%l:%M%p %a, %b.%e")
+
 
     (defun krista-get-buffer-modified-status() 
       ;; What to display if the buffer is read-only
@@ -91,14 +101,11 @@
        ;; Version control string
        '(:eval (propertize (if (stringp vc-mode) vc-mode
                              (format "%-12s" "\ ")) ; Default case (no version control)
-                             'face 'font-lock-builtin-face))
+                           'face 'font-lock-builtin-face))
        ;; Buffer/file name (just this file... not the whole path)
        '(:eval (propertize " %12b" 'face '(:foreground "cyan")))
        ;; Line:column
        '(:eval (propertize " %4l | %2c" 'face 'font-lock-comment-face))
-       "    "
-       '(:eval (propertize "𝔞𝔩𝔩 𝔞𝔡𝔳𝔢𝔯𝔰𝔦𝔱𝔶 𝔦𝔰 𝔱𝔯𝔞𝔦𝔫𝔦𝔫𝔤" 
-                           'face '(:foreground "#033021")))
 
        ;; Size of file, in human-readable terms (e.g. 43k)
        " %I "
