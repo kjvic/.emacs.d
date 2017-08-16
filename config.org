@@ -198,31 +198,34 @@ out how to set it immediately, but this should suffice as startup config.
 (setq-default cursor-in-non-selected-windows 'hollow)
 #+END_SRC
 *** Change the fringe wrap indicators
-Replace the (fugly!) arrows that serve to indicate line continuation
-#+BEGIN_SRC emacs-lisp
-  (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0]) 
-  (define-fringe-bitmap 'right-curly-arrow
-    [#b00000000
-     #b00000000
-     #b00000000
-     #b00000000
-     #b00000000
-     #b10010010
-     #b10010010
-     #b00000000])
+- Fringe wrap indicators are used to show that a line is wider than
+  the current window. 
+- The default fringe wrap indicators are a curly arrow
+- I prefer an elipsis:
+  #+BEGIN_SRC emacs-lisp
+     (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0]) 
+     (define-fringe-bitmap 'right-curly-arrow
+       [#b00000000
+        #b00000000
+        #b00000000
+        #b00000000
+        #b00000000
+        #b10010010
+        #b10010010
+        #b00000000])
 
-  (define-fringe-bitmap 'left-curly-arrow
-    [#b00000000
-     #b00000000
-     #b00000000
-     #b00000000
-     #b00000000
-     #b10010010
-     #b10010010
-     #b00000000])
+     (define-fringe-bitmap 'left-curly-arrow
+       [#b00000000
+        #b00000000
+        #b00000000
+        #b00000000
+        #b00000000
+        #b10010010
+        #b10010010
+        #b00000000])
 
- (setq visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow)))
-#+END_SRC
+    (setq visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow)))
+  #+END_SRC
 *** Fringe and border faces
 #+BEGIN_SRC emacs-lisp
  (set-face-attribute 'fringe nil :background "#001519")
@@ -696,7 +699,7 @@ the display until you restart Emacs.
     :config
     (yas-global-mode t))
 #+END_SRC
-* Org
+* Org mode
 ** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
   (message "[krista] Loading org-mode settings...")
@@ -810,6 +813,14 @@ the display until you restart Emacs.
                       :stipple nil
                       :foreground "AntiqueWhite4"
                       :family "Andale Mono")
+
+  ;; Custom Org keywords
+  (setq org-todo-keywords '((sequence "TODO" "|" "DONE" "CANCELLED")))
+
+  ;; Org todo keyword faces
+  (setq org-todo-keyword-faces '(("TODO" . (:foreground "#ff0f97" :weight bold))
+                                 ("DONE" . (:foreground "#075f5f" :weight bold))
+                                 ("CANCELLED") . (:foreground "#888a85" :weight bold)))
 #+END_SRC
 ** Exporting to LaTeX
 #+BEGIN_SRC emacs-lisp
@@ -844,11 +855,30 @@ the display until you restart Emacs.
           ("g" "git-gotchas" entry (file+olp "~/core/lists/git-gotchas.org" "The gotchas")
            "* %?\n %i\n")))
 #+END_SRC
-** Org agenda
+** Org todo/agenda
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
   ;; Places to sniff when compiling a list of TODO items
-  (setq org-agenda-files (list "~/core/school/W17/at_a_glance.org"
-                               "~/core/lists/todo.org"))
+  (setq org-agenda-files (list "~/core/lists/todo.org"))
+
+  ;; From http://orgmode.org/manual/Breaking-down-tasks.html 
+  ;;
+  ;; When showing progress stats for TODO completion, recursively
+  ;; consider the entire subtree
+  (setq org-hierarchical-todo-statistics nil)
+  ;;
+  ;; "If you would like a TODO entry to automatically change to DONE
+  ;; when all children are done, you can use the following setup:"
+  (defun org-summary-todo (n-done n-not-done)
+    "Switch entry to DONE when all subentries are done, to TODO otherwise."
+    (let (org-log-done org-log-states)   ; turn off logging
+      (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+
+  (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+
+;; Source https://emacs.stackexchange.com/a/19876
+(setq-default org-display-custom-times t)
+(setq org-time-stamp-custom-formats '("<%A %b %e %Y>" . "<%A %b %e %Y %l:%M%p>"))
+
 #+END_SRC
 ** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
@@ -1225,7 +1255,10 @@ the mark if it was set before search started.
       (t (:inherit company-tooltip))))
    '(company-tooltip-common-selection
      ((((type x)) (:inherit company-tooltip-selection :weight bold))
-      (t (:inherit company-tooltip-selection)))))
+      (t (:inherit company-tooltip-selection))))
+
+;; TODO: move this!!!!!!!!!!!!!!!!!!!!!!
+'(org-date ((t (:foreground "Cyan" :underline "#075f5f")))))
 #+END_SRC
 ** TODO helm-company
 #+BEGIN_SRC emacs-lisp
