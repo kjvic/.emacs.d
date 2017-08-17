@@ -19,15 +19,14 @@ How to: see spruce's config. Something something angle brackets source block tit
 *** Config
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "~/.emacs.d/elisp/")
-  (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
-  (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
-  (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
-  (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
+  ;; (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
+  ;; (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
+  ;; (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
+  ;; (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
   ;; mode-icons
-  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620")
-  (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620/icons")
-  ;; custom tron theme
-  (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/tron-theme-emacs")
+  ;; (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620")
+  ;; (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620/icons")
+  (add-to-list 'load-path (concat user-emacs-directory "literate/tron-doom/"))
 #+END_SRC
 ** use-package: package management management
 [[https://github.com/jwiegley/use-package][use-package github]]
@@ -1543,6 +1542,23 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (setq tab-width 8)
   ;(defvaralias 'c-basic-offset 'tab-width)
 #+END_SRC
+* Theme
+#+BEGIN_SRC emacs-lisp
+  ;; Grab the elpa package
+  (add-to-list 'custom-theme-load-path (concat user-emacs-directory "literate/tron-doom/"))
+  (load-theme 'tron-doom t) ; t for "don't ask me to load this theme"
+
+  ;; Global settings (defaults)
+  ;;(setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+  ;;      doom-themes-enable-italic t) ; if nil, italics is universally disabled
+
+  ;; Load the theme (doom-one, doom-molokai, etc); keep in mind that each
+  ;; theme may have their own settings.
+  ;; (load-theme 'doom-one t)
+
+  ;; Enable flashing mode-line on errors
+  ;; (doom-themes-visual-bell-config)
+#+END_SRC
 * Dealing with Custom
 #+BEGIN_SRC emacs-lisp :noweb tangle
   ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
@@ -1552,7 +1568,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 
   (custom-set-variables
    <<ansi-colors>>
-   <<enable-tron-dark>>
    '(gud-gdb-command-name "gdb --annotate=1"))
 #+END_SRC
 ** ANSI colors
@@ -1588,15 +1603,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
      "#d2f1ff"
      "#d3f9ee"
      ])
-#+END_SRC
-** Enable tron dark theme
-#+BEGIN_SRC emacs-lisp :noweb-ref enable-tron-dark :tangle yes
-  ;; (load-theme tron-dark)
-    '(custom-enabled-themes (quote (tron-dark)))
-    '(custom-safe-themes
-      (quote ("356352b8ff6ba2b6601c6b37bd7d7a6ae5802926eb2b250fb17d8a73464e27af"
-              tron-dark
-              default)))
 #+END_SRC
 * Emacs help
 ** [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Commands.html][Keybinding instructions]]
