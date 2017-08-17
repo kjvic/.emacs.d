@@ -67,9 +67,12 @@
   which won't work if use-package hasn't been loaded yet!
 **** OS-specific config
 #+BEGIN_SRC emacs-lisp
-(krista/new-config-file macOS "macOS")
-(when (eq system-type 'darwin)
-  (org-babel-load-file krista/macOS-config-file))
+  (krista/new-config-file macOS "macOS")
+  (krista/new-config-file windows "windows")
+  (when (eq system-type 'darwin)
+    (org-babel-load-file krista/macOS-config-file))
+  (when (member system-type '(ms-dos windows-nt cygwin))
+    (org-babel-load-file krista/windows-config-file))
 #+END_SRC
 **** Modeline
 #+BEGIN_SRC emacs-lisp

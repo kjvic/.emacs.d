@@ -1,0 +1,72 @@
+* Windows is... \*ahem* _overzealous_ about garbage collection
+Make sure that that's not the case
+#+BEGIN_SRC emacs-lisp
+; Debugging
+(setq garbage-collection-messages t)
+(setq gc-cons-threshold (* 511 1024 1024))
+(setq gc-cons-percentage 0.5)
+(run-with-idle-timer 10 t #'garbage-collect)
+#+END_SRC
+** Don't gc when I'm in the minibuffer!
+See also: http://bling.github.io/blog/2016/01/18/why-are-you-changing-gc-cons-threshold/
+#+BEGIN_SRC emacs-lisp
+(defun my-minibuffer-setup-hook ()
+  (setq gc-cons-threshold most-positive-fixnum))
+
+(defun my-minibuffer-exit-hook ()
+  (setq gc-cons-threshold 800000))
+
+(add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
+(add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
+#+END_SRC
+* TODO Open a windows explorer window from emacs at the path of the current buffer
+Source: https://zhangda.wordpress.com/2010/02/03/open-the-path-of-the-current-buffer-within-emacs/
+#+BEGIN_SRC emacs-lisp
+  ;; Neither version works atm :(
+  ;;(defun browse-current-folder ()
+  ;;   “open the current buffer’s folder”
+  ;;    (interactive)
+  ;;    (browse-url (concat “file://” (file-name-directory (buffer-file-name)))))
+  ;; (defun open-buffer-path ()
+  ;;                                         ;“Run explorer on the directory of the current buffer.”
+  ;;   (interactive)
+  ;;   (shell-command (concat “explorer ” (replace-regexp-in-string “/” “\\\\” (file-name-directory (buffer-file-name)) t t))))
+
+  ;; Binding: M-W
+  ;; (global-set-key (kbd "M-W") 'open-buffer-path)
+  ;; (global-set-key (kbd "M-W") 'browse-current-folder)
+#+END_SRC
+* Desktop manager
+This is not strictly emacs-related, but it's worth noting that I use
+Dexpot for tile management on windows
+** Note: set "Process priority" to "high" or "realtime" to avoid win-lag on desktop-switching
+** Shortcut series
+*** Series definitions
+- num :: 1,2,3,4,<left>,<right>
+- asdf :: A,S,D,F,<left>,<right>
+*** Spaces
+- Switch desktops :: Ctrl + <series:num>
+- Move window & switch :: Ctrl+Alt + <series:num>
+*** Window interactions
+- Minimize window :: Ctrl+Win+ H
+- Close window :: Ctrl+Win+ W
+* Visual studio integration
+** Install "Open in emacs" VS extension
+** Globally bind Build.CleanSolution to Ctrl+Shift+C
+** Use visual studio-compliant settings
+*** TODO split up config files for spacing, let default spacing on windows := VS-compliant settings
+* Remap capslock to control
+** Open or download SharpKeys
+** Add new keymapping
+- From :: Special: Caps Lock (00_3A)
+- To :: Special: Right Ctrl (E0_1D)
+* Powershell
+#+BEGIN_SRC emacs-lisp
+(use-package powershell)
+;; Add file extensions which should automatically launch powershell-mode
+(add-to-list 'auto-mode-alist '("\\.ps1\\'" . powershell-mode))
+#+END_SRC
+* Cygwin
+- Note: [[https://stackoverflow.com/questions/1850920/how-to-navigate-to-a-directory-in-c-with-cygwin][here's]] how to get out of cygwin's root.
+- I recommend following the advice to symlink /cygdrive/c to /c
+  
