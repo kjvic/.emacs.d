@@ -1587,13 +1587,13 @@ issue, then CHECK CONFIG.EL
 ** Set up steam integration with emacs
 ** Flycheck
 *** Config
-#+BEGIN_EXAMPLE
-  ;;   (use-package flycheck
-  ;;     :init (global-flycheck-mode)
-  ;;     :diminish)
-  ;; ;; Permanently enable syntax checking
-  ;; (add-hook 'after-init-hook #'global-flycheck-mode)
-#+END_EXAMPLE
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck
+    :init (global-flycheck-mode)
+    :diminish)
+  ;; Permanently enable syntax checking
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+#+END_SRC
 *** Usage
 via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
 - =C-c ! n= :: go forward to next error
