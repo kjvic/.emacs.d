@@ -962,6 +962,7 @@ Org link workflow:
       :bind (
              <<helm-replace-defaults>>
              ))
+    <<helm-descbinds>>
 #+END_SRC
 *** Helm behavior
 Sometimes, I just want to tweak something about how Helm functions.
@@ -1003,17 +1004,18 @@ default Emacs functions. Also, Emacs defaults are "meh".
   ;; Display bookmarks for frequently-visited spots on my file system
   ("C-x r l" . helm-bookmarks)
 #+END_SRC
-** Helm descbinds (*desc*-ribe *bind*-ings)
+*** helm-descbinds (*desc*-ribe *bind*-ings)
 - Helm descbinds is a smarter replacement for "C-h k" to look up
   functions by keybinding
 - Invoke with "C-h b"
 - Press TAB for options (e.g. execute the selected command, look up
   documentation, etc.)
-#+BEGIN_SRC emacs-lisp :noweb tangle
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-descbinds :tangle no
   (message "[krista] Loading helm-descbinds...")
   (use-package helm-descbinds
     :diminish helm-descbinds-mode
-    :config (setq helm-descbinds-mode t))
+    :config (setq helm-descbinds-mode t)
+    :bind ("C-h b" . helm-descbinds))
 #+END_SRC
 ** Helm swoop
 - Swoop is like a better isearch. Works really nicely with helm.
