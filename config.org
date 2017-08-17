@@ -978,8 +978,9 @@ This is the place to put it
   (message "[krista] Loading helm-recentf...")
   (require 'recentf)
   (recentf-mode t)
-  (setq recentf-max-menu-items 100)
-  (setq helm-recentf-max-menu-items 100)
+  (setq recentf-max-menu-items 200)
+  (setq recentf-max-saved-items 200)
+  (setq helm-recentf-max-menu-items 200)
 
   ;; Auto-save a list of recently-opened files
   ;; NOTE: This ensures accurate recentf info in case of a
