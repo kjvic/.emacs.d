@@ -15,6 +15,7 @@
   (unless (package-installed-p 'org)
     (package-refresh-contents)
     (package-install 'org)))
+(require 'org)
 
 ;; Tangle code and load from my config.org file
 (setq krista/bootstrap-org-file "config.org")
