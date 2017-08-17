@@ -3,29 +3,12 @@
 #+PROPERTY: header-args :tangle yes
 #+OPTIONS: tex: t
 #+OPTIONS: toc:2
-* Introduction
-* Cleanup plan
-** Split up config into org bullets
-*** Add `use-package` invocations of all packages
-(use-package foo
-:init
-  (setq foo-variable t))
-*** Split up large invocations into sub-bullets
-How to: see spruce's config. Something something angle brackets source block titles
 * Bootstrap
  Get emacs off the ground!
 ** Load-path
-*** TODO see if I can optimize startup by removing some of these?
 *** Config
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'load-path "~/.emacs.d/elisp/")
-  ;; (add-to-list 'load-path "~/.emacs.d/elpa/benchmark-init-20150905.238")
-  ;; (add-to-list 'load-path "~/.emacs.d/elpa/helm-20160403.140")
-  ;; (add-to-list 'load-path "~/.emacs.d/elpa/helm-swoop-20160131.533")
-  ;; (add-to-list 'load-path "~/.emacs.d/plugins/snippets")
-  ;; mode-icons
-  ;; (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620")
-  ;; (add-to-list 'load-path "~/.emacs.d/elpa/mode-icons-20170216.620/icons")
   (add-to-list 'load-path (concat user-emacs-directory "literate/tron-doom/"))
 #+END_SRC
 ** use-package: package management management
