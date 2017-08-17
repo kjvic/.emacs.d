@@ -32,6 +32,8 @@
   #+BEGIN_SRC emacs-lisp
     ;;; init.el --- user init file      -*- no-byte-compile: t -*-
     (use-package auto-compile
+      ;; NOTE: This will only re-compile existing .elc files, so you must
+      ;; run the shell command above for one-time install on new machines
       :config (auto-compile-on-load-mode))
     (setq load-prefer-newer t)
   #+END_SRC
@@ -190,7 +192,9 @@ out how to set it immediately, but this should suffice as startup config.
 - The default fringe wrap indicators are a curly arrow
 - I prefer an elipsis:
   #+BEGIN_SRC emacs-lisp
+     ;; Only relevant if indicate-empty-line is set to t
      (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0]) 
+
      (define-fringe-bitmap 'right-curly-arrow
        [#b00000000
         #b00000000
@@ -722,22 +726,20 @@ the display until you restart Emacs.
            ;;       regular LaTeX docs. This is to provide as
            ;;       seamless an experience as I can muster.
            ("H-C-j" . LaTeX-insert-inline-math)
-           ("H-C-k" . LaTeX-insert-display-math)
-           )
-    )
+           ("H-C-k" . LaTeX-insert-display-math)))
 #+END_SRC
 ** Tips from http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html
 *** todo / schedule / deadline
-**** C-c C-t :: org-todo
-**** C-c C-s :: org-schedule
-**** C-c C-d :: org-deadline
-**** M-shift-RET :: org-insert-todo-heading
-- Adds newline
-- Adds bullet at same indentation level
-- Bullet automatically has a `TODO' header
+- C-c C-t :: org-todo
+- C-c C-s :: org-schedule
+- C-c C-d :: org-deadline
+- M-shift-RET :: org-insert-todo-heading
+  - Adds newline
+  - Adds bullet at same indentation level
+  - Bullet automatically has a `TODO' header
 *** agenda view:
-**** hit `t' to mark an item DONE
-**** hit `l' to enter log display
+- hit `t' to mark an item DONE
+- hit `l' to enter log display
 *** shift-TAB :: OVERVIEW vs. normal mode
 ** Aesthetics
 #+BEGIN_SRC emacs-lisp :noweb-ref org-aesthetics :tangle no
@@ -873,38 +875,6 @@ the display until you restart Emacs.
 ** Tweaks to tree behavior
 Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to the whole subtree!
 #+BEGIN_SRC emacs-lisp :noweb-ref org-tree-behavior :tangle no
-  ;;   (setq org-yank-adjusted-subtrees t)
-  ;;   (setq org-yank-folded-subtrees t)
-
-  ;;   ;; Source: https://github.com/lunaryorn
-  ;;   (defun smarter-move-beginning-of-line (arg)
-  ;;     "Move point back to indentation of beginning of line.
-
-  ;;         Move point to the first non-whitespace character on this line.
-  ;;         If point is already there, move to the beginning of the line.
-  ;;         Effectively toggle between the first non-whitespace character and
-  ;;         the beginning of the line.
-
-  ;;         If ARG is not nil or 1, move forward ARG - 1 lines first.  If
-  ;;         point reaches the beginning or end of the buffer, stop there."
-  ;;     (interactive "^p")
-  ;;     (setq arg (or arg 1))
-
-  ;;     ;; Move lines first
-  ;;     (when (/= arg 1)
-  ;;       ;(let ((line-move-visual nil))
-  ;;       ;  (forward-line (- 1 arg))
-  ;;         (move-to-column (+ outline-level 2))
-  ;; ;)
-  ;;       ))
-  ;;   (let ((orig-point (point)))
-  ;;     (back-to-indentation)
-  ;;     (when (= orig-point (point))
-  ;;       (move-beginning-of-line 1)))
-
-  ;;   ;; remap C-a to `smarter-move-beginning-of-line'
-  ;;   (global-set-key [remap move-beginning-of-line]
-  ;;                   'smarter-move-beginning-of-line)
 
 #+END_SRC
 ** Code snippets in org
@@ -1075,18 +1045,18 @@ default Emacs functions. Also, Emacs defaults are "meh".
     ("C-c r" . isearch-backward))
     )
 #+END_SRC
-*** config
-**** Keep syntax highlighting
+*** Keep syntax highlighting
 Retain syntax highlighting in swoop. It's a tradeoff between this and
 speed, but I think that it's worth the (teeny!) speed hit.
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-syntax-highlighting :tangle no
   (setq helm-swoop-speed-or-color t)
 #+END_SRC
-**** Mark Reactivation
-Source: Spruce Bondera's fabulous config page For some reason
-helm-swoop deactivates the mark on search selection. This wrapper
-fixes that, by wrapping helm-swoop in a function that will reactivate
-the mark if it was set before search started.
+*** Mark reactivation
+- Source: Spruce Bondera's fabulous config page 
+- Description: For some reason helm-swoop deactivates the mark on
+  search selection. This wrapper fixes that, by wrapping helm-swoop in
+  a function that will reactivate the mark if it was set before search
+  started.
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-reactivate-mark :tangle no
   (defun krista/helm-swoop-mark-wrapper (original &rest search)
     "Check the state of the mark before calling helm-swoop and
@@ -1186,9 +1156,8 @@ the mark if it was set before search started.
     ;; Even if there are multiple windows open, /still/ split the window
     ;; in half
   (setq helm-swoop-split-with-multiple-windows t)
-  (setq-default helm-display-function 'helm-default-display-buffer)
 #+END_SRC
-* Auto-complete
+* WIP Auto-complete
 ** Giving company a whirl
 #+BEGIN_SRC emacs-lisp
   (use-package company 
@@ -1298,39 +1267,6 @@ going to use the helm
   ;;   :bind
   ;;   (("C-;" 'ac-complete-with-helm)))
   ;; (global-set-key (kbd "C-;") 'ac-complete-with-helm)
-#+END_SRC
-** Popup face
-Among other things, popup is used in autocomplete. But if I ever want to do more, it'll still look pretty :D
-#+BEGIN_SRC emacs-lisp
-    ;; (message "[krista] Loading popup-face...")
-    ;; (set-face-attribute 'popup-face nil
-    ;;                     :background "#19343D"
-    ;;                     :foreground "#a0ffff"
-    ;;                     :weight 'light
-    ;;                     :family "Fira code")
-
-    ;; (set-face-attribute 'popup-menu-face nil
-    ;;                     :inherit 'popup-face
-    ;;                     :family "Fira code")
-
-    ;; (set-face-attribute 'popup-menu-selection-face nil
-    ;;                     :inherit 'default
-    ;;                     :background "#033021"
-    ;;                     :foreground "#3fffff"
-    ;;                     :weight 'light
-    ;;                     :family "Fira Code")
-
-    ;; (set-face-attribute 'popup-scroll-bar-foreground-face nil
-    ;;                     :background "#19343D")
-
-    ;; (set-face-attribute 'popup-summary-face nil
-    ;;                      :inherit 'popup-face
-    ;;                      :foreground "slate blue")
-
-    ;; (set-face-attribute 'popup-tip-face nil
-    ;;                     :background "dark slate gray"
-    ;;                     :family "Fira Code")
-    ;;                     :foreground "aquamarine"
 #+END_SRC
 * Projectile
 ** Projectile proper
