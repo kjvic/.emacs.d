@@ -1068,7 +1068,7 @@ speed, but I think that it's worth the (teeny!) speed hit.
       (when marked (activate-mark))))
   (advice-add 'helm-swoop :around #'krista/helm-swoop-mark-wrapper)
 #+END_SRC
-**** behavior
+*** behavior
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-behavior :tangle no
   ;; If you're at the bottom of the list of swoop matches, and you try
   ;; to go down another line, then you wrap around again
@@ -1077,7 +1077,7 @@ speed, but I think that it's worth the (teeny!) speed hit.
   ;; Enable fuzzy matching
   (setq helm-swoop-use-fuzzy-match nil)
 #+END_SRC
-**** aesthetics
+*** aesthetics
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-aesthetics :tangle no
    ;; Face for directories in the find-file popup
    (set-face-attribute 'helm-ff-directory nil
