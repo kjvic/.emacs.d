@@ -387,9 +387,9 @@ Use case: peeking at cheat sheets!
 Github page: https://github.com/darksmile/cheatsheet/
 *** Quickstart
 **** Pull up your cheatsheet :: cheatsheet-show
-***** Show buffer with your cheatsheet!
-***** Use H-c to show the cheatsheet
-***** Use C-q to exit the cheatsheet
+- Show buffer with your cheatsheet!
+- Use H-c to show the cheatsheet
+- Use C-q to exit the cheatsheet
 **** Add a new cheat to your cheatsheet :: cheatsheet-add
 Here's an example cheat. Follow this format in your config
 #+BEGIN_SRC example
