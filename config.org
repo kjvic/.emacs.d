@@ -1,7 +1,6 @@
 #+TITLE: Krista Victorsen's Emacs configuration
 #+AUTHOR: Krista Victorsen
 #+PROPERTY: header-args :tangle yes
-#+OPTIONS: tex: t
 #+OPTIONS: toc:2
 * Bootstrap
  Get emacs off the ground!
