@@ -704,14 +704,8 @@ the display until you restart Emacs.
     (message "[krista] Loading org-links...")
     <<org-links>>
     :bind (
-           ;; For use with my capture templates
            ("C-c c" . org-capture)
-
-           ;; Tags
-           ("H-q" . org-set-tags-command)
-           
-           ;; Even MORE of the org ecosystem!
-           ("C-c a a" . org-agenda-list)
+           ("C-c a" . org-agenda)
 
            ;; Links!
            ;; - C-c C-l will insert link,
@@ -754,7 +748,7 @@ the display until you restart Emacs.
   ;; characters, if possible/sensible
   ;; E.g. "\" + "alpha" becomes a lowercase alpha
   ;; I have it turned off, but it's here
-  (setq org-pretty-entities nil)
+  (setq org-pretty-entities t)
 
   ;; Setting this to `t' will use {} to render sub/super-scripts
   ;; e.g. asdf_{123} is rendered as "asdf sub 123"
@@ -770,8 +764,6 @@ the display until you restart Emacs.
   ;; Make top-level headings larger, and lower-level headings progressively smaller
   (set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.2)
   (set-face-attribute 'org-level-2 nil :inherit 'outline-2 :height 1.0)
-  ;; (add-hook 'org-mode-hook (lambda () (setq line-spacing '0.25)))
-  (setq line-spacing '0.25)
 
   ;; Use my theme as the color scheme for source blocks
   (setq org-src-fontify-natively t)
@@ -875,6 +867,14 @@ the display until you restart Emacs.
 ** Tweaks to tree behavior
 Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to the whole subtree!
 #+BEGIN_SRC emacs-lisp :noweb-ref org-tree-behavior :tangle no
+  ;; Source: Spruce Bondera
+  (defun krista/org-cycle-current-subtree ()
+    (interactive)
+    (let ((old-tab-style org-cycle-emulate-tab))
+      (setq org-cycle-emulate-tab nil)
+      (org-cycle)
+      (setq org-cycle-emulate-tab old-tab-style)))
+  (bind-key "C-<tab>" #'krista/org-cycle-current-subtree)
 
 #+END_SRC
 ** Code snippets in org
