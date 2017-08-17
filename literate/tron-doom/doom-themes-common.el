@@ -748,7 +748,7 @@
     ;; org-mode
     (org-level-1 :foreground blue :background base3 :bold bold :height 1.2)
     (org-level-2 :inherit 'org-level-1 :foreground violet :height 1.0)
-    (org-level-3 :bold bold :foreground base8)
+    (org-level-3 :bold bold :foreground teal)
     (org-level-4 :inherit 'org-level-3)
     (org-level-5 :inherit 'org-level-3)
     (org-level-6 :inherit 'org-level-3)

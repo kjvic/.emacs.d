@@ -1,4 +1,4 @@
-;;; tron-doom-theme.el --- inspired by Atom One Dark
+;;; tron-doom-theme.el --- inspired by the movie Tron Legacy
 (require 'doom-themes)
 
 ;;
