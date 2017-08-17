@@ -17,6 +17,7 @@ This stuff is required for flycheck to work
 * Helm fuzzy matching
 Helm-locate kinda sucks. Whoops. Following [[https://github.com/syl20bnr/spacemacs/issues/3280][this]] fix makes it use =mdfind= instead
 #+BEGIN_SRC emacs-lisp
-(setq helm-locate-fuzzy-match nil)
-(setq helm-locate-command "mdfind -name %s %s")
+  (with-eval-after-load 'helm
+    (setq helm-locate-fuzzy-match nil)
+    (setq helm-locate-command "mdfind -name %s %s"))
 #+END_SRC

@@ -14,8 +14,11 @@
 [[https://github.com/jwiegley/use-package][use-package github]]
 #+BEGIN_SRC emacs-lisp
   (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
+    ;; Update the package if it needs updating.
+    ;; NOTE: This contacts melpa every time you reload your config. Overhead!
+    ;; (package-refresh-contents)
     (package-install 'use-package))
+  (require 'use-package)
   ;; All packages in a use-package macro should be automagically installed
   (setq use-package-always-ensure t)
 #+END_SRC
@@ -53,7 +56,7 @@
   (defmacro krista/new-config-file (name filename)
     (let ((full-file (make-symbol "full-filename")))
       `(let ((,full-file
-              (concat krista/org-config-dirpath "/" ,filename ".org")))
+              (concat (file-name-as-directory krista/org-config-dirpath)  ,filename ".org")))
          (defvar ,(intern (concat "krista/" (symbol-name name) "-config-file"))
            ,full-file)
          (add-to-list
@@ -218,7 +221,6 @@ out how to set it immediately, but this should suffice as startup config.
 *** Fonts
 #+BEGIN_SRC emacs-lisp
   (set-face-attribute 'default nil :font "Fira Code-13")
-  (set-frame-font "Fira Code-13")
   (set-face-attribute 'bold nil :weight 'extra-bold)
 
   (set-face-attribute 'bold-italic nil
@@ -231,12 +233,6 @@ out how to set it immediately, but this should suffice as startup config.
 
   (set-face-attribute 'region nil :background "#032929")
   (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
-#+END_SRC
-*** TODO Hide the ugly title bar
-http://stackoverflow.com/questions/20405433/how-to-force-emacs-not-use-mountain-lions-full-screen-style
-hrm. doesn't seem to work for me :P
-#+BEGIN_SRC emacs-lisp
-(setq ns-auto-hide-menu-bar t)
 #+END_SRC
 *** Kill default startup message, text at the top of scratch buffers
 #+BEGIN_SRC emacs-lisp
@@ -291,7 +287,7 @@ Source: https://www.emacswiki.org/emacs/BackwardKillLine
 (setq
    backup-by-copying t      ; don't clobber symlinks
    backup-directory-alist
-    '(("." . "~/.emacs.d/backup"))    ; don't litter my filesystem
+    '((".*" . "~/.emacs.d/backup/"))    ; don't litter my filesystem
    delete-old-versions t
    kept-new-versions 50
    kept-old-versions 50
@@ -299,8 +295,7 @@ Source: https://www.emacswiki.org/emacs/BackwardKillLine
 #+END_SRC
 *** Autosaves
 #+BEGIN_SRC emacs-lisp
-(setq auto-save-file-name-transforms
-      `((".*" "~/.emacs.d/autosaves" t)))
+(setq auto-save-file-prefix "~/.emacs.d/autosaves/.saves-")
 (setq auto-save-interval 1000) ; 1000 characters
 (setq auto-save-timeout 60)    ; or 60 seconds
 #+END_SRC
@@ -308,7 +303,7 @@ Source: https://www.emacswiki.org/emacs/BackwardKillLine
 #+BEGIN_SRC emacs-lisp
   (message "[krista] Loading keybindings and accessibility...")
   ;; Change "yes or no" prompts to "y or n" prompts
-  (fset 'yes-or-no-p 'y-or-n-p)
+  (defalias 'yes-or-no-p 'y-or-n-p)
   ;; Toggle fullscreen with meta-return
   (global-set-key (kbd "C-c C-<return>") 'toggle-frame-fullscreen)
   ;; Speedy eval-buffer
@@ -1352,8 +1347,7 @@ Among other things, popup is used in autocomplete. But if I ever want to do more
   (use-package helm-projectile
     :config
     (with-eval-after-load 'projectile (helm-projectile-on))
-    (setq projectile-mode t)
-    (setq projectile-switch-project-action 'helm-projectile-find-file))
+    (setq projectile-mode t))
 #+END_SRC
 * Magit
 ** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
@@ -1490,7 +1484,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (setq undo-tree-auto-save-history t)
   (global-undo-tree-mode)
   (add-to-list 'undo-tree-history-directory-alist
-               '("." . "~/.emacs.d/cache/undo"))
+               '("." . "~/.emacs.d/cache/undo/"))
 #+END_SRC
 * Cosmetics
 ** Whitespace preferences
@@ -1510,7 +1504,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
           'hide-trailing-whitespace)
 (add-hook 'help-mode-hook
           'hide-trailing-whitespace)
-(add-hook 'compiliation-mode-hook
+(add-hook 'compilation-mode-hook
           'hide-trailing-whitespace)
 (add-hook 'makefile-mode-hook
           'hide-trailing-whitespace)
