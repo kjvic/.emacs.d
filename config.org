@@ -1364,84 +1364,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
                '("." . "~/.emacs.d/cache/undo/"))
 #+END_SRC
 * Programming
-** C / C++
-#+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading cc-mode...")
-    (use-package cc-mode
-      :bind (:map
-             c-mode-base-map
-             ("C-c b" . compile)
-             ("M-j" . join-line)))
-    ;; Give me preconfigured autocompletions for C and C++!
-    ;; (add-hook 'c-mode-hook
-    ;;             (lambda ()
-    ;;               (add-to-list 'ac-sources 'ac-source-c-headers)
-    ;;               (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
-
-    ; My wildly unpopular bracing style
-    ; Secret: I really use Ratliffe, but this does the trick
-    (setq krista-c-style
-          '((setq c-default-style "whitesmith")
-            (setq-default c-basic-offset 4)))
-
-    ;;(setq c-default-style "whitesmith")
-    ;;(setq-default c-basic-offset 4)
-
-    ; Alternate settings that don't piss other programmers off as much:
-
-    (setq conformity-c-style
-          '((setq c-default-style "python")
-            (setq-default c-basic-offset 2)))
-
-    (add-hook 'c-mode-common-hook
-              (lambda () (c-add-style "krista-c-style" krista-c-style t)))
-#+END_SRC
-** Python
-*** Pylint minor mode
-#+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading python config...")
-  (autoload 'pylint "pylint")
-  (add-hook 'python-mode-hook 'pylint-add-menu-items)
-  (add-hook 'python-mode-hook 'pylint-add-key-bindings)
-#+END_SRC
-*** Python shell interpreter
-- Problem: When I ran =run-python=, I got the following error message:
-  - Warning (python): Your ‘python-shell-interpreter’ doesn’t seem to
-    support readline, yet ‘python-shell-completion-native’ was t and
-    "python" is not part of the
-    ‘python-shell-completion-native-disabled-interpreters’ list.
-    Native completions have been disabled locally.
-- Solution (via [[https://emacs.stackexchange.com/a/30970][this]]):
-  #+BEGIN_SRC emacs-lisp
-  (with-eval-after-load 'python
-    (defun python-shell-completion-native-try ()
-      "Return non-nil if can trigger native completion."
-      (let ((python-shell-completion-native-enable t)
-            (python-shell-completion-native-output-timeout
-             python-shell-completion-native-try-output-timeout))
-        (python-shell-completion-native-get-completions
-         (get-buffer-process (current-buffer))
-         nil "_"))))
-  #+END_SRC
-*** Press <tab> to indent with 4 spaces
-#+BEGIN_SRC emacs-lisp
-    (add-hook 'python-mode-hook
-              (lambda ()
-                (setq indent-tabs-mode nil)
-                (setq tab-width 4)
-                (setq python-indent 4)))
-#+END_SRC
-** Slime (lisp)
-#+BEGIN_SRC emacs-lisp
-;  (load (expand-file-name "~/core/dev/builds_from_source/quicklisp/slime-helper.el"))
-  ;; The SBCL binary and command-line arguments
-;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
-#+END_SRC
-** haskell
-#+BEGIN_SRC emacs-lisp
-(use-package haskell-mode)
-#+END_SRC
-* Cosmetics
 ** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
 ;; Show trailing whitespace by default
@@ -1477,45 +1399,83 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (setq-default fill-column 80)
   ;(defvaralias 'c-basic-offset 'tab-width)
 #+END_SRC
-* Dealing with Custom
-#+BEGIN_SRC emacs-lisp :noweb tangle
-  (custom-set-variables
-   <<ansi-colors>>
-   '(gud-gdb-command-name "gdb --annotate=1"))
+** Programming languages
+*** C / C++
+#+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading cc-mode...")
+    (use-package cc-mode
+      :bind (:map
+             c-mode-base-map
+             ("C-c b" . compile)
+             ("M-j" . join-line)))
+    ;; Give me preconfigured autocompletions for C and C++!
+    ;; (add-hook 'c-mode-hook
+    ;;             (lambda ()
+    ;;               (add-to-list 'ac-sources 'ac-source-c-headers)
+    ;;               (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
+
+    ; My wildly unpopular bracing style
+    ; Secret: I really use Ratliffe, but this does the trick
+    (setq krista-c-style
+          '((setq c-default-style "whitesmith")
+            (setq-default c-basic-offset 4)))
+
+    ;;(setq c-default-style "whitesmith")
+    ;;(setq-default c-basic-offset 4)
+
+    ; Alternate settings that don't piss other programmers off as much:
+
+    (setq conformity-c-style
+          '((setq c-default-style "python")
+            (setq-default c-basic-offset 2)))
+
+    (add-hook 'c-mode-common-hook
+              (lambda () (c-add-style "krista-c-style" krista-c-style t)))
 #+END_SRC
-** ANSI colors
-#+BEGIN_SRC emacs-lisp :noweb-ref ansi-colors :tangle yes
-  '(ansi-color-faces-vector
-    [default
-      default
-      default
-      italic
-      underline
-      success
-      warning
-      error
-      ])
-  '(ansi-color-names-vector
-    ["#212526"
-     "#ff4b4b"
-     "#b4fa70"
-     "#fce94f"
-     "#729fcf"
-     "#e090d7"
-     "#8cc4ff"
-     "#eeeeec"
-     ])
-  '(ansi-term-color-vector
-    [unspecified
-     "#081724"
-     "#ff694d"
-     "#68f6cb"
-     "#fffe4e"
-     "#bad6e2"
-     "#afc0fd"
-     "#d2f1ff"
-     "#d3f9ee"
-     ])
+*** Python
+**** Pylint minor mode
+#+BEGIN_SRC emacs-lisp
+  (message "[krista] Loading python config...")
+  (autoload 'pylint "pylint")
+  (add-hook 'python-mode-hook 'pylint-add-menu-items)
+  (add-hook 'python-mode-hook 'pylint-add-key-bindings)
+#+END_SRC
+**** Python shell interpreter
+- Problem: When I ran =run-python=, I got the following error message:
+  - Warning (python): Your ‘python-shell-interpreter’ doesn’t seem to
+    support readline, yet ‘python-shell-completion-native’ was t and
+    "python" is not part of the
+    ‘python-shell-completion-native-disabled-interpreters’ list.
+    Native completions have been disabled locally.
+- Solution (via [[https://emacs.stackexchange.com/a/30970][this]]):
+  #+BEGIN_SRC emacs-lisp
+  (with-eval-after-load 'python
+    (defun python-shell-completion-native-try ()
+      "Return non-nil if can trigger native completion."
+      (let ((python-shell-completion-native-enable t)
+            (python-shell-completion-native-output-timeout
+             python-shell-completion-native-try-output-timeout))
+        (python-shell-completion-native-get-completions
+         (get-buffer-process (current-buffer))
+         nil "_"))))
+  #+END_SRC
+**** Press <tab> to indent with 4 spaces
+#+BEGIN_SRC emacs-lisp
+    (add-hook 'python-mode-hook
+              (lambda ()
+                (setq indent-tabs-mode nil)
+                (setq tab-width 4)
+                (setq python-indent 4)))
+#+END_SRC
+*** Slime (lisp)
+#+BEGIN_SRC emacs-lisp
+;  (load (expand-file-name "~/core/dev/builds_from_source/quicklisp/slime-helper.el"))
+  ;; The SBCL binary and command-line arguments
+;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
+#+END_SRC
+*** haskell
+#+BEGIN_SRC emacs-lisp
+(use-package haskell-mode)
 #+END_SRC
 * Emacs help
 ** [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Commands.html][Keybinding instructions]]
