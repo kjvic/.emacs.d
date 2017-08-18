@@ -1564,10 +1564,8 @@ issue, then CHECK CONFIG.EL
   ;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
 #+END_SRC
 
-** Install Corral
-- Surround things with quotes/paren easily!
-- Note: the reason why I don't have this installed now is because the
-  default kbds interfere with my kbds for recording macros
+** +Install Corral+ Figure out smartparens
+Apparently, the package does more than just automatically add the closing paren!
 ** Add more to yasnippet
 ** Install the alert package
 - provides Growl-like notifications
