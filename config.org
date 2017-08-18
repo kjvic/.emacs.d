@@ -965,23 +965,24 @@ Org link workflow:
   - M-x commands (the default binding for execute-extended-command)
 ** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
-    (message "[krista] Loading helm...")
-    (use-package helm
-      :diminish helm-mode
-      ;; helm-config is a bootstrapping package. According to
-      ;;   https://github.com/emacs-helm/helm/issues/744 it's not
-      ;;   required, but I checked out the source, and it looks like it
-      ;;   provides some core niceties that I've enjoyed
-      :init (require 'helm-config)
-      :config
-      ;; Enable Helm globally
-      (helm-mode t)
-      <<helm-behavior>>
-      <<helm-recentf>>
-      :bind (
-             <<helm-replace-defaults>>
-             ))
-    <<helm-descbinds>>
+  (message "[krista] Loading helm...")
+  (use-package helm
+    :diminish helm-mode
+    ;; helm-config is a bootstrapping package. According to
+    ;;   https://github.com/emacs-helm/helm/issues/744 it's not
+    ;;   required, but I checked out the source, and it looks like it
+    ;;   provides some core niceties that I've enjoyed
+    :init (require 'helm-config)
+    :config
+    ;; Enable Helm globally
+    (helm-mode t)
+    <<helm-behavior>>
+    <<helm-recentf>>
+    :bind (
+           <<helm-replace-defaults>>
+           <<helm-actions>>
+           ))
+  <<helm-descbinds>>
 #+END_SRC
 *** Helm behavior
 Sometimes, I just want to tweak something about how Helm functions.
@@ -1024,6 +1025,17 @@ default Emacs functions. Also, Emacs defaults are "meh".
   ;; Display bookmarks for frequently-visited spots on my file system
   ("C-x r l" . helm-bookmarks)
 #+END_SRC
+*** helm actions
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-actions :tangle no
+  :map helm-map
+  ;; Helm persistent action does something useful for the given context, without
+  ;; closing the helm popup
+  ("<tab>" . helm-execute-persistent-action)
+  ("C-i" . helm-execute-persistent-action) ; for use in terminal
+  ;; helm-select-action pulls up a menu of more complex actions that you can take
+  ;; in a given context
+  ("C-z" . helm-select-action)
+#+END_SRC
 *** helm-descbinds (*desc*-ribe *bind*-ings)
 - Helm descbinds is a smarter replacement for "C-h k" to look up
   functions by keybinding
@@ -1064,8 +1076,7 @@ default Emacs functions. Also, Emacs defaults are "meh".
     ;; Bindings so I can still use isearch (if for some crazy reason, I
     ;; want to use isearch rather than swoop)
     ("C-c s" . isearch-forward)
-    ("C-c r" . isearch-backward))
-    )
+    ("C-c r" . isearch-backward)))
 #+END_SRC
 *** Keep syntax highlighting
 Retain syntax highlighting in swoop. It's a tradeoff between this and
@@ -1180,7 +1191,7 @@ speed, but I think that it's worth the (teeny!) speed hit.
   (setq helm-swoop-split-with-multiple-windows t)
 #+END_SRC
 * WIP Auto-complete
-** Giving company a whirl
+** company (COM-plete ANY-thing)
 #+BEGIN_SRC emacs-lisp
   (use-package company 
     :diminish
@@ -1227,68 +1238,18 @@ speed, but I think that it's worth the (teeny!) speed hit.
      ((((type x)) (:inherit company-tooltip-selection :weight bold))
       (t (:inherit company-tooltip-selection))))
 
-;; TODO: move this!!!!!!!!!!!!!!!!!!!!!!
+;; TODO: move this
 '(org-date ((t (:foreground "Cyan" :underline "#075f5f")))))
 #+END_SRC
-** TODO helm-company
+** helm-company
+- company uses popup/tooltip-style suggestions which appear under the point
+- sometimes, I want to navigate through the completion options using helm
+- solution: helm-company
 #+BEGIN_SRC emacs-lisp
-  ;; company
-  ;; (use-package helm-company
-  ;;   :diminish
-  ;;   :bind
-  ;;   (("C-;" 'helm-company company-mode-map)
-  ;;    ("C-;" 'helm-company company-active-map)))
-#+END_SRC
-** auto-complete
-#+BEGIN_SRC emacs-lisp
-  ;; (require 'auto-complete)
-  ;; (require 'ac-helm)
-  ;; (require 'auto-complete-config)
-  ;; (ac-config-default)
-  ;; (defun ac-complete-with-helm-Select ()
-  ;;   "auto `auto-complete' candidates by `helm'.
-  ;; It is useful to narrow candidates."
-  ;;   (interactive)
-  ;;   (let ((c (ac-candidates)))
-  ;;     (if (= (length c) 1)
-  ;;         (ac-expand)
-  ;;       (when ac-completing
-  ;;         (with-helm-show-completion ac-point ac-last-point
-  ;;           (helm :sources 'helm-source-auto-complete-candidates
-  ;;                 :buffer  "*helm auto-complete*"))))))
-  ;; (defun complete-with-helm ()
-  ;;   (interactive)
-  ;;   (ignore-errors
-  ;;     (call-interactively 'auto-complete)
-  ;;     (call-interactively 'ac-complete-with-helm-auto)))
-  ;; (global-set-key (kbd "C-;") 'complete-with-helm)
-#+END_SRC
-** TODO migrate this into a use-package statement
-[[http://stackoverflow.com/questions/27474936/color-schema-of-emacs-auto-complete-mode][color scheme]]
-#+BEGIN_SRC emacs-lisp
-  ;; (message "[krista] Loading auto-complete...")
-  ;; (require 'auto-complete)
-  ;; (ac-config-default)
-  ;; (setq global-auto-complete-mode t)
-
-  ;; ;; Enable auto-complete-mode globally, and don't do it in the minibuffer
-  ;; ;; Source: https://stackoverflow.com/questions/8095715/emacs-auto-complete-mode-at-startup
-  ;; (defun auto-complete-mode-maybe ()
-  ;;   (unless (minibufferp (current-buffer))
-  ;;     (auto-complete-mode t)))
-  ;; ;; (global-set-key (kbd "C-;") 'auto-complete)
-  ;; (diminish auto-complete-mode)
-#+END_SRC
-** Helm autocomplete
-I used the auto-complete package for a long time, but it caused
-problems in my settings for helm window splitting. So instead, I'm
-going to use the helm
-#+BEGIN_SRC emacs-lisp
-  ;; (use-package ac-helm
-  ;;   :diminish
-  ;;   :bind
-  ;;   (("C-;" 'ac-complete-with-helm)))
-  ;; (global-set-key (kbd "C-;") 'ac-complete-with-helm)
+  (with-eval-after-load 'company
+    (use-package helm-company :diminish)
+    (bind-key "C-'"  'helm-company company-mode-map)
+    (bind-key "C-'" 'helm-company company-active-map))
 #+END_SRC
 * Projectile
 ** Projectile proper
