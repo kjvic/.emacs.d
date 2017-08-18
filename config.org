@@ -359,8 +359,8 @@ Keep some "context lines" around
     (transpose-lines 1)
     (forward-line -1)
     (indent-according-to-mode))
-  (global-set-key [(meta p)]  'move-line-up)
-  (global-set-key [(meta n)]  'move-line-down)
+  (global-set-key (kbd "M-P")  'move-line-up)
+  (global-set-key (kbd "M-N")  'move-line-down)
 
   ;; Don't add 2 spaces after my period, dammit!
   (setq sentence-end-double-space nil)
@@ -1347,6 +1347,11 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
       (340 . "#ffcc66")
       (360 . "#99cc99"))))
   (setq vc-annotate-very-old-color nil)
+#+END_SRC
+* Ace-window
+#+BEGIN_SRC emacs-lisp
+(use-package ace-window)
+(global-set-key (kbd "M-p") 'ace-window)
 #+END_SRC
 * Programming
 ** C / C++
