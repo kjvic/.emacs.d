@@ -1190,7 +1190,7 @@ speed, but I think that it's worth the (teeny!) speed hit.
     ;; in half
   (setq helm-swoop-split-with-multiple-windows t)
 #+END_SRC
-* WIP Auto-complete
+* Auto-complete
 ** company (COM-plete ANY-thing)
 #+BEGIN_SRC emacs-lisp
   (use-package company 
