@@ -1490,25 +1490,25 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
 #+BEGIN_SRC emacs-lisp
 (use-package haskell-mode)
 #+END_SRC
-* Emacs help
-** [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Commands.html][Keybinding instructions]]
-** How to edit source code in org-mode file
-*** New code block:
-**** New source block (lang unspecified): <s [TAB]
-**** New elisp block: <el [TAB]
-*** Edit code block: C-c'
-** embed image in org
-#+BEGIN_SRC emacs-lisp
-  ;; P.s.: you can embed an image in org as follows:
-  ;; * Picture:
-  ;; #+CAPTION: This is the caption for the next figure link (or table)
-  ;; #+attr_org: :width="50px"
-  ;; #+NAME:   figure
-  ;; [[file:./my_image.png]]
-;; To view:
-#+END_SRC
-** Select all: C-xh
-** Moving a file into the 'literate' directory:
+* Getting help
+This section is not part of my config file per say, but contains instructions
+for getting help with various parts of emacs
+** How-to's
+*** [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Commands.html][Keybinding instructions]]
+*** How to edit source code in org-mode file
+- New code block:
+  - New source block (lang unspecified): <s [TAB]
+  - New elisp block: <el [TAB]
+- Edit code block: C-c'
+*** Embed an image in an org document
+#+BEGIN_EXAMPLE
+  #+CAPTION: This is the caption for the next figure link (or table)
+  #+attr_org: :width="50px"
+  #+NAME:   figure
+  [[file:./my_image.png]]
+#+END_EXAMPLE
+*** Select all: C-x h
+*** Moving a file into the 'literate' directory:
 Suppose you made a file called =new-thing=
 #+BEGIN_EXAMPLE 
 ;; Macro to define a new external tangling file:
@@ -1516,9 +1516,19 @@ Suppose you made a file called =new-thing=
 ;; Actually load the external file:
 '(org-babel-load-file krista/my-new-config-file)
 #+END_EXAMPLE
-** Tangling issues
+** Troubleshooting your config file
 If you don't know why your emacs is breaking, but suspect a tangling
 issue, then CHECK CONFIG.EL
+** Helpful resources
+*** Within emacs
+- =M-x describe-[key, face, mode, etc.]=
+  - =C-h [k, o, f, m]=: Quick keybindings for the describe-.* functions
+- For helm: [[*helm-descbinds%20(*desc*-ribe%20*bind*-ings)][*helm-descbinds (*desc*-ribe *bind*-ings)]]
+- Custom help written by me: [[*Cheatsheet]]
+*** Online
+- http://pages.sachachua.com/.emacs.d/Sacha.html
+- http://ergoemacs.org/emacs/emacs.html
+- https://emacsdojo.github.io/
 * Further plans
 ** TODO Kinesis-specific keyboard issues
 - My hands were hurting after long typing sessions. As a computer
@@ -1568,7 +1578,3 @@ Apparently, the package does more than just automatically add the closing paren!
 ** TODO Install the alert package
 - provides Growl-like notifications
 - would be useful for org-calendar
-* Gurus
-- https://emacsdojo.github.io/
-- http://pages.sachachua.com/.emacs.d/Sacha.html
-  
