@@ -186,6 +186,13 @@ q
 #+BEGIN_SRC emacs-lisp
 (setq list-colors-sort 'luminance)
 #+END_SRC
+** Funnel settings from Customize into another file
+#+BEGIN_SRC emacs-lisp
+  ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  ;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
+  ;; (load custom-file :noerror)
+#+END_SRC
 * Global settings
 ** Better defaults
 *** Remove default startup message, text at the top of scratch buffers
@@ -1472,11 +1479,6 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+END_SRC
 * Dealing with Custom
 #+BEGIN_SRC emacs-lisp :noweb tangle
-  ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-  ;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
-  ;; (load custom-file :noerror)
-
   (custom-set-variables
    <<ansi-colors>>
    '(gud-gdb-command-name "gdb --annotate=1"))
