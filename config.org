@@ -256,6 +256,7 @@ out how to set it immediately, but this should suffice as startup config.
 *** Highlight corresponding paren whenever you mouse over its pair
 #+BEGIN_SRC emacs-lisp
   (show-paren-mode 1)
+  (setq show-paren-delay 0)
 #+END_SRC
 ** Getting around
 *** Cycle backwards through buffers
@@ -270,16 +271,22 @@ Thanks to http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
    'minibuffer-prompt-properties
    (quote (read-only t cursor-intangible t face minibuffer-prompt)))
 #+END_SRC
+*** Don't scroll a full screenful at a time
+Keep some "context lines" around
+#+BEGIN_SRC emacs-lisp
+(setq next-screen-context-lines 3)
+#+END_SRC
 ** Editing
 *** Backwards kill-line
-It's the backwards version of C-k
-Source: https://www.emacswiki.org/emacs/BackwardKillLine
+- It's the backwards version of C-k
+- Note: M-k was originally bound to =kill-sentence=
+- Source: https://www.emacswiki.org/emacs/BackwardKillLine
 #+BEGIN_SRC emacs-lisp
   (defun backward-kill-line (arg)
     "Kill ARG lines backward."
     (interactive "p")
     (kill-line (- 1 arg)))
-  (global-set-key (kbd "C-c k") 'backward-kill-line)
+  (global-set-key (kbd "M-k") 'backward-kill-line)
 #+END_SRC
 *** Delete highlighted text if you start typing on top of it
 #+BEGIN_SRC emacs-lisp
@@ -1458,6 +1465,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (setq whitespace-action '(auto-cleanup))
   (setq-default indent-tabs-mode nil)
   (setq tab-width 8)
+  (setq-default fill-column 80)
   ;(defvaralias 'c-basic-offset 'tab-width)
 #+END_SRC
 * Theme
