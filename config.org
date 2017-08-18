@@ -1475,7 +1475,7 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   ;; (load-theme 'doom-one t)
 
   ;; Enable flashing mode-line on errors
-  ;; (doom-themes-visual-bell-config)
+  (doom-themes-visual-bell-config)
 #+END_SRC
 * Dealing with Custom
 #+BEGIN_SRC emacs-lisp :noweb tangle
