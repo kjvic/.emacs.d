@@ -340,6 +340,11 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
     ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
   ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
   (global-set-key (kbd "M-j") 'join-line)
+
+;; Unbind Ctrl+meta+<right>, Ctrl+meta+<left> so BTT can use that to
+;;bring a window to a new desktop
+(global-unset-key (kbd "C-M-<left>"))
+(global-unset-key (kbd "C-M-<right>"))
 #+END_SRC
 ** Enable hidden commands
 #+BEGIN_SRC emacs-lisp
@@ -1414,14 +1419,6 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 ** haskell
 #+BEGIN_SRC emacs-lisp
 (use-package haskell-mode)
-#+END_SRC
-* Interfacing with other customizations
-** BetterTouchTool (BTT)
-Unbind Ctrl+meta+<right>, Ctrl+meta+<left> so BTT can use that to
-bring a window to a new desktop
-#+BEGIN_SRC emacs-lisp
-(global-unset-key (kbd "C-M-<left>"))
-(global-unset-key (kbd "C-M-<right>"))
 #+END_SRC
 * Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
