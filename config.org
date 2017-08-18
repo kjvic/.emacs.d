@@ -316,8 +316,8 @@ Note: this resizes the frame, but does not enter the OS's native fullscreen mode
     (transpose-lines 1)
     (forward-line -1)
     (indent-according-to-mode))
-  (global-set-key (kbd "M-P")  'move-line-up)
-  (global-set-key (kbd "M-N")  'move-line-down)
+  (global-set-key (kbd "M-p")  'move-line-up)
+  (global-set-key (kbd "M-n")  'move-line-down)
 #+END_SRC
 *** Comment out the current line
 Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
@@ -1351,7 +1351,7 @@ the display until you restart Emacs.
 ** Ace Window
 #+BEGIN_SRC emacs-lisp
 (use-package ace-window)
-(global-set-key (kbd "M-p") 'ace-window)
+(global-set-key (kbd "M-P") 'ace-window)
 #+END_SRC
 ** Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
