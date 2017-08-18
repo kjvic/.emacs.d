@@ -160,15 +160,7 @@ This is where I put things that help me modify my emacs install more efficiently
   #+BEGIN_SRC emacs-lisp
   (require 'benchmark-init)
   #+END_SRC
-** Number of messages to store (increase if debugging lots of elisp!)
-#+BEGIN_SRC emacs-lisp
-(setq message-log-max 1000)
-#+END_SRC
-** Help me learn new keybindings
-#+BEGIN_SRC emacs-lisp
-(setq suggest-key-bindings t)
-#+END_SRC
-** Help me pick colors
+q
 #+BEGIN_SRC emacs-lisp
 (setq list-colors-sort 'luminance)
 #+END_SRC
@@ -237,6 +229,30 @@ Source: http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
 #+BEGIN_SRC emacs-lisp
  (delete-selection-mode 1)
 #+END_SRC
+** Getting around
+*** Don't scroll a full screenful at a time
+Keep some "context lines" around
+#+BEGIN_SRC emacs-lisp
+(setq next-screen-context-lines 3)
+#+END_SRC
+*** Cycle backwards through buffers
+"C-x o", meet your new friend "C-c o"!
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-c o") 'previous-multiframe-window)
+#+END_SRC
+** Editing
+*** Backwards kill-line
+- It's the backwards version of C-k
+- Note: M-k was originally bound to =kill-sentence=
+- Source: https://www.emacswiki.org/emacs/BackwardKillLine
+#+BEGIN_SRC emacs-lisp
+  (defun backward-kill-line (arg)
+    "Kill ARG lines backward."
+    (interactive "p")
+    (kill-line (- 1 arg)))
+  (global-set-key (kbd "M-k") 'backward-kill-line)
+#+END_SRC
+* Appearance
 ** Aesthetic tweaks
 *** Set cursor appearance
 Note: changing the cursor-type does not take effect until emacs is restarted,
@@ -311,29 +327,7 @@ out how to set it immediately, but this should suffice as startup config.
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
 #+END_SRC
-** Getting around
-*** Don't scroll a full screenful at a time
-Keep some "context lines" around
-#+BEGIN_SRC emacs-lisp
-(setq next-screen-context-lines 3)
-#+END_SRC
-*** Cycle backwards through buffers
-"C-x o", meet your new friend "C-c o"!
-#+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "C-c o") 'previous-multiframe-window)
-#+END_SRC
-** Editing
-*** Backwards kill-line
-- It's the backwards version of C-k
-- Note: M-k was originally bound to =kill-sentence=
-- Source: https://www.emacswiki.org/emacs/BackwardKillLine
-#+BEGIN_SRC emacs-lisp
-  (defun backward-kill-line (arg)
-    "Kill ARG lines backward."
-    (interactive "p")
-    (kill-line (- 1 arg)))
-  (global-set-key (kbd "M-k") 'backward-kill-line)
-#+END_SRC
+
 * Keybindings and accessibility
 #+BEGIN_SRC emacs-lisp
   (message "[krista] Loading keybindings and accessibility...")
