@@ -1363,6 +1363,19 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (add-to-list 'undo-tree-history-directory-alist
                '("." . "~/.emacs.d/cache/undo/"))
 #+END_SRC
+** Flycheck
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck
+    :init (global-flycheck-mode)
+    :diminish)
+  ;; Permanently enable syntax checking
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+#+END_SRC
+*** Usage
+via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
+- =C-c ! n=: go forward to next error
+- =C-c ! p=: go backward to prev. error
+- =C-c ! l=: show a popup list of errors
 * Programming
 ** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
@@ -1506,7 +1519,7 @@ Suppose you made a file called =new-thing=
 ** Tangling issues
 If you don't know why your emacs is breaking, but suspect a tangling
 issue, then CHECK CONFIG.EL
-* Further plans / WIP
+* Further plans / WIPs
 ** Add Kinesis-specific keyboard issues
 - NOTE: This section is WIP.
 - My hands were hurting after long typing sessions. As a computer
@@ -1540,20 +1553,6 @@ issue, then CHECK CONFIG.EL
 - Ideally, the package would output an org doc with an undo-tree -like
   interface for retracing my steps in debugging
 ** Set up steam integration with emacs
-** Flycheck
-*** Config
-#+BEGIN_SRC emacs-lisp
-  (use-package flycheck
-    :init (global-flycheck-mode)
-    :diminish)
-  ;; Permanently enable syntax checking
-  (add-hook 'after-init-hook #'global-flycheck-mode)
-#+END_SRC
-*** Usage
-via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
-- =C-c ! n= :: go forward to next error
-- =C-c ! p= :: go backward to prev. error
-- =C-c ! l= :: show a popup list of errors
 ** Emacs/W3
 #+BEGIN_SRC emacs-lisp
 ;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
