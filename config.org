@@ -108,7 +108,7 @@
   #+END_SRC
 * Tools for configuring emacs
 This is where I put things that help me modify my emacs install more efficiently
-** Speedy-keys to open and eval my config file
+** Quickly open, evaluate my config file
 #+BEGIN_SRC emacs-lisp
   (defun krista/open-config ()
     "Quickly open my config file"
@@ -122,7 +122,9 @@ This is where I put things that help me modify my emacs install more efficiently
     (interactive)
     (load-file user-init-file))
   (global-set-key (kbd "C-c C-h") 'krista/eval-config)
-
+#+END_SRC
+** Evaluate a region, or the buffer (whatever's appropriate)
+#+BEGIN_SRC emacs-lisp
   (defun eval-region-or-buffer ()
     "Let me eval either a region or a buffer at a time"
     (interactive)
@@ -135,12 +137,27 @@ This is where I put things that help me modify my emacs install more efficiently
        (t
         (eval-buffer)
         (message "Buffer evaluated!")))))
-
   (add-hook 'emacs-lisp-mode-hook
             (lambda ()
               (global-set-key (kbd "C-c C-b") 'eval-region-or-buffer)))
 #+END_SRC
-** achievements mode
+** Switch to *Messages* buffer
+#+BEGIN_SRC emacs-lisp
+  (defun switch-to-messages-buffer ()
+    "Open up the *Messages* buffer in a new frame"
+    (interactive)
+    (switch-to-buffer-other-window "*Messages*"))
+  (global-set-key (kbd "C-c m") 'switch-to-messages-buffer)
+#+END_SRC
+** Record keyboard macros
+#+BEGIN_SRC emacs-lisp
+  ;; Start & end recording new keyboard macro
+  (global-set-key (kbd "M-[") 'kmacro-start-macro)
+  (global-set-key (kbd "M-]") 'kmacro-end-macro)
+  ;; Call the last keyboard macro that was recorded
+  (global-set-key (kbd "C-l") 'call-last-kbd-macro)
+#+END_SRC
+** Emacs achievements
 - Unlock achievements to track your emacs journey
 - [[https://bitbucket.org/gvol/emacs-achievements/src/5b4b7b6816aaf105cd493f51b3860bd2f0c014a6/README.md?at=default&fileviewer=file-view-default][Bitbucket]]
 #+BEGIN_SRC emacs-lisp
@@ -229,6 +246,10 @@ Source: http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
 #+BEGIN_SRC emacs-lisp
  (delete-selection-mode 1)
 #+END_SRC
+*** Change "yes or no" prompts to "y or n" prompts
+#+BEGIN_SRC emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
 ** Getting around
 *** Don't scroll a full screenful at a time
 Keep some "context lines" around
@@ -251,6 +272,11 @@ Keep some "context lines" around
     (interactive "p")
     (kill-line (- 1 arg)))
   (global-set-key (kbd "M-k") 'backward-kill-line)
+#+END_SRC
+** Global keybindings
+#+BEGIN_SRC emacs-lisp
+  ;; Toggle fullscreen with meta-return
+  (global-set-key (kbd "C-c C-<return>") 'toggle-frame-fullscreen)
 #+END_SRC
 * Appearance
 ** Aesthetic tweaks
@@ -331,19 +357,9 @@ out how to set it immediately, but this should suffice as startup config.
 * Keybindings and accessibility
 #+BEGIN_SRC emacs-lisp
   (message "[krista] Loading keybindings and accessibility...")
-  ;; Change "yes or no" prompts to "y or n" prompts
-  (defalias 'yes-or-no-p 'y-or-n-p)
-  ;; Toggle fullscreen with meta-return
-  (global-set-key (kbd "C-c C-<return>") 'toggle-frame-fullscreen)
-  ;; Speedy eval-buffer
-  (global-set-key (kbd "C-c b") 'eval-buffer)
 
-  ;; Go to *Messages* buffer
-  (defun switch-to-messages-buffer ()
-    "Open up the *Messages* buffer in a new frame"
-    (interactive)
-    (switch-to-buffer-other-window "*Messages*"))
-  (global-set-key (kbd "C-c m") 'switch-to-messages-buffer)
+  ;; Eval buffer
+  (global-set-key (kbd "C-c b") 'eval-buffer)
 
   ;; count words in selected region
   (global-set-key (kbd "C-c w") 'count-words)
@@ -394,13 +410,6 @@ out how to set it immediately, but this should suffice as startup config.
 
   ;; Make C-K clear text AND newline
   (setq kill-whole-line t)
-
-      ;;; Start & end recording new keyboard macro
-  (global-set-key (kbd "M-[") 'kmacro-start-macro)
-  (global-set-key (kbd "M-]") 'kmacro-end-macro)
-      ;;; (TODO https://www.emacswiki.org/emacs/KeyboardMacros)
-  (global-set-key (kbd "C-l") 'call-last-kbd-macro)
-
 
   ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
   ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
