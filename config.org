@@ -258,6 +258,18 @@ out how to set it immediately, but this should suffice as startup config.
   (show-paren-mode 1)
   (setq show-paren-delay 0)
 #+END_SRC
+*** Put relevant info in the title bar
+Set the format for the title bar
+- Disambiguation: 
+  - An example [[https://cdn1.tekrevue.com/wp-content/uploads/2015/09/osx-finder-path-in-title-bar.jpg][window title bar]] in macOS
+  - macOS calls this thing a "window title"
+  - emacs calls this thing a "frame title"
+- See also: https://www.emacswiki.org/emacs/FrameTitle
+#+BEGIN_SRC emacs-lisp
+;; %b - Buffer name
+;; %m - Buffer mode
+(setq frame-title-format '("%b - [%m]"))
+#+END_SRC
 ** Getting around
 *** Cycle backwards through buffers
 "C-x o", meet your new friend "C-c o"!
