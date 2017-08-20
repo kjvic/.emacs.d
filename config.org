@@ -549,6 +549,10 @@ out how to set it immediately, but this should suffice as startup config.
   (setq org-todo-keyword-faces '(("TODO" . (:foreground "#ff0f97" :weight bold))
                                  ("DONE" . (:foreground "#075f5f" :weight bold))
                                  ("CANCELLED") . (:foreground "#888a85" :weight bold)))
+;; Don't add a weird indent to source blocks
+(setq org-src-preserve-indentation nil
+      org-edit-src-content-indentation 0)
+
 #+END_SRC
 *** Exporting to LaTeX
 #+BEGIN_SRC emacs-lisp
