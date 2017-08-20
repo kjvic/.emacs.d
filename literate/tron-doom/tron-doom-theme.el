@@ -22,11 +22,12 @@ legibility."
   :group 'tron-doom-theme
   :type 'boolean)
 
-(defcustom tron-doom-padded-modeline nil
+(defcustom tron-doom-padded-modeline t
   "If non-nil, adds a 4px padding to the mode-line. Can be an integer to
 determine the exact padding."
   :group 'tron-doom-theme
   :type '(or integer boolean))
+(setq tron-doom-padded-modeline t)
 
 ;;
 (def-doom-theme tron-doom
@@ -59,6 +60,8 @@ determine the exact padding."
    (violet     '("#75dbb7" "#75dbb7" "brightmagenta"))
    (cyan       '("#a0ffff" "#a0ffff" "brightcyan"   ))
    (dark-cyan  '("#3fffff" "#3fffff" "cyan"         ))
+   (salad      '("#00a890" "#00a890" "yellow"       ))
+   ;; (rust       '("#804532" "#804532" "darkred"      ))
 
    ;; face categories -- required for all themes
    (highlight      blue)
@@ -90,13 +93,11 @@ determine the exact padding."
     (when tron-doom-padded-modeline
       (if (integerp tron-doom-padded-modeline) tron-doom-padded-modeline 4)))
 
-   (modeline-fg     nil)
-   (modeline-fg-alt (doom-blend violet base4 (if -modeline-bright 0.5 0.2)))
+   (modeline-fg cyan)
+   (modeline-fg-alt base3)
+   ;; (modeline-fg-alt (doom-lighten violet 0.6))
 
-   (modeline-bg
-    (if -modeline-bright
-        (doom-darken blue 0.475)
-      `(,(car bg) ,@(cdr base0))))
+   (modeline-bg (doom-darken green 0.5))
    (modeline-bg-l
     (if -modeline-bright
         (doom-darken blue 0.45)

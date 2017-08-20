@@ -103,7 +103,8 @@
                              (format "%-12s" "\ ")) ; Default case (no version control)
                            'face 'font-lock-builtin-face))
        ;; Buffer/file name (just this file... not the whole path)
-       '(:eval (propertize " %12b" 'face '(:foreground "cyan")))
+       " %12b"
+       ;; '(:eval (propertize " %12b" 'face '(:foreground "cyan")))
        ;; Line:column
        '(:eval (propertize " %4l | %2c" 'face 'font-lock-comment-face))
 

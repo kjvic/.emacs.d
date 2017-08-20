@@ -52,7 +52,10 @@
     (font-lock-regexp-grouping-construct :inherit 'bold :foreground operators)
 
     ;; mode-line / header-line
-    (mode-line           :background bg     :foreground fg     :distant-foreground bg)
+    (mode-line           :background modeline-bg
+                         :foreground modeline-fg
+                         :box (:line-width modeline-height :color modeline-bg))
+
     (mode-line-inactive  :background bg-alt :foreground fg-alt :distant-foreground bg-alt)
     (mode-line-emphasis  :foreground highlight :distant-foreground bg)
     (mode-line-highlight :inherit 'highlight :distant-foreground bg)
