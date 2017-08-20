@@ -1015,12 +1015,10 @@ speed, but I think that it's worth the (teeny!) speed hit.
 (use-package magit
   :config
   <<magit-color-scheme>>
-  )
-
-;; Speedy-open
-(bind-key "C-c g" #'magit-status)
-;; Default arguments to magit log
-(setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
+  ;; Default arguments to magit log
+  (setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
+  :bind
+  (("C-c g" . magit-status)))
 #+END_SRC
 *** Color scheme
 Note: "vc" stands for *V*-ersion *C*-ontrol
