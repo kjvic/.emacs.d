@@ -160,7 +160,8 @@ This is where I put things that help me modify my emacs install more efficiently
 ** Quickly open melpa
 #+BEGIN_SRC emacs-lisp
   ;; Speedy-open melpa
-  (bind-key "H-p" #'package-list-packages)
+  (use-package paradox
+    :bind (("H-p" . paradox-list-packages)))
 #+END_SRC
 ** Emacs achievements
 - Unlock achievements to track your emacs journey
