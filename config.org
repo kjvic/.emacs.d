@@ -7,20 +7,20 @@
 ** Load-path
 *** Config
 #+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/elisp/")
-  (add-to-list 'load-path (concat user-emacs-directory "literate/tron-doom/"))
+(add-to-list 'load-path "~/.emacs.d/elisp/")
+(add-to-list 'load-path (concat user-emacs-directory "literate/tron-doom/"))
 #+END_SRC
 ** use-package: package management management
 [[https://github.com/jwiegley/use-package][use-package github]]
 #+BEGIN_SRC emacs-lisp
-  (unless (package-installed-p 'use-package)
-    ;; Update the package if it needs updating.
-    ;; NOTE: This contacts melpa every time you reload your config. Overhead!
-    ;; (package-refresh-contents)
-    (package-install 'use-package))
-  (require 'use-package)
-  ;; All packages in a use-package macro should be automagically installed
-  (setq use-package-always-ensure t)
+(unless (package-installed-p 'use-package)
+  ;; Update the package if it needs updating.
+  ;; NOTE: This contacts melpa every time you reload your config. Overhead!
+  ;; (package-refresh-contents)
+  (package-install 'use-package))
+(require 'use-package)
+;; All packages in a use-package macro should be automagically installed
+(setq use-package-always-ensure t)
 #+END_SRC
 ** Byte-compile external files (if necessary)
 - How to byte-compile your entire .emacs.d from the command line:
@@ -30,12 +30,12 @@
   - [[http://emacsredux.com/blog/2013/06/25/boost-performance-by-leveraging-byte-compilation/][Source]]
 - auto-compile mode
   #+BEGIN_SRC emacs-lisp
-    ;;; init.el --- user init file      -*- no-byte-compile: t -*-
-    (use-package auto-compile
-      ;; NOTE: This will only re-compile existing .elc files, so you must
-      ;; run the shell command above for one-time install on new machines
-      :config (auto-compile-on-load-mode))
-    (setq load-prefer-newer t)
+  ;;; init.el --- user init file      -*- no-byte-compile: t -*-
+  (use-package auto-compile
+    ;; NOTE: This will only re-compile existing .elc files, so you must
+    ;; run the shell command above for one-time install on new machines
+    :config (auto-compile-on-load-mode))
+  (setq load-prefer-newer t)
   #+END_SRC
 ** Literate programming support
 - NOTE: you /must/ have each tangle block on a new line in order for it
@@ -46,23 +46,23 @@
   which won't work if use-package hasn't been loaded yet!
 *** Tangling helpers
 #+BEGIN_SRC emacs-lisp
-  (setq-default krista/org-config-directory "literate")
-  (setq-default krista/org-config-dirpath
-                (expand-file-name (concat user-emacs-directory
-                                          krista/org-config-directory)))
-  (add-to-list 'load-path krista/org-config-dirpath)
-  (setq-default krista/config-org-files nil)
+(setq-default krista/org-config-directory "literate")
+(setq-default krista/org-config-dirpath
+              (expand-file-name (concat user-emacs-directory
+                                        krista/org-config-directory)))
+(add-to-list 'load-path krista/org-config-dirpath)
+(setq-default krista/config-org-files nil)
 
-  ;; transforms the given name to "krista/name-config-file" and sets it
-  ;; to the given org filename
-  (defmacro krista/new-config-file (name filename)
-    (let ((full-file (make-symbol "full-filename")))
-      `(let ((,full-file
-              (concat (file-name-as-directory krista/org-config-dirpath)  ,filename ".org")))
-         (defvar ,(intern (concat "krista/" (symbol-name name) "-config-file"))
-           ,full-file)
-         (add-to-list
-          (quote krista/config-org-files) (quote (,name . ,filename)) t))))
+;; transforms the given name to "krista/name-config-file" and sets it
+;; to the given org filename
+(defmacro krista/new-config-file (name filename)
+  (let ((full-file (make-symbol "full-filename")))
+    `(let ((,full-file
+            (concat (file-name-as-directory krista/org-config-dirpath)  ,filename ".org")))
+       (defvar ,(intern (concat "krista/" (symbol-name name) "-config-file"))
+         ,full-file)
+       (add-to-list
+        (quote krista/config-org-files) (quote (,name . ,filename)) t))))
 #+END_SRC
 *** Now actually tangle the external files
 - NOTE: It is important that use-package has been loaded before this
@@ -71,12 +71,12 @@
   which won't work if use-package hasn't been loaded yet!
 **** OS-specific config
 #+BEGIN_SRC emacs-lisp
-  (krista/new-config-file macOS "macOS")
-  (krista/new-config-file windows "windows")
-  (when (eq system-type 'darwin)
-    (org-babel-load-file krista/macOS-config-file))
-  (when (member system-type '(ms-dos windows-nt cygwin))
-    (org-babel-load-file krista/windows-config-file))
+(krista/new-config-file macOS "macOS")
+(krista/new-config-file windows "windows")
+(when (eq system-type 'darwin)
+  (org-babel-load-file krista/macOS-config-file))
+(when (member system-type '(ms-dos windows-nt cygwin))
+  (org-babel-load-file krista/windows-config-file))
 #+END_SRC
 **** Modeline
 #+BEGIN_SRC emacs-lisp
@@ -98,83 +98,83 @@
   - [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Command_002dLine-Arguments.html][More on command line arguments]]
 - Config (via [[https://emacs.stackexchange.com/a/21106][stackexchange]])
   #+BEGIN_SRC emacs-lisp
-    (setq default-initial-buffer-choice "~/core/lists/todo.org")
-    (defun my-after-init-hook ()
-      "Set initial buffer ONLY if no file is specified in command line args"
-      (when (eq 1 (length command-line-args))
-        (message "[krista] Setting initial buffer to default value")
-        (setq initial-buffer-choice default-initial-buffer-choice)))
-    (add-hook 'after-init-hook 'my-after-init-hook)
+  (setq default-initial-buffer-choice "~/core/lists/todo.org")
+  (defun my-after-init-hook ()
+    "Set initial buffer ONLY if no file is specified in command line args"
+    (when (eq 1 (length command-line-args))
+      (message "[krista] Setting initial buffer to default value")
+      (setq initial-buffer-choice default-initial-buffer-choice)))
+  (add-hook 'after-init-hook 'my-after-init-hook)
   #+END_SRC
 * Tools for configuring emacs
 This is where I put things that help me modify my emacs install more efficiently
 ** Quickly open, evaluate my config file
 #+BEGIN_SRC emacs-lisp
-  (defun krista/open-config ()
-    "Quickly open my config file"
-    (interactive)
-    (find-file (or "~/.emacs.d/config.org"
-                   user-init-file "")))
-  (bind-key "C-c e" #'krista/open-config)
+(defun krista/open-config ()
+  "Quickly open my config file"
+  (interactive)
+  (find-file (or "~/.emacs.d/config.org"
+                 user-init-file "")))
+(bind-key "C-c e" #'krista/open-config)
 
-  (defun krista/eval-config ()
-    "Quickly evaluate my config file"
-    (interactive)
-    (load-file user-init-file))
-  (bind-key "C-c C-h" #'krista/eval-config)
+(defun krista/eval-config ()
+  "Quickly evaluate my config file"
+  (interactive)
+  (load-file user-init-file))
+(bind-key "C-c C-h" #'krista/eval-config)
 #+END_SRC
 ** Evaluate a region, or the buffer (whatever's appropriate)
 #+BEGIN_SRC emacs-lisp
-  (defun eval-region-or-buffer ()
-    "Let me eval either a region or a buffer at a time"
-    (interactive)
-    (let ((debug-on-error t))
-      (cond
-       (mark-active
-        (call-interactively 'eval-region)
-        (message "Region evaluated!")
-        (setq deactivate-mark t))
-       (t
-        (eval-buffer)
-        (message "Buffer evaluated!")))))
-  (add-hook 'emacs-lisp-mode-hook
-            (lambda ()
-              (bind-key "C-c C-b" #'eval-region-or-buffer)))
+(defun eval-region-or-buffer ()
+  "Let me eval either a region or a buffer at a time"
+  (interactive)
+  (let ((debug-on-error t))
+    (cond
+     (mark-active
+      (call-interactively 'eval-region)
+      (message "Region evaluated!")
+      (setq deactivate-mark t))
+     (t
+      (eval-buffer)
+      (message "Buffer evaluated!")))))
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (bind-key "C-c C-b" #'eval-region-or-buffer)))
 #+END_SRC
 ** Switch to *Messages* buffer
 #+BEGIN_SRC emacs-lisp
-  (defun switch-to-messages-buffer ()
-    "Open up the *Messages* buffer in a new frame"
-    (interactive)
-    (switch-to-buffer-other-window "*Messages*"))
-  (bind-key "C-c m" #'switch-to-messages-buffer)
+(defun switch-to-messages-buffer ()
+  "Open up the *Messages* buffer in a new frame"
+  (interactive)
+  (switch-to-buffer-other-window "*Messages*"))
+(bind-key "C-c m" #'switch-to-messages-buffer)
 #+END_SRC
 ** Record keyboard macros
 #+BEGIN_SRC emacs-lisp
-  ;; Start & end recording new keyboard macro
-  (bind-key "M-[" #'kmacro-start-macro)
-  (bind-key "M-]" #'kmacro-end-macro)
-  ;; Call the last keyboard macro that was recorded
-  (bind-key "C-l" #'call-last-kbd-macro)
+;; Start & end recording new keyboard macro
+(bind-key "M-[" #'kmacro-start-macro)
+(bind-key "M-]" #'kmacro-end-macro)
+;; Call the last keyboard macro that was recorded
+(bind-key "C-l" #'call-last-kbd-macro)
 #+END_SRC
 ** Quickly open melpa
 #+BEGIN_SRC emacs-lisp
-  ;; Speedy-open melpa
-  (use-package paradox
-    :bind (("H-p" . paradox-list-packages)))
+;; Speedy-open melpa
+(use-package paradox
+  :bind (("H-p" . paradox-list-packages)))
 #+END_SRC
 ** Emacs achievements
 - Unlock achievements to track your emacs journey
 - [[https://bitbucket.org/gvol/emacs-achievements/src/5b4b7b6816aaf105cd493f51b3860bd2f0c014a6/README.md?at=default&fileviewer=file-view-default][Bitbucket]]
 #+BEGIN_SRC emacs-lisp
-  (use-package achievements
-    :diminish achievements-mode
-    :config (achievements-mode t))
+(use-package achievements
+  :diminish achievements-mode
+  :config (achievements-mode t))
 #+END_SRC
 ** Freekeys
 #+BEGIN_SRC emacs-lisp
-  (use-package free-keys
-    :bind ("M-F" . free-keys))
+(use-package free-keys
+  :bind ("M-F" . free-keys))
 #+END_SRC
 ** Benchmark init
 - Figure out where you're burning time!!!
@@ -183,41 +183,41 @@ This is where I put things that help me modify my emacs install more efficiently
   #+BEGIN_SRC emacs-lisp
   (require 'benchmark-init)
   #+END_SRC
-q
+** Make Customize sort colors in a way that makes sense to me
 #+BEGIN_SRC emacs-lisp
 (setq list-colors-sort 'luminance)
 #+END_SRC
 ** Funnel settings from Customize into another file
 #+BEGIN_SRC emacs-lisp
-  ;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-  ;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
-  ;; (load custom-file :noerror)
+;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
+;; (load custom-file :noerror)
 #+END_SRC
 * Global settings
 ** Better defaults
 *** Remove default startup message, text at the top of scratch buffers
 #+BEGIN_SRC emacs-lisp
-    (setq inhibit-startup-message t)
-    (setq initial-scratch-message "")
-    (setq inhibit-startup-screen t)
+(setq inhibit-startup-message t)
+(setq initial-scratch-message "")
+(setq inhibit-startup-screen t)
 #+END_SRC
 *** Don't warn me before opening large files
 #+BEGIN_SRC emacs-lisp
-    (setq large-file-warning-threshold nil)
+(setq large-file-warning-threshold nil)
 #+END_SRC
 *** Remove the default emacs toolbar (top of screen)
 #+BEGIN_SRC emacs-lisp
-  (tool-bar-mode -1)
+(tool-bar-mode -1)
 #+END_SRC
 *** Hide the scrollbar
 #+BEGIN_SRC emacs-lisp
-  (scroll-bar-mode -1)
+(scroll-bar-mode -1)
 #+END_SRC
 *** When cursor is on a paren, highlight the other one 
 #+BEGIN_SRC emacs-lisp
-  (show-paren-mode 1)
-  (setq show-paren-delay 0)
+(show-paren-mode 1)
+(setq show-paren-delay 0)
 #+END_SRC
 *** Put /relevant/ info in the title bar
 Set the format for the title bar
@@ -234,9 +234,9 @@ Set the format for the title bar
 *** Don't try to edit read-only portions of the minibuffer
 Source: http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
 #+BEGIN_SRC emacs-lisp
-  (customize-set-variable
-   'minibuffer-prompt-properties
-   (quote (read-only t cursor-intangible t face minibuffer-prompt)))
+(customize-set-variable
+ 'minibuffer-prompt-properties
+ (quote (read-only t cursor-intangible t face minibuffer-prompt)))
 #+END_SRC
 *** Don't litter working directory with backup files
 #+BEGIN_SRC emacs-lisp
@@ -257,7 +257,7 @@ Source: http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
 #+END_SRC
 *** Delete highlighted text if you start typing on top of it
 #+BEGIN_SRC emacs-lisp
- (delete-selection-mode 1)
+(delete-selection-mode 1)
 #+END_SRC
 *** Change "yes or no" prompts to "y or n" prompts
 #+BEGIN_SRC emacs-lisp
@@ -265,7 +265,7 @@ Source: http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
 #+END_SRC
 *** Don't add 2 spaces after a period
 #+BEGIN_SRC emacs-lisp
-  (setq sentence-end-double-space nil)
+(setq sentence-end-double-space nil)
 #+END_SRC
 ** Getting around
 See also: [[*Ace-window]]
@@ -277,12 +277,12 @@ Keep some "context lines" around
 *** Cycle backwards through buffers
 "C-x o", meet your new friend "C-c o"!
 #+BEGIN_SRC emacs-lisp
-  (bind-key "C-c o" #'previous-multiframe-window)
+(bind-key "C-c o" #'previous-multiframe-window)
 #+END_SRC
 *** Toggle fullscreen
 Note: this resizes the frame, but does not enter the OS's native fullscreen mode
 #+BEGIN_SRC emacs-lisp
-  (bind-key "C-c C-<return>" #'toggle-frame-fullscreen)
+(bind-key "C-c C-<return>" #'toggle-frame-fullscreen)
 #+END_SRC 
 ** Editing
 - This section contains variable settings and functions.
@@ -292,11 +292,11 @@ Note: this resizes the frame, but does not enter the OS's native fullscreen mode
 - Note: M-k was originally bound to =kill-sentence=
 - Source: https://www.emacswiki.org/emacs/BackwardKillLine
 #+BEGIN_SRC emacs-lisp
-  (defun backward-kill-line (arg)
-    "Kill ARG lines backward."
-    (interactive "p")
-    (kill-line (- 1 arg)))
-  (bind-key "M-k" #'backward-kill-line)
+(defun backward-kill-line (arg)
+  "Kill ARG lines backward."
+  (interactive "p")
+  (kill-line (- 1 arg)))
+(bind-key "M-k" #'backward-kill-line)
 #+END_SRC
 *** Make C-k kill the text AND newline
 #+BEGIN_SRC emacs-lisp
@@ -304,50 +304,50 @@ Note: this resizes the frame, but does not enter the OS's native fullscreen mode
 #+END_SRC
 *** Transpose line up or down
 #+BEGIN_SRC emacs-lisp
-  (defun move-line-up ()
-    "Move up the current line."
-    (interactive)
-    (transpose-lines 1)
-    (forward-line -2)
-    (indent-according-to-mode))
-  (defun move-line-down ()
-    "Move down the current line."
-    (interactive)
-    (forward-line 1)
-    (transpose-lines 1)
-    (forward-line -1)
-    (indent-according-to-mode))
-  (global-set-key (kbd "M-p")  'move-line-up)
-  (global-set-key (kbd "M-n")  'move-line-down)
+(defun move-line-up ()
+  "Move up the current line."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
+(defun move-line-down ()
+  "Move down the current line."
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
+(global-set-key (kbd "M-p")  'move-line-up)
+(global-set-key (kbd "M-n")  'move-line-down)
 #+END_SRC
 *** Comment out the current line
 Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
 #+BEGIN_SRC emacs-lisp
-  (defun comment-dwim-line (&optional arg)
-    "Replacement for the comment-dwim command.
-         If no region is selected and current line is not blank and we are not at the end of the line,
-         then comment current line.
-         Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
-    (interactive "*P")
-    (comment-normalize-vars)
-    (if (and (not (region-active-p))
-             (not (looking-at "[ \t]*$")))
-        (comment-or-uncomment-region (line-beginning-position)
-                                     (line-end-position))
-      (comment-dwim arg)))
-  (bind-key "M-;" #'comment-dwim-line)
+(defun comment-dwim-line (&optional arg)
+  "Replacement for the comment-dwim command.
+       If no region is selected and current line is not blank and we are not at the end of the line,
+       then comment current line.
+       Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
+  (interactive "*P")
+  (comment-normalize-vars)
+  (if (and (not (region-active-p))
+           (not (looking-at "[ \t]*$")))
+      (comment-or-uncomment-region (line-beginning-position)
+                                   (line-end-position))
+    (comment-dwim arg)))
+(bind-key "M-;" #'comment-dwim-line)
 #+END_SRC
 ** Global keybindings
 #+BEGIN_SRC emacs-lisp
-  ;; Eval buffer
-  (bind-key "C-c b" #'eval-buffer)
+;; Eval buffer
+(bind-key "C-c b" #'eval-buffer)
 
-  ;; Count words in selected region
+;; Count words in selected region
 
-  (bind-key "C-c w" #'count-words)
-    ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
-  ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
-  (bind-key "M-j" #'join-line)
+(bind-key "C-c w" #'count-words)
+;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
+;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
+(bind-key "M-j" #'join-line)
 
 ;; Unbind Ctrl+meta+<right>, Ctrl+meta+<left> so BTT can use that to
 ;;bring a window to a new desktop
@@ -356,9 +356,9 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
 #+END_SRC
 ** Enable hidden commands
 #+BEGIN_SRC emacs-lisp
-  ;; Enable "C-x u" for upcase-region, "C-x l" for downcase-region
-  (put 'upcase-region 'disabled nil)
-  (put 'downcase-region 'disabled nil)
+;; Enable "C-x u" for upcase-region, "C-x l" for downcase-region
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
 #+END_SRC
 * Appearance
 ** Aesthetic tweaks
@@ -376,106 +376,106 @@ out how to set it immediately, but this should suffice as startup config.
 - The default fringe wrap indicators are a curly arrow
 - I prefer an elipsis:
   #+BEGIN_SRC emacs-lisp
-     ;; Only relevant if indicate-empty-line is set to t
-     (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0]) 
+   ;; Only relevant if indicate-empty-line is set to t
+   (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0]) 
 
-     (define-fringe-bitmap 'right-curly-arrow
-       [#b00000000
-        #b00000000
-        #b00000000
-        #b00000000
-        #b00000000
-        #b10010010
-        #b10010010
-        #b00000000])
+   (define-fringe-bitmap 'right-curly-arrow
+     [#b00000000
+      #b00000000
+      #b00000000
+      #b00000000
+      #b00000000
+      #b10010010
+      #b10010010
+      #b00000000])
 
-     (define-fringe-bitmap 'left-curly-arrow
-       [#b00000000
-        #b00000000
-        #b00000000
-        #b00000000
-        #b00000000
-        #b10010010
-        #b10010010
-        #b00000000])
+   (define-fringe-bitmap 'left-curly-arrow
+     [#b00000000
+      #b00000000
+      #b00000000
+      #b00000000
+      #b00000000
+      #b10010010
+      #b10010010
+      #b00000000])
 
-    (setq visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow)))
+  (setq visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow)))
   #+END_SRC
 *** Fringe and border faces
 #+BEGIN_SRC emacs-lisp
- (set-face-attribute 'fringe nil :background "#001519")
- (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
+(set-face-attribute 'fringe nil :background "#001519")
+(set-face-attribute 'vertical-border nil :foreground "#00d4d4")
 #+END_SRC
 *** Fonts
 #+BEGIN_SRC emacs-lisp
-  (set-face-attribute 'default nil :font "Fira Code-13")
-  (set-face-attribute 'bold nil :weight 'extra-bold)
+(set-face-attribute 'default nil :font "Fira Code-13")
+(set-face-attribute 'bold nil :weight 'extra-bold)
 
-  (set-face-attribute 'bold-italic nil
-                      :slant 'oblique
-                      :weight 'bold)
+(set-face-attribute 'bold-italic nil
+                    :slant 'oblique
+                    :weight 'bold)
 
-  (set-face-attribute 'font-lock-doc-face nil
-                      :foreground "#58615a"
-                      :family "Fira Code")
+(set-face-attribute 'font-lock-doc-face nil
+                    :foreground "#58615a"
+                    :family "Fira Code")
 
-  (set-face-attribute 'region nil :background "#032929")
-  (set-face-attribute 'vertical-border nil :foreground "#00d4d4")
+(set-face-attribute 'region nil :background "#032929")
+(set-face-attribute 'vertical-border nil :foreground "#00d4d4")
 #+END_SRC
 ** Theme
 #+BEGIN_SRC emacs-lisp
-  ;; Load my theme
-  (add-to-list 'custom-theme-load-path (concat user-emacs-directory "literate/tron-doom/"))
-  (load-theme 'tron-doom t) ; t for "don't ask me to load this theme"
+;; Load my theme
+(add-to-list 'custom-theme-load-path (concat user-emacs-directory "literate/tron-doom/"))
+(load-theme 'tron-doom t) ; t for "don't ask me to load this theme"
 
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+;; Global settings (defaults)
+(setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+      doom-themes-enable-italic t) ; if nil, italics is universally disabled
 
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
+;; Enable flashing mode-line on errors
+(doom-themes-visual-bell-config)
 #+END_SRC
 
 * Major packages
-** Org mode
+** Org-mode
 *** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
-  (message "[krista] Loading org-mode settings...")
-  (use-package org
-    :diminish org-indent-mode
-    :config
-    (message "[krista] Loading org-aesthetics...")
-    <<org-aesthetics>>
-    (message "[krista] Loading org-capture...")
-    <<org-capture>>
-    (message "[krista] Loading org-agenda...")
-    <<org-agenda>>
-    (message "[krista] Loading org-inline-images...")
-    <<org-inline-images>>
-    (message "[krista] Loading org-tree-behavior...")
-    <<org-tree-behavior>>
-    (message "[krista] Loading org-code-snippets...")
-    <<org-code-snippets>>
-    (message "[krista] Loading org-links...")
-    <<org-links>>
-    :bind (
-           ("C-c c" . org-capture)
-           ("C-c a" . org-agenda)
+(message "[krista] Loading org-mode settings...")
+(use-package org
+  :diminish org-indent-mode
+  :config
+  (message "[krista] Loading org-aesthetics...")
+  <<org-aesthetics>>
+  (message "[krista] Loading org-capture...")
+  <<org-capture>>
+  (message "[krista] Loading org-agenda...")
+  <<org-agenda>>
+  (message "[krista] Loading org-inline-images...")
+  <<org-inline-images>>
+  (message "[krista] Loading org-tree-behavior...")
+  <<org-tree-behavior>>
+  (message "[krista] Loading org-code-snippets...")
+  <<org-code-snippets>>
+  (message "[krista] Loading org-links...")
+  <<org-links>>
+  :bind (
+         ("C-c c" . org-capture)
+         ("C-c a" . org-agenda)
 
-           ;; Links!
-           ;; - C-c C-l will insert link,
-           ;; - C-c C-o will open the link at the point
-           ("C-c l" . org-store-link)
+         ;; Links!
+         ;; - C-c C-l will insert link,
+         ;; - C-c C-o will open the link at the point
+         ("C-c l" . org-store-link)
 
-           ;; Keybindings that insert inline / display math
-           ;; into org docs, s.t. everything will export to
-           ;; LaTeX nicely:
-           ;; NOTE: These shortcuts match up with my shortcuts
-           ;;       for inserting inline / display math into
-           ;;       regular LaTeX docs. This is to provide as
-           ;;       seamless an experience as I can muster.
-           ("H-C-j" . LaTeX-insert-inline-math)
-           ("H-C-k" . LaTeX-insert-display-math)))
+         ;; Keybindings that insert inline / display math
+         ;; into org docs, s.t. everything will export to
+         ;; LaTeX nicely:
+         ;; NOTE: These shortcuts match up with my shortcuts
+         ;;       for inserting inline / display math into
+         ;;       regular LaTeX docs. This is to provide as
+         ;;       seamless an experience as I can muster.
+         ("H-C-j" . LaTeX-insert-inline-math)
+         ("H-C-k" . LaTeX-insert-display-math)))
 #+END_SRC
 *** Tips from http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html
 **** todo / schedule / deadline
@@ -492,148 +492,147 @@ out how to set it immediately, but this should suffice as startup config.
 **** shift-TAB :: OVERVIEW vs. normal mode
 *** Aesthetics
 #+BEGIN_SRC emacs-lisp :noweb-ref org-aesthetics :tangle no
-  ;; Display bullets instead of asterisks
-  (use-package org-bullets
-    :diminish
-    :config
-    (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝"))))
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
+;; Display bullets instead of asterisks
+(use-package org-bullets
+  :diminish
+  :config
+  (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝"))))
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
 
-  ;; Setting this to `t' will automatically render LaTeX special
-  ;; characters, if possible/sensible
-  ;; E.g. "\" + "alpha" becomes a lowercase alpha
-  ;; I have it turned off, but it's here
-  (setq org-pretty-entities t)
+;; Setting this to `t' will automatically render LaTeX special
+;; characters, if possible/sensible
+;; E.g. "\" + "alpha" becomes a lowercase alpha
+;; I have it turned off, but it's here
+(setq org-pretty-entities t)
 
-  ;; Setting this to `t' will use {} to render sub/super-scripts
-  ;; e.g. asdf_{123} is rendered as "asdf sub 123"
-  ;; I have it turned off, but it's here
-  (setq org-use-sub-superscripts "{}")
+;; Setting this to `t' will use {} to render sub/super-scripts
+;; e.g. asdf_{123} is rendered as "asdf sub 123"
+;; I have it turned off, but it's here
+(setq org-use-sub-superscripts "{}")
 
-  ;; Hide org markup elements
-  ;; See http://stackoverflow.com/questions/10969617/hiding-markup-elements-in-org-mode
-  ;; Note: This change may not take effect until you restart emacs:
-  ;; See http://orgmode.org/manual/Emphasis-and-monospace.html
-  (setq org-hide-emphasis-markers t)
+;; Hide org markup elements
+;; See http://stackoverflow.com/questions/10969617/hiding-markup-elements-in-org-mode
+;; Note: This change may not take effect until you restart emacs:
+;; See http://orgmode.org/manual/Emphasis-and-monospace.html
+(setq org-hide-emphasis-markers t)
 
-  ;; Make top-level headings larger, and lower-level headings progressively smaller
-  (set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.2)
-  (set-face-attribute 'org-level-2 nil :inherit 'outline-2 :height 1.0)
+;; Make top-level headings larger, and lower-level headings progressively smaller
+(set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.2)
+(set-face-attribute 'org-level-2 nil :inherit 'outline-2 :height 1.0)
 
-  ;; Use my theme as the color scheme for source blocks
-  (setq org-src-fontify-natively t)
+;; Use my theme as the color scheme for source blocks
+(setq org-src-fontify-natively t)
 
-  ;; Org mode clean view
-  ;; <http://orgmode.org/manual/Clean-view.html>
-  (setq org-startup-indented t)
-
-  ;; in org mode C-a/e moves to beginning of text in line, after header asterisks
-  ;; however you can press it again to go all the way
-  (setq org-special-ctrl-a/e t)
-
-  (set-face-attribute 'org-code nil
-                      :inherit 'shadow
-                      :foreground "dark sea green"
-                      :family "Courier")
-
-  (set-face-attribute 'org-verbatim nil
-                      :inherit 'shadow
-                      :stipple nil
-                      :foreground "AntiqueWhite4"
-                      :family "Andale Mono")
-
-  ;; Custom Org keywords
-  (setq org-todo-keywords '((sequence "TODO" "|" "DONE" "CANCELLED")))
-
-  ;; Org todo keyword faces
-  (setq org-todo-keyword-faces '(("TODO" . (:foreground "#ff0f97" :weight bold))
-                                 ("DONE" . (:foreground "#075f5f" :weight bold))
-                                 ("CANCELLED") . (:foreground "#888a85" :weight bold)))
 ;; Don't add a weird indent to source blocks
 (setq org-src-preserve-indentation nil
       org-edit-src-content-indentation 0)
 
+;; Org mode clean view
+;; <http://orgmode.org/manual/Clean-view.html>
+(setq org-startup-indented t)
+
+;; in org mode C-a/e moves to beginning of text in line, after header asterisks
+;; however you can press it again to go all the way
+(setq org-special-ctrl-a/e t)
+
+(set-face-attribute 'org-code nil
+                    :inherit 'shadow
+                    :foreground "dark sea green"
+                    :family "Courier")
+
+(set-face-attribute 'org-verbatim nil
+                    :inherit 'shadow
+                    :stipple nil
+                    :foreground "AntiqueWhite4"
+                    :family "Andale Mono")
+
+;; Custom Org keywords
+(setq org-todo-keywords '((sequence "TODO" "|" "DONE" "CANCELLED")))
+
+;; Org todo keyword faces
+(setq org-todo-keyword-faces '(("TODO" . (:foreground "#ff0f97" :weight bold))
+                               ("DONE" . (:foreground "#075f5f" :weight bold))
+                               ("CANCELLED") . (:foreground "#888a85" :weight bold)))
 #+END_SRC
 *** Exporting to LaTeX
 #+BEGIN_SRC emacs-lisp
-  ;; Put newlines around my images, please!
-  ;; http://emacs.stackexchange.com/questions/5363/centered-figures-in-org-mode-latex-export?rq=1
-  (advice-add 'org-latex--inline-image :around
-              (lambda (orig link info)
-                (concat
-                 "\\begin{center}"
-                 (funcall orig link info)
-                 "\\end{center}")))
+;; Put newlines around my images, please!
+;; http://emacs.stackexchange.com/questions/5363/centered-figures-in-org-mode-latex-export?rq=1
+(advice-add 'org-latex--inline-image :around
+            (lambda (orig link info)
+              (concat
+               "\\begin{center}"
+               (funcall orig link info)
+               "\\end{center}")))
 #+END_SRC
 *** Org-capture
 #+BEGIN_SRC emacs-lisp :noweb-ref org-capture :tangle no
-  ;; Org capture
-  (setq org-default-notes-file (concat org-directory "/notes.org"))
-  ;; To see what goes into an org-capture template, see
-  ;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
-  (setq org-capture-templates
-        '(("t" "todo" entry (file+olp "~/core/lists/todo.org" "todo-queue")
-           "* TODO %?\n %i\n")
-          ("a" "annoy" entry (file+olp "~/core/lists/annoy.org" "annoy")
-           "* %?\n %i\n")
-          ("p" "project" entry (file+olp "~/core/lists/todo.org" "projects")
-           "* %?\n %i\n")
-          ("s" "shopping" entry (file+olp "~/core/lists/todo.org" "shopping")
-           "* %?\n %i\n")
-          ("q" "quotes" entry (file+olp "~/core/lists/quotes.org" "quotes")
-           "* %?\n %i\n")
-          ("h" "hw-style-guide" entry (file+olp "~/core/lists/tacky_hw_things.org" "tacky!")
-           "* %?\n %i\n")
-          ("g" "git-gotchas" entry (file+olp "~/core/lists/git-gotchas.org" "The gotchas")
-           "* %?\n %i\n")))
+;; Org capture
+(setq org-default-notes-file (concat org-directory "/notes.org"))
+;; To see what goes into an org-capture template, see
+;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
+(setq org-capture-templates
+      '(("t" "todo" entry (file+olp "~/core/lists/todo.org" "todo-queue")
+         "* TODO %?\n %i\n")
+        ("a" "annoy" entry (file+olp "~/core/lists/annoy.org" "annoy")
+         "* %?\n %i\n")
+        ("p" "project" entry (file+olp "~/core/lists/todo.org" "projects")
+         "* %?\n %i\n")
+        ("s" "shopping" entry (file+olp "~/core/lists/todo.org" "shopping")
+         "* %?\n %i\n")
+        ("q" "quotes" entry (file+olp "~/core/lists/quotes.org" "quotes")
+         "* %?\n %i\n")
+        ("h" "hw-style-guide" entry (file+olp "~/core/lists/tacky_hw_things.org" "tacky!")
+         "* %?\n %i\n")
+        ("g" "git-gotchas" entry (file+olp "~/core/lists/git-gotchas.org" "The gotchas")
+         "* %?\n %i\n")))
 #+END_SRC
 *** Org todo/agenda
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
-  ;; Places to sniff when compiling a list of TODO items
-  (setq org-agenda-files (list "~/core/lists/todo.org"))
+;; Places to sniff when compiling a list of TODO items
+(setq org-agenda-files (list "~/core/lists/todo.org"))
 
-  ;; From http://orgmode.org/manual/Breaking-down-tasks.html 
-  ;;
-  ;; When showing progress stats for TODO completion, recursively
-  ;; consider the entire subtree
-  (setq org-hierarchical-todo-statistics nil)
-  ;;
-  ;; "If you would like a TODO entry to automatically change to DONE
-  ;; when all children are done, you can use the following setup:"
-  (defun org-summary-todo (n-done n-not-done)
-    "Switch entry to DONE when all subentries are done, to TODO otherwise."
-    (let (org-log-done org-log-states)   ; turn off logging
-      (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+;; From http://orgmode.org/manual/Breaking-down-tasks.html 
+;;
+;; When showing progress stats for TODO completion, recursively
+;; consider the entire subtree
+(setq org-hierarchical-todo-statistics nil)
+;;
+;; "If you would like a TODO entry to automatically change to DONE
+;; when all children are done, you can use the following setup:"
+(defun org-summary-todo (n-done n-not-done)
+  "Switch entry to DONE when all subentries are done, to TODO otherwise."
+  (let (org-log-done org-log-states)   ; turn off logging
+    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
 
-  (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+(add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
 
 ;; Source https://emacs.stackexchange.com/a/19876
 (setq-default org-display-custom-times t)
 (setq org-time-stamp-custom-formats '("<%A %b %e %Y>" . "<%A %b %e %Y %l:%M%p>"))
-
 #+END_SRC
 *** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
-  ;; Let me resize them plz!
-  (setq org-image-actual-width '(500))
-  ;; => if there is a #+ATTR.*: width="200", resize to 200,
-  ;;     otherwise resize to 500 pixels wide
-  ;; link credit: http://lists.gnu.org/archive/html/emacs-orgmode/2012-08/msg01388.html
+;; Let me resize them plz!
+(setq org-image-actual-width '(500))
+;; => if there is a #+ATTR.*: width="200", resize to 200,
+;;     otherwise resize to 500 pixels wide
+;; link credit: http://lists.gnu.org/archive/html/emacs-orgmode/2012-08/msg01388.html
 
-  ;; By default, *do* display inline images
-  (setq org-startup-with-inline-images t)
+;; By default, *do* display inline images
+(setq org-startup-with-inline-images t)
 #+END_SRC
 *** Tweaks to tree behavior
 Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to the whole subtree!
 #+BEGIN_SRC emacs-lisp :noweb-ref org-tree-behavior :tangle no
-  ;; Source: Spruce Bondera
-  (defun krista/org-cycle-current-subtree ()
-    (interactive)
-    (let ((old-tab-style org-cycle-emulate-tab))
-      (setq org-cycle-emulate-tab nil)
-      (org-cycle)
-      (setq org-cycle-emulate-tab old-tab-style)))
-  (bind-key "C-<tab>" #'krista/org-cycle-current-subtree)
+;; Source: Spruce Bondera
+(defun krista/org-cycle-current-subtree ()
+  (interactive)
+  (let ((old-tab-style org-cycle-emulate-tab))
+    (setq org-cycle-emulate-tab nil)
+    (org-cycle)
+    (setq org-cycle-emulate-tab old-tab-style)))
+(bind-key "C-<tab>" #'krista/org-cycle-current-subtree)
 #+END_SRC
 *** Code snippets in org
 #+BEGIN_SRC emacs-lisp :noweb-ref org-code-snippets :noweb tangle :tangle yes
@@ -644,27 +643,27 @@ Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to
 Example: Start a new elisp block in org mode by typing <el and then pressing TAB
 ***** Config
 #+BEGIN_SRC emacs-lisp :noweb-ref org-quick-source-blocks :tangle no
-  (add-to-list 'org-structure-template-alist
-               '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
-  (add-to-list 'org-structure-template-alist
-               '("c" "#+BEGIN_SRC C\n?\n#+END_SRC" ""))
-  (add-to-list 'org-structure-template-alist
-               '("cpp" "#+BEGIN_SRC C++\n?\n#+END_SRC" ""))
-  (add-to-list 'org-structure-template-alist
-               '("p" "#+BEGIN_SRC python\n?\n#+END_SRC" ""))
-  ;; "Example" block for plaintext
-  (add-to-list 'org-structure-template-alist
-               '("ex" "#+BEGIN_EXAMPLE \n?\n#+END_EXAMPLE" ""))
+(add-to-list 'org-structure-template-alist
+             '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("c" "#+BEGIN_SRC C\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("cpp" "#+BEGIN_SRC C++\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("p" "#+BEGIN_SRC python\n?\n#+END_SRC" ""))
+;; "Example" block for plaintext
+(add-to-list 'org-structure-template-alist
+             '("ex" "#+BEGIN_EXAMPLE \n?\n#+END_EXAMPLE" ""))
 #+END_SRC
 **** Babel / Languages
 #+BEGIN_SRC emacs-lisp :noweb-ref org-babel-config :tangle no
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((latex . t)
-     (python . t)
-     (emacs-lisp . t)
-     (C . t)
-     (lisp . t)))
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((latex . t)
+   (python . t)
+   (emacs-lisp . t)
+   (C . t)
+   (lisp . t)))
 #+END_SRC
 *** Links
 Org link workflow:
@@ -676,11 +675,11 @@ Org link workflow:
 5. type in my own description
 6. carry on with my life
 #+BEGIN_SRC emacs-lisp :noweb-ref org-links :tangle no
-  (defun org-link-describe (link desc)
-    (if (file-exists-p link)
-        desc
-      (read-string "Description: " nil)))
-  (setf org-make-link-description-function #'org-link-describe)
+(defun org-link-describe (link desc)
+  (if (file-exists-p link)
+      desc
+    (read-string "Description: " nil)))
+(setf org-make-link-description-function #'org-link-describe)
 #+END_SRC
 
 ** Helm
@@ -705,24 +704,24 @@ Org link workflow:
   - M-x commands (the default binding for execute-extended-command)
 *** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
-  (message "[krista] Loading helm...")
-  (use-package helm
-    :diminish helm-mode
-    ;; helm-config is a bootstrapping package. According to
-    ;;   https://github.com/emacs-helm/helm/issues/744 it's not
-    ;;   required, but I checked out the source, and it looks like it
-    ;;   provides some core niceties that I've enjoyed
-    :init (require 'helm-config)
-    :config
-    ;; Enable Helm globally
-    (helm-mode t)
-    <<helm-behavior>>
-    <<helm-recentf>>
-    :bind (
-           <<helm-replace-defaults>>
-           <<helm-actions>>
-           ))
-  <<helm-descbinds>>
+(message "[krista] Loading helm...")
+(use-package helm
+  :diminish helm-mode
+  ;; helm-config is a bootstrapping package. According to
+  ;;   https://github.com/emacs-helm/helm/issues/744 it's not
+  ;;   required, but I checked out the source, and it looks like it
+  ;;   provides some core niceties that I've enjoyed
+  :init (require 'helm-config)
+  :config
+  ;; Enable Helm globally
+  (helm-mode t)
+  <<helm-behavior>>
+  <<helm-recentf>>
+  :bind (
+         <<helm-replace-defaults>>
+         <<helm-actions>>
+         ))
+<<helm-descbinds>>
 #+END_SRC
 **** Helm behavior
 Sometimes, I just want to tweak something about how Helm functions.
@@ -735,46 +734,46 @@ This is the place to put it
 #+END_SRC
 **** helm-recentf
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-recentf :tangle no
-  (message "[krista] Loading helm-recentf...")
-  (require 'recentf)
-  (recentf-mode t)
-  (setq recentf-max-menu-items 200)
-  (setq recentf-max-saved-items 200)
-  (setq helm-recentf-max-menu-items 200)
+(message "[krista] Loading helm-recentf...")
+(require 'recentf)
+(recentf-mode t)
+(setq recentf-max-menu-items 200)
+(setq recentf-max-saved-items 200)
+(setq helm-recentf-max-menu-items 200)
 
-  ;; Auto-save a list of recently-opened files
-  ;; NOTE: This ensures accurate recentf info in case of a
-  ;; less-than-graceful exit
-  (setq krista/recentf-save-interval 300)
-  (run-at-time (current-time) krista/recentf-save-interval 'recentf-save-list)
+;; Auto-save a list of recently-opened files
+;; NOTE: This ensures accurate recentf info in case of a
+;; less-than-graceful exit
+(setq krista/recentf-save-interval 300)
+(run-at-time (current-time) krista/recentf-save-interval 'recentf-save-list)
 #+END_SRC
 **** Override global keybindings (replace defaults)
 I like Helm so much that I'm willing to override the corresponding
 default Emacs functions. Also, Emacs defaults are "meh".
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-replace-defaults :tangle no
-  ("M-x" . helm-M-x)
-  ("C-x C-f" . helm-find-files)
-  ("C-x C-r" . helm-recentf)
+("M-x" . helm-M-x)
+("C-x C-f" . helm-find-files)
+("C-x C-r" . helm-recentf)
 
-  ;; helm-mini shows recentf, the buffers list, and a "create buffer" prompt
-  ("C-x b" . helm-mini)
+;; helm-mini shows recentf, the buffers list, and a "create buffer" prompt
+("C-x b" . helm-mini)
 
-  ;; helm-buffers-list just shows the buffers list
-  ("C-x C-b" . helm-buffers-list)
+;; helm-buffers-list just shows the buffers list
+("C-x C-b" . helm-buffers-list)
 
-  ;; Display bookmarks for frequently-visited spots on my file system
-  ("C-x r l" . helm-bookmarks)
+;; Display bookmarks for frequently-visited spots on my file system
+("C-x r l" . helm-bookmarks)
 #+END_SRC
 **** helm actions
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-actions :tangle no
-  :map helm-map
-  ;; Helm persistent action does something useful for the given context, without
-  ;; closing the helm popup
-  ("<tab>" . helm-execute-persistent-action)
-  ("C-i" . helm-execute-persistent-action) ; for use in terminal
-  ;; helm-select-action pulls up a menu of more complex actions that you can take
-  ;; in a given context
-  ("C-z" . helm-select-action)
+:map helm-map
+;; Helm persistent action does something useful for the given context, without
+;; closing the helm popup
+("<tab>" . helm-execute-persistent-action)
+("C-i" . helm-execute-persistent-action) ; for use in terminal
+;; helm-select-action pulls up a menu of more complex actions that you can take
+;; in a given context
+("C-z" . helm-select-action)
 #+END_SRC
 **** helm-descbinds (*desc*-ribe *bind*-ings)
 - Helm descbinds is a smarter replacement for "C-h k" to look up
@@ -783,11 +782,11 @@ default Emacs functions. Also, Emacs defaults are "meh".
 - Press TAB for options (e.g. execute the selected command, look up
   documentation, etc.)
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-descbinds :tangle no
-  (message "[krista] Loading helm-descbinds...")
-  (use-package helm-descbinds
-    :diminish helm-descbinds-mode
-    :config (setq helm-descbinds-mode t)
-    :bind ("C-h b" . helm-descbinds))
+(message "[krista] Loading helm-descbinds...")
+(use-package helm-descbinds
+  :diminish helm-descbinds-mode
+  :config (setq helm-descbinds-mode t)
+  :bind ("C-h b" . helm-descbinds))
 #+END_SRC
 *** Helm swoop
 - Swoop is like a better isearch. Works really nicely with helm.
@@ -797,32 +796,32 @@ default Emacs functions. Also, Emacs defaults are "meh".
   - select lines with C-<space>, and /then/ do "C-c C-e" to edit just
     the /selected/ lines
 #+BEGIN_SRC emacs-lisp :noweb tangle
-  (message "[krista] Loading helm-swoop...")
-  (use-package helm-swoop
-    :config <<helm-swoop-syntax-highlighting>>
-    <<helm-swoop-reactivate-mark>>
-    <<helm-swoop-behavior>>
-    <<helm-swoop-aesthetics>>
-    :bind 
-    ;; Use swoop instead of isearch
-    (("C-s" . helm-swoop-without-pre-input)
-    ;; r is for "Reuse", b/c this reuses the input from the last query
-    ("C-r" . helm-swoop)
+(message "[krista] Loading helm-swoop...")
+(use-package helm-swoop
+  :config <<helm-swoop-syntax-highlighting>>
+  <<helm-swoop-reactivate-mark>>
+  <<helm-swoop-behavior>>
+  <<helm-swoop-aesthetics>>
+  :bind 
+  ;; Use swoop instead of isearch
+  (("C-s" . helm-swoop-without-pre-input)
+   ;; r is for "Reuse", b/c this reuses the input from the last query
+   ("C-r" . helm-swoop)
 
-    ;; M-s is for multi-swoop
-    ;; ...TODO write a description for multi-swoop
-    ("C-M-s" . helm-multi-swoop-projectile)
+   ;; M-s is for multi-swoop
+   ;; ...TODO write a description for multi-swoop
+   ("C-M-s" . helm-multi-swoop-projectile)
 
-    ;; Bindings so I can still use isearch (if for some crazy reason, I
-    ;; want to use isearch rather than swoop)
-    ("C-c s" . isearch-forward)
-    ("C-c r" . isearch-backward)))
+   ;; Bindings so I can still use isearch (if for some crazy reason, I
+   ;; want to use isearch rather than swoop)
+   ("C-c s" . isearch-forward)
+   ("C-c r" . isearch-backward)))
 #+END_SRC
 **** Keep syntax highlighting
 Retain syntax highlighting in swoop. It's a tradeoff between this and
 speed, but I think that it's worth the (teeny!) speed hit.
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-syntax-highlighting :tangle no
-  (setq helm-swoop-speed-or-color t)
+(setq helm-swoop-speed-or-color t)
 #+END_SRC
 **** Mark reactivation
 - Source: Spruce Bondera's fabulous config page 
@@ -831,225 +830,224 @@ speed, but I think that it's worth the (teeny!) speed hit.
   a function that will reactivate the mark if it was set before search
   started.
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-reactivate-mark :tangle no
-  (defun krista/helm-swoop-mark-wrapper (original &rest search)
-    "Check the state of the mark before calling helm-swoop and
-    re-activate it after swooping if it was active before-hand"
-    (let ((marked mark-active))
-      (apply original search)
-      (when marked (activate-mark))))
-  (advice-add 'helm-swoop :around #'krista/helm-swoop-mark-wrapper)
+(defun krista/helm-swoop-mark-wrapper (original &rest search)
+  "Check the state of the mark before calling helm-swoop and
+  re-activate it after swooping if it was active before-hand"
+  (let ((marked mark-active))
+    (apply original search)
+    (when marked (activate-mark))))
+(advice-add 'helm-swoop :around #'krista/helm-swoop-mark-wrapper)
 #+END_SRC
 **** behavior
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-behavior :tangle no
-  ;; If you're at the bottom of the list of swoop matches, and you try
-  ;; to go down another line, then you wrap around again
-  (setq helm-swoop-move-to-line-cycle t)
+;; If you're at the bottom of the list of swoop matches, and you try
+;; to go down another line, then you wrap around again
+(setq helm-swoop-move-to-line-cycle t)
 
-  ;; Enable fuzzy matching
-  (setq helm-swoop-use-fuzzy-match nil)
+;; Enable fuzzy matching
+(setq helm-swoop-use-fuzzy-match nil)
 #+END_SRC
 **** aesthetics
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-aesthetics :tangle no
-   ;; Face for directories in the find-file popup
-   (set-face-attribute 'helm-ff-directory nil
-                       :foreground "#42071d"
-                       :background "#00a890")
-   (set-face-attribute 'helm-ff-executable nil
-                       :foreground "green"
-                       :underline t)
+;; Face for directories in the find-file popup
+(set-face-attribute 'helm-ff-directory nil
+                    :foreground "#42071d"
+                    :background "#00a890")
+(set-face-attribute 'helm-ff-executable nil
+                    :foreground "green"
+                    :underline t)
 
-   (set-face-attribute 'helm-source-header nil
-                       :background "turquoise4"
-                       :foreground "#f0ffff"
-                       :weight 'semi-bold
-                       :height 1.3
-                       :family "Fira Code")
+(set-face-attribute 'helm-source-header nil
+                    :background "turquoise4"
+                    :foreground "#f0ffff"
+                    :weight 'semi-bold
+                    :height 1.3
+                    :family "Fira Code")
 
-   (set-face-attribute 'helm-swoop-target-word-face nil
-                       :background "#00d4d4"
-                       :foreground "#f0ffff")
-   (set-face-attribute 'helm-selection nil
-                       :foreground "#f0ffff"
-                       :background "#cf7a00"
-                       :weight 'semi-bold)
-   (set-face-attribute 'helm-swoop-target-line-face nil
-                       :foreground "#f0ffff"
-                       :background "#804532"
-                       :weight 'semi-bold)
+(set-face-attribute 'helm-swoop-target-word-face nil
+                    :background "#00d4d4"
+                    :foreground "#f0ffff")
+(set-face-attribute 'helm-selection nil
+                    :foreground "#f0ffff"
+                    :background "#cf7a00"
+                    :weight 'semi-bold)
+(set-face-attribute 'helm-swoop-target-line-face nil
+                    :foreground "#f0ffff"
+                    :background "#804532"
+                    :weight 'semi-bold)
 
 #+END_SRC
 *** Helm window splitting
 #+BEGIN_SRC emacs-lisp
-  ;; nil => split within this window
-  ;;(setq helm-full-frame nil)
-  ;; If nil don’t split and replace helm-buffer by the action buffer
-  ;; in same window.
-  ;;(setq helm-show-action-window-other-window nil)
+;; nil => split within this window
+;;(setq helm-full-frame nil)
+;; If nil don’t split and replace helm-buffer by the action buffer
+;; in same window.
+;;(setq helm-show-action-window-other-window nil)
 
-  ;; If you have your frame like this:
-  ;;  --------------
-  ;;  |      |     |
-  ;;  |      |     |
-  ;;  |  *   |     |
-  ;;  |active|other|
-  ;;  --------------
-  ;;
-  ;; and then do M-x, I do NOT want helm to do this:
-  ;;  --------------
-  ;;  |      |     |
-  ;;  |      |     |
-  ;;  |      |  *  |
-  ;;  |active|helm |
-  ;;  --------------
-  ;; 
-  ;; Instead, I want helm to do THIS:
-  ;;  --------------
-  ;;  |      |     |
-  ;;  |active|     |
-  ;;  |------|     |
-  ;;  |helm *|other|
-  ;;  --------------
-  ;;
-  ;; Source: https://github.com/emacs-helm/helm/issues/169
-  ;; This line keeps helm on the same side
-  ;; (setq helm-split-window-default-side 'same)
-  ;; open helm buffer inside current window, don't occupy whole other window
-  (setq helm-split-window-in-side-p t)
+;; If you have your frame like this:
+;;  --------------
+;;  |      |     |
+;;  |      |     |
+;;  |  *   |     |
+;;  |active|other|
+;;  --------------
+;;
+;; and then do M-x, I do NOT want helm to do this:
+;;  --------------
+;;  |      |     |
+;;  |      |     |
+;;  |      |  *  |
+;;  |active|helm |
+;;  --------------
+;; 
+;; Instead, I want helm to do THIS:
+;;  --------------
+;;  |      |     |
+;;  |active|     |
+;;  |------|     |
+;;  |helm *|other|
+;;  --------------
+;;
+;; Source: https://github.com/emacs-helm/helm/issues/169
+;; This line keeps helm on the same side
+;; (setq helm-split-window-default-side 'same)
+;; open helm buffer inside current window, don't occupy whole other window
+(setq helm-split-window-in-side-p t)
 
-    ;; Split windows in half like *this*:
-    ;; ------------
-    ;; |          |
-    ;; |  Buffer  |
-    ;; |          |
-    ;; ------------
-    ;; |   Helm   |
-    ;; ------------
-  (setq helm-swoop-split-direction 'split-window-vertically)
+;; Split windows in half like *this*:
+;; ------------
+;; |          |
+;; |  Buffer  |
+;; |          |
+;; ------------
+;; |   Helm   |
+;; ------------
+(setq helm-swoop-split-direction 'split-window-vertically)
 
-    ;; Even if there are multiple windows open, /still/ split the window
-    ;; in half
-  (setq helm-swoop-split-with-multiple-windows t)
+;; Even if there are multiple windows open, /still/ split the window
+;; in half
+(setq helm-swoop-split-with-multiple-windows t)
 #+END_SRC
 ** Company
 *** company (COM-plete ANY-thing)
 #+BEGIN_SRC emacs-lisp
-    (use-package company 
-      :diminish
-      :config
-      (global-company-mode)
-      :bind (("C-;" . company-complete)))
+(use-package company 
+  :diminish
+  :config
+  (global-company-mode)
+  :bind (("C-;" . company-complete)))
 
-    ;; Scroll through completion options with C-n and C-p (instead of M-n
-    ;; and M-p)
-    ;; Source: https://emacs.stackexchange.com/a/2990
-    (with-eval-after-load 'company
-      (define-key company-active-map (kbd "M-n") nil)
-      (define-key company-active-map (kbd "M-p") nil)
-      (define-key company-active-map (kbd "C-n") #'company-select-next)
-      (define-key company-active-map (kbd "C-p") #'company-select-previous))
+;; Scroll through completion options with C-n and C-p (instead of M-n
+;; and M-p)
+;; Source: https://emacs.stackexchange.com/a/2990
+(with-eval-after-load 'company
+  (define-key company-active-map (kbd "M-n") nil)
+  (define-key company-active-map (kbd "M-p") nil)
+  (define-key company-active-map (kbd "C-n") #'company-select-next)
+  (define-key company-active-map (kbd "C-p") #'company-select-previous))
 
-    (custom-set-faces
-     ;; Auto-completion preview (for the case where there's a unique suggestion)
-     ;; ------------------------------------------------------------------------
-     '(company-preview
-       ((t (:foreground "darkgray" :underline t :family "Fira Code"))))
-     '(company-preview-common
-       ((t (:inherit company-preview :foreground "#cf7a00"))))
-     
-     ;; Scrollbar
-     ;; ----------
-     '(company-scrollbar-fg
-       ((t (:background "#804532"))))
-     '(company-scrollbar-bg
-       ((t (:background "#19343D"))))
+(custom-set-faces
+ ;; Auto-completion preview (for the case where there's a unique suggestion)
+ ;; ------------------------------------------------------------------------
+ '(company-preview
+   ((t (:foreground "darkgray" :underline t :family "Fira Code"))))
+ '(company-preview-common
+   ((t (:inherit company-preview :foreground "#cf7a00"))))
+ 
+ ;; Scrollbar
+ ;; ----------
+ '(company-scrollbar-fg
+   ((t (:background "#804532"))))
+ '(company-scrollbar-bg
+   ((t (:background "#19343D"))))
 
-     ;; Tooltips
-     ;; -----------
-     ;; In case you're wondering, this is what a "tooltip" looks like
-     ;; http://www.goldsborough.me/images/emacs-java/correcting.png
-     '(company-tooltip
-       ((t (:background "#19343D" :foreground "#306158"))))
-     '(company-tooltip-selection
-       ((t (:background "#cf7a00" :foreground "#a0ffff" :weight bold))))
-     '(company-tooltip-common
-       ((((type x)) (:inherit company-tooltip :weight bold))
-        (t (:inherit company-tooltip))))
-     '(company-tooltip-common-selection
-       ((((type x)) (:inherit company-tooltip-selection :weight bold))
-        (t (:inherit company-tooltip-selection))))
+ ;; Tooltips
+ ;; -----------
+ ;; In case you're wondering, this is what a "tooltip" looks like
+ ;; http://www.goldsborough.me/images/emacs-java/correcting.png
+ '(company-tooltip
+   ((t (:background "#19343D" :foreground "#306158"))))
+ '(company-tooltip-selection
+   ((t (:background "#cf7a00" :foreground "#a0ffff" :weight bold))))
+ '(company-tooltip-common
+   ((((type x)) (:inherit company-tooltip :weight bold))
+    (t (:inherit company-tooltip))))
+ '(company-tooltip-common-selection
+   ((((type x)) (:inherit company-tooltip-selection :weight bold))
+    (t (:inherit company-tooltip-selection))))
 
-  ;; TODO: move this
-  '(org-date ((t (:foreground "Cyan" :underline "#075f5f")))))
+ ;; TODO: move this
+ '(org-date ((t (:foreground "Cyan" :underline "#075f5f")))))
 #+END_SRC
 *** helm-company
 - company uses popup/tooltip-style suggestions which appear under the point
 - sometimes, I want to navigate through the completion options using helm
 - solution: helm-company
 #+BEGIN_SRC emacs-lisp
-  (with-eval-after-load 'company
-    (use-package helm-company :diminish)
-    (bind-key "C-'"  'helm-company company-mode-map)
-    (bind-key "C-'" 'helm-company company-active-map))
+(with-eval-after-load 'company
+  (use-package helm-company :diminish)
+  (bind-key "C-'"  'helm-company company-mode-map)
+  (bind-key "C-'" 'helm-company company-active-map))
 #+END_SRC
 ** Projectile
 *** Projectile proper
 #+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading projectile...")
-  (use-package projectile
-    :diminish
-    :config
-    (setq projectile-completion-system 'helm)
-    (projectile-global-mode))
+(message "[krista] Loading projectile...")
+(use-package projectile
+  :diminish
+  :config
+  (setq projectile-completion-system 'helm)
+  (projectile-global-mode))
 #+END_SRC
 *** Helm projectile
 #+BEGIN_SRC emacs-lisp
-  (use-package helm-projectile
-    :config
-    (with-eval-after-load 'projectile (helm-projectile-on))
-    (setq projectile-mode t))
+(use-package helm-projectile
+  :config
+  (with-eval-after-load 'projectile (helm-projectile-on))
+  (setq projectile-mode t))
 #+END_SRC
 ** Magit
 *** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
 *** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
-  (message "[krista] Loading magit...")
-  (use-package magit
-    :config
-    <<magit-color-scheme>>
-    )
+(message "[krista] Loading magit...")
+(use-package magit
+  :config
+  <<magit-color-scheme>>
+  )
 
-  ;; Speedy-open
-  (bind-key "C-c g" #'magit-status)
-  ;; Default arguments to magit log
-  (setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
+;; Speedy-open
+(bind-key "C-c g" #'magit-status)
+;; Default arguments to magit log
+(setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
 #+END_SRC
 *** Color scheme
 Note: "vc" stands for *V*-ersion *C*-ontrol
 #+BEGIN_SRC emacs-lisp :noweb-ref magit-color-scheme :tangle no
-  (setq vc-annotate-background nil)
-  (setq vc-annotate-color-map
-    (quote
-     ((20 . "#f2777a")
-      (40 . "#f99157")
-      (60 . "#ffcc66")
-      (80 . "#99cc99")
-      (100 . "#66cccc")
-      (120 . "#6699cc")
-      (140 . "#cc99cc")
-      (160 . "#f2777a")
-      (180 . "#f99157")
-      (200 . "#ffcc66")
-      (220 . "#99cc99")
-      (240 . "#66cccc")
-      (260 . "#6699cc")
-      (280 . "#cc99cc")
-      (300 . "#f2777a")
-      (320 . "#f99157")
-      (340 . "#ffcc66")
-      (360 . "#99cc99"))))
-  (setq vc-annotate-very-old-color nil)
+(setq vc-annotate-background nil)
+(setq vc-annotate-color-map
+      (quote
+       ((20 . "#f2777a")
+        (40 . "#f99157")
+        (60 . "#ffcc66")
+        (80 . "#99cc99")
+        (100 . "#66cccc")
+        (120 . "#6699cc")
+        (140 . "#cc99cc")
+        (160 . "#f2777a")
+        (180 . "#f99157")
+        (200 . "#ffcc66")
+        (220 . "#99cc99")
+        (240 . "#66cccc")
+        (260 . "#6699cc")
+        (280 . "#cc99cc")
+        (300 . "#f2777a")
+        (320 . "#f99157")
+        (340 . "#ffcc66")
+        (360 . "#99cc99"))))
+(setq vc-annotate-very-old-color nil)
 #+END_SRC
-
 * Minor packages
 ** Cheatsheet
 *** What is cheatsheet?
@@ -1070,264 +1068,264 @@ Here's an example cheat. Follow this format in your config
 #+END_SRC
 *** Krista's cheatsheet entries
 #+BEGIN_SRC emacs-lisp :noweb tangle
-  (message "[krista] Loading cheatsheet...")
-  (use-package cheatsheet
-    :config
-    <<common-cheats>>
-    <<LaTeX-cheats>>
-    <<org-cheats>>
-    <<magit-cheats>>
-    <<projectile-cheats>>
-    <<builtin-cheats>>
-    :bind (("H-c" . cheatsheet-show)))
+(message "[krista] Loading cheatsheet...")
+(use-package cheatsheet
+  :config
+  <<common-cheats>>
+  <<LaTeX-cheats>>
+  <<org-cheats>>
+  <<magit-cheats>>
+  <<projectile-cheats>>
+  <<builtin-cheats>>
+  :bind (("H-c" . cheatsheet-show)))
 #+END_SRC
 **** Common cheats for use throughout Emacs
 #+BEGIN_SRC emacs-lisp :noweb-ref common-cheats :tangle yes
-  (cheatsheet-add :group 'Getting_around
-                  :key "C-d"
-                  :description "Kill --> one character")
-  (cheatsheet-add :group 'Getting_around
-                  :key "M-d"
-                  :description "Kill --> to end of word")
-  (cheatsheet-add :group 'Getting_around
-                  :key "C-DEL -or- M-DEL"
-                  :description "Kill <-- to beginning of word")
-  (cheatsheet-add :group 'Getting_around
-                  :key "M-@"
-                  :description "Mark --> to end of word")
-  (cheatsheet-add :group 'Getting_around
-                  :key "C-t"
-                  :description "Swap the character at the mark w/the character before it")
-  (cheatsheet-add :group 'Getting_around
-                  :key "M-t"
-                  :description "Swap the word at the mark w/the word before it")
+(cheatsheet-add :group 'Getting_around
+                :key "C-d"
+                :description "Kill --> one character")
+(cheatsheet-add :group 'Getting_around
+                :key "M-d"
+                :description "Kill --> to end of word")
+(cheatsheet-add :group 'Getting_around
+                :key "C-DEL -or- M-DEL"
+                :description "Kill <-- to beginning of word")
+(cheatsheet-add :group 'Getting_around
+                :key "M-@"
+                :description "Mark --> to end of word")
+(cheatsheet-add :group 'Getting_around
+                :key "C-t"
+                :description "Swap the character at the mark w/the character before it")
+(cheatsheet-add :group 'Getting_around
+                :key "M-t"
+                :description "Swap the word at the mark w/the word before it")
 #+END_SRC
 **** LaTeX cheats
 Much thanks goes to the AUCTeX Reference Card for version 11.89
 #+BEGIN_SRC emacs-lisp :noweb-ref LaTeX-cheats :tangle no
-  (cheatsheet-add :group 'LaTeX:document_structure ; see "Command Insertion" in the AUCTeX sheet
-                  :key "C-c C-s"
-                  :description "Insert section")
-  (cheatsheet-add :group 'LaTeX:document_structure
-                  :key "M-RET"
-                  :description "Insert item")
-  (cheatsheet-add :group 'LaTeX:document_structure
-                  :key "C-c ]"
-                  :description "Close LaTeX environment")
+(cheatsheet-add :group 'LaTeX:document_structure ; see "Command Insertion" in the AUCTeX sheet
+                :key "C-c C-s"
+                :description "Insert section")
+(cheatsheet-add :group 'LaTeX:document_structure
+                :key "M-RET"
+                :description "Insert item")
+(cheatsheet-add :group 'LaTeX:document_structure
+                :key "C-c ]"
+                :description "Close LaTeX environment")
 
-                                          ; Typeface commands: C-c C-f C-[whatever]
-  (cheatsheet-add :group 'LaTeX:typeface
-                  :key "C-c C-f C-b"
-                  :description "Bold")
-  (cheatsheet-add :group 'LaTeX:typeface
-                  :key "C-c C-f C-i"
-                  :description "Italics")
-  (cheatsheet-add :group 'LaTeX:typeface
-                  :key "C-c C-f C-r"
-                  :description "\\text{} in math mode")
-  (cheatsheet-add :group 'LaTeX:typeface
-                  :key "C-c C-f C-e"
-                  :description "\\emph{}")
-  (cheatsheet-add :group 'LaTeX:typeface
-                  :key "C-c C-f C-t"
-                  :description "typewriter-style text")
-  (cheatsheet-add :group 'LaTeX:typeface
-                  :key "C-c C-f C-s"
-                  :description "(forward-) slanted text")
-  (cheatsheet-add :group 'LaTeX:typeface
-                  :key "C-c C-f C-c"
-                  :description "smallcaps")
+                                        ; Typeface commands: C-c C-f C-[whatever]
+(cheatsheet-add :group 'LaTeX:typeface
+                :key "C-c C-f C-b"
+                :description "Bold")
+(cheatsheet-add :group 'LaTeX:typeface
+                :key "C-c C-f C-i"
+                :description "Italics")
+(cheatsheet-add :group 'LaTeX:typeface
+                :key "C-c C-f C-r"
+                :description "\\text{} in math mode")
+(cheatsheet-add :group 'LaTeX:typeface
+                :key "C-c C-f C-e"
+                :description "\\emph{}")
+(cheatsheet-add :group 'LaTeX:typeface
+                :key "C-c C-f C-t"
+                :description "typewriter-style text")
+(cheatsheet-add :group 'LaTeX:typeface
+                :key "C-c C-f C-s"
+                :description "(forward-) slanted text")
+(cheatsheet-add :group 'LaTeX:typeface
+                :key "C-c C-f C-c"
+                :description "smallcaps")
 
-                                          ; Source formatting commands: C-c C-q C-[whatever]
-  (cheatsheet-add :group 'LaTeX:source_formatting
-                  :key "C-c C-q C-s"
-                  :description "Align section")
-  (cheatsheet-add :group 'LaTeX:source_formatting
-                  :key "C-c C-q C-s"
-                  :description "Align environment")
-  (cheatsheet-add :group 'LaTeX:source_formatting
-                  :key "M-q"
-                  :description "Align paragraph")
-  (cheatsheet-add :group 'LaTeX:source_formatting
-                  :key "C-c *"
-                  :description "Mark section")
-  (cheatsheet-add :group 'LaTeX:source_formatting
-                  :key "C-c ."
-                  :description "Mark environment")
+                                        ; Source formatting commands: C-c C-q C-[whatever]
+(cheatsheet-add :group 'LaTeX:source_formatting
+                :key "C-c C-q C-s"
+                :description "Align section")
+(cheatsheet-add :group 'LaTeX:source_formatting
+                :key "C-c C-q C-s"
+                :description "Align environment")
+(cheatsheet-add :group 'LaTeX:source_formatting
+                :key "M-q"
+                :description "Align paragraph")
+(cheatsheet-add :group 'LaTeX:source_formatting
+                :key "C-c *"
+                :description "Mark section")
+(cheatsheet-add :group 'LaTeX:source_formatting
+                :key "C-c ."
+                :description "Mark environment")
 
-                                          ; Math abbreviations: `[whatever]
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
-                  :key "` c"
-                  :description "\\mathcal{}")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
-                  :key "` ~"
-                  :description "\\tilde{}")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
-                  :key "` ^"
-                  :description "\\hat{}")
+                                        ; Math abbreviations: `[whatever]
+(cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
+                :key "` c"
+                :description "\\mathcal{}")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
+                :key "` ~"
+                :description "\\tilde{}")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
+                :key "` ^"
+                :description "\\hat{}")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                  :key "` C-f"
-                  :description "\\rightarrow")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                  :key "` C-b"
-                  :description "\\leftarrow")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                  :key "` C-p"
-                  :description "\\uparrow")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                  :key "` C-n]"
-                  :description "\\downarrow")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
+                :key "` C-f"
+                :description "\\rightarrow")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
+                :key "` C-b"
+                :description "\\leftarrow")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
+                :key "` C-p"
+                :description "\\uparrow")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
+                :key "` C-n]"
+                :description "\\downarrow")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                  :key "` I"
-                  :description "\\infty")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                  :key "` A"
-                  :description "\\forall")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                  :key "` E"
-                  :description "\\exists")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                  :key "` i"
-                  :description "\\in")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                  :key "` |"
-                  :description "\\vee")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                  :key "` &"
-                  :description "\\wedge")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                :key "` I"
+                :description "\\infty")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                :key "` A"
+                :description "\\forall")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                :key "` E"
+                :description "\\exists")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                :key "` i"
+                :description "\\in")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                :key "` |"
+                :description "\\vee")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
+                :key "` &"
+                :description "\\wedge")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                  :key "` 0"
-                  :description "\\emptyset")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                  :key "` \\"
-                  :description "\\setminus")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                  :key "` +"
-                  :description "\\cup")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                  :key "` -"
-                  :description "\\cap")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                :key "` 0"
+                :description "\\emptyset")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                :key "` \\"
+                :description "\\setminus")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                :key "` +"
+                :description "\\cup")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                :key "` -"
+                :description "\\cap")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                  :key "` {"
-                  :description "\\subset")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                  :key "` }"
-                  :description "\\supset")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                  :key "` ["
-                  :description "\\subseteq")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                  :key "` ]"
-                  :description "\\supseteq")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                :key "` {"
+                :description "\\subset")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                :key "` }"
+                :description "\\supset")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                :key "` ["
+                :description "\\subseteq")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
+                :key "` ]"
+                :description "\\supseteq")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                  :key "` <"
-                  :description "\\leq")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                  :key "` >"
-                  :description "\\geq")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                  :key "` *"
-                  :description "\\times")
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                  :key "` ."
-                  :description "\\cdot")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
+                :key "` <"
+                :description "\\leq")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
+                :key "` >"
+                :description "\\geq")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
+                :key "` *"
+                :description "\\times")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
+                :key "` ."
+                :description "\\cdot")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-                  :key"` C-e"
-                  :description "\\exp")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
+                :key"` C-e"
+                :description "\\exp")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-                  :key"` C-s"
-                  :description "\\sin")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
+                :key"` C-s"
+                :description "\\sin")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-                  :key"` C-c"
-                  :description "\\cos")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
+                :key"` C-c"
+                :description "\\cos")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-                  :key"` C-t"
-                  :description "\\tan")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
+                :key"` C-t"
+                :description "\\tan")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-                  :key"` C-^"
-                  :description "\\sup")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
+                :key"` C-^"
+                :description "\\sup")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-                  :key"` C-_"
-                  :description "\\inf")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
+                :key"` C-_"
+                :description "\\inf")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-                  :key"` C-l"
-                  :description "\\lim")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
+                :key"` C-l"
+                :description "\\lim")
 
-  (cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-                  :key"` C-d"
-                  :description "\\det")
+(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
+                :key"` C-d"
+                :description "\\det")
 #+END_SRC
 **** Org-mode cheats
 #+BEGIN_SRC emacs-lisp :noweb-ref org-cheats :tangle no
-  (cheatsheet-add :group 'org
-                  :key "
-  ,#+attr_org: :width 300 
-  ,#+attr_latex :width 3in :placement [H] 
-  [[file:./my_image.png]]"
-                      :description "Add image inline")
+(cheatsheet-add :group 'org
+                :key "
+,#+attr_org: :width 300 
+,#+attr_latex :width 3in :placement [H] 
+[[file:./my_image.png]]"
+                    :description "Add image inline")
 #+END_SRC
 **** Magit cheats
 ***** [[*Magit][Magit use-package entry]]
 ***** Config
 #+BEGIN_SRC emacs-lisp :noweb-ref magit-cheats :tangle no
-  (cheatsheet-add :group 'magit
-                  :key "C-c g"
-                  :description "Enter magit menu")
-  (cheatsheet-add :group 'magit
-                  :key "(from status menu) h"
-                  :description "HALP")
-  (cheatsheet-add :group 'magit
-                  :key "c c; [type message]; C-c C-c"
-                  :description "Commit staged changes; add commit msg; save commit msg and finish")
+(cheatsheet-add :group 'magit
+                :key "C-c g"
+                :description "Enter magit menu")
+(cheatsheet-add :group 'magit
+                :key "(from status menu) h"
+                :description "HALP")
+(cheatsheet-add :group 'magit
+                :key "c c; [type message]; C-c C-c"
+                :description "Commit staged changes; add commit msg; save commit msg and finish")
 #+END_SRC
 **** Projectile cheats
 #+BEGIN_SRC emacs-lisp :noweb-ref projectile-cheats :tangle no
-  (cheatsheet-add :group 'projectile
-                  :key "C-c p s s"
-                  :description "search")
-  (cheatsheet-add :group 'projectile
-                  :key "C-c p r"
-                  :description "find-replace")
-  (cheatsheet-add :group 'projectile
-                  :key "C-c p f"
-                  :description "file-find")
-  (cheatsheet-add :group 'projectile
-                  :key "C-c p a"
-                  :description "switch to related file (e.g. header)")
-  (cheatsheet-add :group 'projectile
-                  :key "C-c p k"
-                  :description "kill all buffers for current project")
-  (cheatsheet-add :group 'projectile
-                  :key "C-c p <Shift>+s"
-                  :description "save all buffers for current project")
+(cheatsheet-add :group 'projectile
+                :key "C-c p s s"
+                :description "search")
+(cheatsheet-add :group 'projectile
+                :key "C-c p r"
+                :description "find-replace")
+(cheatsheet-add :group 'projectile
+                :key "C-c p f"
+                :description "file-find")
+(cheatsheet-add :group 'projectile
+                :key "C-c p a"
+                :description "switch to related file (e.g. header)")
+(cheatsheet-add :group 'projectile
+                :key "C-c p k"
+                :description "kill all buffers for current project")
+(cheatsheet-add :group 'projectile
+                :key "C-c p <Shift>+s"
+                :description "save all buffers for current project")
 #+END_SRC
 **** Built-in emacs help
 [[http://stackoverflow.com/questions/965263/given-an-emacs-command-name-how-would-you-find-key-bindings-and-vice-versa][Source]]
 #+BEGIN_SRC emacs-lisp :noweb-ref builtin-cheats :tangle yes
-  (cheatsheet-add :group 'builtin_help
-                  :key "C-h c [command-name]"
-                  :description "Look up the keybinding for a given command")
-  (cheatsheet-add :group 'builtin_help
-                  :key "C-h k [key-sequence]"
-                  :description "Look up the command for a given keybinding")
-  (cheatsheet-add :group 'builtin_help
-                  :key "C-h f [function-name]"
-                  :description "Look up the docs for a command")
-  (cheatsheet-add :group 'builtin_help
-                  :key "C-h ?"
-                  :description "Help for getting more help")
+(cheatsheet-add :group 'builtin_help
+                :key "C-h c [command-name]"
+                :description "Look up the keybinding for a given command")
+(cheatsheet-add :group 'builtin_help
+                :key "C-h k [key-sequence]"
+                :description "Look up the command for a given keybinding")
+(cheatsheet-add :group 'builtin_help
+                :key "C-h f [function-name]"
+                :description "Look up the docs for a command")
+(cheatsheet-add :group 'builtin_help
+                :key "C-h ?"
+                :description "Help for getting more help")
 #+END_SRC
 *** TODO use popwin to make it so that
 **** the cheatsheet pops up in a sensible place (just like helm), i.e. the cheatsheet does not occupy the adjacent buffer
@@ -1346,43 +1344,89 @@ the display until you restart Emacs.
 *** [[https://joaotavora.github.io/yasnippet/snippet-organization.html#sec-1][Joatoavora tutorial (better)]]
 *** Configuration
 #+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading yasnippet...")
-  (use-package yasnippet
-    :diminish yas-minor-mode
-    :config
-    (yas-global-mode t))
+(message "[krista] Loading yasnippet...")
+(use-package yasnippet
+  :diminish yas-minor-mode
+  :config
+  (yas-global-mode t))
 #+END_SRC
 ** Ace Window
 #+BEGIN_SRC emacs-lisp
-  (use-package ace-window
-    :bind (("M-P" . ace-window)))
+(use-package ace-window
+  :bind (("M-P" . ace-window)))
 #+END_SRC
 ** Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading undo-tree...")
-  (require 'undo-tree)
-  (setq undo-tree-auto-save-history t)
-  (add-to-list 'undo-tree-history-directory-alist
-               '("." . "~/.emacs.d/cache/undo/"))
+(message "[krista] Loading undo-tree...")
+(require 'undo-tree)
+(setq undo-tree-auto-save-history t)
+(add-to-list 'undo-tree-history-directory-alist
+             '("." . "~/.emacs.d/cache/undo/"))
 
-  ;; WARNING!!! This line must appear /after/ setting variables to save undo-tree
-  ;; history!!!
-  (global-undo-tree-mode)
+;; WARNING!!! This line must appear /after/ setting variables to save undo-tree
+;; history!!!
+(global-undo-tree-mode)
 #+END_SRC
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
-  (use-package flycheck
-    :init (global-flycheck-mode)
-    :diminish)
-  ;; Permanently enable syntax checking
-  (add-hook 'after-init-hook #'global-flycheck-mode)
+(use-package flycheck
+  :init (global-flycheck-mode)
+  :diminish)
+;; Permanently enable syntax checking
+(add-hook 'after-init-hook #'global-flycheck-mode)
 #+END_SRC
 *** Usage
 via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
 - =C-c ! n=: go forward to next error
 - =C-c ! p=: go backward to prev. error
 - =C-c ! l=: show a popup list of errors
+** Smartparens
+This config is adapted from Spruce Bondera's .emacs.d
+#+BEGIN_SRC emacs-lisp
+(use-package smartparens
+  :config
+  ;; Enable the default config
+  (require 'smartparens-config)
+
+  ;; There's several modes in which I usually prefer strings to be treated
+  ;; similar to s-expressions. In others its less relevant/string literals are
+  ;; less common.
+  (setq sp-navigate-consider-stringlike-sexp
+        (append sp-navigate-consider-stringlike-sexp (list 'python-mode
+                                                           'org-mode
+                                                           'coffeescript-mode)))
+
+  ;; This overlay ended up being on basically all the time and overriding my
+  ;; syntax highlighting. More distracting than helpful.
+
+  ;; From the docs:
+  ;; If non-nil, autoinserted pairs are highlighted while point is inside the pair.
+  (setq sp-highlight-pair-overlay nil)
+
+  ;; smartparens will automatically escape quotes, so if you type this:
+  ;;     "The expression of the day is My Expression!"
+  ;;
+  ;; and then try to highlight and quote "My Expression!", you'll get this:
+  ;;     "The expression of the day is \"My Expression!\""
+  ;;
+  ;; I don't like that. This line turns it off.
+  (setq sp-escape-quotes-after-insert nil)
+
+  :bind (("C-M-f" . sp-forward-sexp)
+         ("C-M-b" . sp-backward-sexp)
+         ("C-M-u" . sp-backward-up-sexp)
+         ("C-M-d" . sp-down-sexp)
+         ("C-M-a" . sp-backward-down-sexp)
+         ("C-M-e" . sp-forward-up-sexp)
+         ("C-M-n" . sp-beginning-of-next-sexp)
+         ("C-M-p" . sp-beginning-of-previous-sexp)
+         ;; Unwrap, or remove the parens/outer pair from the current s-exp
+         ("C-M-<backspace>" . sp-unwrap-sexp)))
+
+;; Enable smartparens globally
+(smartparens-global-mode)
+#+END_SRC
 * Programming
 ** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
@@ -1390,7 +1434,7 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
 (message "[krista] Loading whitespace preferences...")
 (use-package whitespace)
 (setq-default show-trailing-whitespace nil)
-;(add-hook 'before-save-hook 'delete-trailing-whitespace)
+                                        ;(add-hook 'before-save-hook 'delete-trailing-whitespace)
 ;; ... but don't show trailing whitespace if I'm in
 ;; - a minibuffer
 ;; - help mode
@@ -1411,54 +1455,54 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
 ;; the function no-trailing-whitespace, available:
 ;; https://ogbe.net/emacsconfig.html
 
-  (add-hook 'python-mode-hook 'whitespace-mode)
-  (setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
-  (setq whitespace-action '(auto-cleanup))
-  (setq-default indent-tabs-mode nil)
-  (setq tab-width 8)
-  (setq-default fill-column 80)
-  ;(defvaralias 'c-basic-offset 'tab-width)
+(add-hook 'python-mode-hook 'whitespace-mode)
+(setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
+(setq whitespace-action '(auto-cleanup))
+(setq-default indent-tabs-mode nil)
+(setq tab-width 8)
+(setq-default fill-column 80)
+                                        ;(defvaralias 'c-basic-offset 'tab-width)
 #+END_SRC
 ** Programming languages
 *** C / C++
 #+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading cc-mode...")
-    (use-package cc-mode
-      :bind (:map
-             c-mode-base-map
-             ("C-c b" . compile)
-             ("M-j" . join-line)))
-    ;; Give me preconfigured autocompletions for C and C++!
-    ;; (add-hook 'c-mode-hook
-    ;;             (lambda ()
-    ;;               (add-to-list 'ac-sources 'ac-source-c-headers)
-    ;;               (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
+(message "[krista] Loading cc-mode...")
+(use-package cc-mode
+  :bind (:map
+         c-mode-base-map
+         ("C-c b" . compile)
+         ("M-j" . join-line)))
+;; Give me preconfigured autocompletions for C and C++!
+;; (add-hook 'c-mode-hook
+;;             (lambda ()
+;;               (add-to-list 'ac-sources 'ac-source-c-headers)
+;;               (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
 
-    ; My wildly unpopular bracing style
-    ; Secret: I really use Ratliffe, but this does the trick
-    (setq krista-c-style
-          '((setq c-default-style "whitesmith")
-            (setq-default c-basic-offset 4)))
+                                        ; My wildly unpopular bracing style
+                                        ; Secret: I really use Ratliffe, but this does the trick
+(setq krista-c-style
+      '((setq c-default-style "whitesmith")
+        (setq-default c-basic-offset 4)))
 
-    ;;(setq c-default-style "whitesmith")
-    ;;(setq-default c-basic-offset 4)
+;;(setq c-default-style "whitesmith")
+;;(setq-default c-basic-offset 4)
 
-    ; Alternate settings that don't piss other programmers off as much:
+                                        ; Alternate settings that don't piss other programmers off as much:
 
-    (setq conformity-c-style
-          '((setq c-default-style "python")
-            (setq-default c-basic-offset 2)))
+(setq conformity-c-style
+      '((setq c-default-style "python")
+        (setq-default c-basic-offset 2)))
 
-    (add-hook 'c-mode-common-hook
-              (lambda () (c-add-style "krista-c-style" krista-c-style t)))
+(add-hook 'c-mode-common-hook
+          (lambda () (c-add-style "krista-c-style" krista-c-style t)))
 #+END_SRC
 *** Python
 **** Pylint minor mode
 #+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading python config...")
-  (autoload 'pylint "pylint")
-  (add-hook 'python-mode-hook 'pylint-add-menu-items)
-  (add-hook 'python-mode-hook 'pylint-add-key-bindings)
+(message "[krista] Loading python config...")
+(autoload 'pylint "pylint")
+(add-hook 'python-mode-hook 'pylint-add-menu-items)
+(add-hook 'python-mode-hook 'pylint-add-key-bindings)
 #+END_SRC
 **** Python shell interpreter
 - Problem: When I ran =run-python=, I got the following error message:
@@ -1481,17 +1525,17 @@ via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
   #+END_SRC
 **** Press <tab> to indent with 4 spaces
 #+BEGIN_SRC emacs-lisp
-    (add-hook 'python-mode-hook
-              (lambda ()
-                (setq indent-tabs-mode nil)
-                (setq tab-width 4)
-                (setq python-indent 4)))
+(add-hook 'python-mode-hook
+          (lambda ()
+            (setq indent-tabs-mode nil)
+            (setq tab-width 4)
+            (setq python-indent 4)))
 #+END_SRC
 *** Slime (lisp)
 #+BEGIN_SRC emacs-lisp
-;  (load (expand-file-name "~/core/dev/builds_from_source/quicklisp/slime-helper.el"))
-  ;; The SBCL binary and command-line arguments
-;  (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
+;; (load (expand-file-name "~/core/dev/builds_from_source/quicklisp/slime-helper.el"))
+;; The SBCL binary and command-line arguments
+;; (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
 #+END_SRC
 *** haskell
 #+BEGIN_SRC emacs-lisp
@@ -1509,10 +1553,10 @@ for getting help with various parts of emacs
 - Edit code block: C-c'
 *** Embed an image in an org document
 #+BEGIN_EXAMPLE
-  #+CAPTION: This is the caption for the next figure link (or table)
-  #+attr_org: :width="50px"
-  #+NAME:   figure
-  [[file:./my_image.png]]
+,#+CAPTION: This is the caption for the next figure link (or table)
+,#+attr_org: :width="50px"
+,#+NAME:   figure
+[[file:./my_image.png]]
 #+END_EXAMPLE
 *** Select all: C-x h
 *** Moving a file into the 'literate' directory:
@@ -1571,13 +1615,13 @@ issue, then CHECK CONFIG.EL
 ** TODO Set up steam integration with emacs
 ** TODO Emacs/W3
 #+BEGIN_SRC emacs-lisp
-;    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
-;    (condition-case () (require 'w3-auto "w3-auto") (error nil))
+;; (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
+;; (condition-case () (require 'w3-auto "w3-auto") (error nil))
 #+END_SRC
 ** TODO multiple-cursors
 #+BEGIN_SRC emacs-lisp
-  ;(use-package multiple-cursors
-  ;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
+;; (use-package multiple-cursors
+;;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
 #+END_SRC
 ** TODO +Install Corral+ Figure out smartparens
 Apparently, the package does more than just automatically add the closing paren!
