@@ -115,13 +115,13 @@ This is where I put things that help me modify my emacs install more efficiently
     (interactive)
     (find-file (or "~/.emacs.d/config.org"
                    user-init-file "")))
-  (bind-key "C-c e" 'krista/open-config)
+  (bind-key "C-c e" #'krista/open-config)
 
   (defun krista/eval-config ()
     "Quickly evaluate my config file"
     (interactive)
     (load-file user-init-file))
-  (global-set-key (kbd "C-c C-h") 'krista/eval-config)
+  (bind-key "C-c C-h" #'krista/eval-config)
 #+END_SRC
 ** Evaluate a region, or the buffer (whatever's appropriate)
 #+BEGIN_SRC emacs-lisp
@@ -139,7 +139,7 @@ This is where I put things that help me modify my emacs install more efficiently
         (message "Buffer evaluated!")))))
   (add-hook 'emacs-lisp-mode-hook
             (lambda ()
-              (global-set-key (kbd "C-c C-b") 'eval-region-or-buffer)))
+              (bind-key "C-c C-b" #'eval-region-or-buffer)))
 #+END_SRC
 ** Switch to *Messages* buffer
 #+BEGIN_SRC emacs-lisp
@@ -147,20 +147,20 @@ This is where I put things that help me modify my emacs install more efficiently
     "Open up the *Messages* buffer in a new frame"
     (interactive)
     (switch-to-buffer-other-window "*Messages*"))
-  (global-set-key (kbd "C-c m") 'switch-to-messages-buffer)
+  (bind-key "C-c m" #'switch-to-messages-buffer)
 #+END_SRC
 ** Record keyboard macros
 #+BEGIN_SRC emacs-lisp
   ;; Start & end recording new keyboard macro
-  (global-set-key (kbd "M-[") 'kmacro-start-macro)
-  (global-set-key (kbd "M-]") 'kmacro-end-macro)
+  (bind-key "M-[" #'kmacro-start-macro)
+  (bind-key "M-]" #'kmacro-end-macro)
   ;; Call the last keyboard macro that was recorded
-  (global-set-key (kbd "C-l") 'call-last-kbd-macro)
+  (bind-key "C-l" #'call-last-kbd-macro)
 #+END_SRC
 ** Quickly open melpa
 #+BEGIN_SRC emacs-lisp
   ;; Speedy-open melpa
-  (global-set-key (kbd "H-p") 'package-list-packages)
+  (bind-key "H-p" #'package-list-packages)
 #+END_SRC
 ** Emacs achievements
 - Unlock achievements to track your emacs journey
@@ -276,12 +276,12 @@ Keep some "context lines" around
 *** Cycle backwards through buffers
 "C-x o", meet your new friend "C-c o"!
 #+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "C-c o") 'previous-multiframe-window)
+  (bind-key "C-c o" #'previous-multiframe-window)
 #+END_SRC
 *** Toggle fullscreen
 Note: this resizes the frame, but does not enter the OS's native fullscreen mode
 #+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "C-c C-<return>") 'toggle-frame-fullscreen)
+  (bind-key "C-c C-<return>" #'toggle-frame-fullscreen)
 #+END_SRC 
 ** Editing
 - This section contains variable settings and functions.
@@ -295,7 +295,7 @@ Note: this resizes the frame, but does not enter the OS's native fullscreen mode
     "Kill ARG lines backward."
     (interactive "p")
     (kill-line (- 1 arg)))
-  (global-set-key (kbd "M-k") 'backward-kill-line)
+  (bind-key "M-k" #'backward-kill-line)
 #+END_SRC
 *** Make C-k kill the text AND newline
 #+BEGIN_SRC emacs-lisp
@@ -334,19 +334,19 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
         (comment-or-uncomment-region (line-beginning-position)
                                      (line-end-position))
       (comment-dwim arg)))
-  (global-set-key (kbd "M-;") 'comment-dwim-line)
+  (bind-key "M-;" #'comment-dwim-line)
 #+END_SRC
 ** Global keybindings
 #+BEGIN_SRC emacs-lisp
   ;; Eval buffer
-  (global-set-key (kbd "C-c b") 'eval-buffer)
+  (bind-key "C-c b" #'eval-buffer)
 
   ;; Count words in selected region
 
-  (global-set-key (kbd "C-c w") 'count-words)
+  (bind-key "C-c w" #'count-words)
     ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
   ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
-  (global-set-key (kbd "M-j") 'join-line)
+  (bind-key "M-j" #'join-line)
 
 ;; Unbind Ctrl+meta+<right>, Ctrl+meta+<left> so BTT can use that to
 ;;bring a window to a new desktop
@@ -629,7 +629,6 @@ Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to
       (org-cycle)
       (setq org-cycle-emulate-tab old-tab-style)))
   (bind-key "C-<tab>" #'krista/org-cycle-current-subtree)
-
 #+END_SRC
 *** Code snippets in org
 #+BEGIN_SRC emacs-lisp :noweb-ref org-code-snippets :noweb tangle :tangle yes
@@ -929,53 +928,53 @@ speed, but I think that it's worth the (teeny!) speed hit.
 ** Company
 *** company (COM-plete ANY-thing)
 #+BEGIN_SRC emacs-lisp
-  (use-package company 
-    :diminish
-    :config
-    (global-company-mode))
-  (global-set-key (kbd "C-;") 'company-complete)
+    (use-package company 
+      :diminish
+      :config
+      (global-company-mode)
+      :bind (("C-;" . company-complete)))
 
-  ;; Scroll through completion options with C-n and C-p (instead of M-n
-  ;; and M-p)
-  ;; Source: https://emacs.stackexchange.com/a/2990
-  (with-eval-after-load 'company
-    (define-key company-active-map (kbd "M-n") nil)
-    (define-key company-active-map (kbd "M-p") nil)
-    (define-key company-active-map (kbd "C-n") #'company-select-next)
-    (define-key company-active-map (kbd "C-p") #'company-select-previous))
+    ;; Scroll through completion options with C-n and C-p (instead of M-n
+    ;; and M-p)
+    ;; Source: https://emacs.stackexchange.com/a/2990
+    (with-eval-after-load 'company
+      (define-key company-active-map (kbd "M-n") nil)
+      (define-key company-active-map (kbd "M-p") nil)
+      (define-key company-active-map (kbd "C-n") #'company-select-next)
+      (define-key company-active-map (kbd "C-p") #'company-select-previous))
 
-  (custom-set-faces
-   ;; Auto-completion preview (for the case where there's a unique suggestion)
-   ;; ------------------------------------------------------------------------
-   '(company-preview
-     ((t (:foreground "darkgray" :underline t :family "Fira Code"))))
-   '(company-preview-common
-     ((t (:inherit company-preview :foreground "#cf7a00"))))
-   
-   ;; Scrollbar
-   ;; ----------
-   '(company-scrollbar-fg
-     ((t (:background "#804532"))))
-   '(company-scrollbar-bg
-     ((t (:background "#19343D"))))
+    (custom-set-faces
+     ;; Auto-completion preview (for the case where there's a unique suggestion)
+     ;; ------------------------------------------------------------------------
+     '(company-preview
+       ((t (:foreground "darkgray" :underline t :family "Fira Code"))))
+     '(company-preview-common
+       ((t (:inherit company-preview :foreground "#cf7a00"))))
+     
+     ;; Scrollbar
+     ;; ----------
+     '(company-scrollbar-fg
+       ((t (:background "#804532"))))
+     '(company-scrollbar-bg
+       ((t (:background "#19343D"))))
 
-   ;; Tooltips
-   ;; -----------
-   ;; In case you're wondering, this is what a "tooltip" looks like
-   ;; http://www.goldsborough.me/images/emacs-java/correcting.png
-   '(company-tooltip
-     ((t (:background "#19343D" :foreground "#306158"))))
-   '(company-tooltip-selection
-     ((t (:background "#cf7a00" :foreground "#a0ffff" :weight bold))))
-   '(company-tooltip-common
-     ((((type x)) (:inherit company-tooltip :weight bold))
-      (t (:inherit company-tooltip))))
-   '(company-tooltip-common-selection
-     ((((type x)) (:inherit company-tooltip-selection :weight bold))
-      (t (:inherit company-tooltip-selection))))
+     ;; Tooltips
+     ;; -----------
+     ;; In case you're wondering, this is what a "tooltip" looks like
+     ;; http://www.goldsborough.me/images/emacs-java/correcting.png
+     '(company-tooltip
+       ((t (:background "#19343D" :foreground "#306158"))))
+     '(company-tooltip-selection
+       ((t (:background "#cf7a00" :foreground "#a0ffff" :weight bold))))
+     '(company-tooltip-common
+       ((((type x)) (:inherit company-tooltip :weight bold))
+        (t (:inherit company-tooltip))))
+     '(company-tooltip-common-selection
+       ((((type x)) (:inherit company-tooltip-selection :weight bold))
+        (t (:inherit company-tooltip-selection))))
 
-;; TODO: move this
-'(org-date ((t (:foreground "Cyan" :underline "#075f5f")))))
+  ;; TODO: move this
+  '(org-date ((t (:foreground "Cyan" :underline "#075f5f")))))
 #+END_SRC
 *** helm-company
 - company uses popup/tooltip-style suggestions which appear under the point
@@ -1015,7 +1014,7 @@ speed, but I think that it's worth the (teeny!) speed hit.
     )
 
   ;; Speedy-open
-  (global-set-key (kbd "C-c g") 'magit-status)
+  (bind-key "C-c g" #'magit-status)
   ;; Default arguments to magit log
   (setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
 #+END_SRC
@@ -1350,8 +1349,8 @@ the display until you restart Emacs.
 #+END_SRC
 ** Ace Window
 #+BEGIN_SRC emacs-lisp
-(use-package ace-window)
-(global-set-key (kbd "M-P") 'ace-window)
+  (use-package ace-window
+    :bind (("M-P" . ace-window)))
 #+END_SRC
 ** Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
@@ -1359,9 +1358,12 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   (message "[krista] Loading undo-tree...")
   (require 'undo-tree)
   (setq undo-tree-auto-save-history t)
-  (global-undo-tree-mode)
   (add-to-list 'undo-tree-history-directory-alist
                '("." . "~/.emacs.d/cache/undo/"))
+
+  ;; WARNING!!! This line must appear /after/ setting variables to save undo-tree
+  ;; history!!!
+  (global-undo-tree-mode)
 #+END_SRC
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
