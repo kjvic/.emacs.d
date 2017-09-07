@@ -22,12 +22,12 @@ legibility."
   :group 'tron-doom-theme
   :type 'boolean)
 
-(defcustom tron-doom-padded-modeline t
+(defcustom tron-doom-padded-modeline nil
   "If non-nil, adds a 4px padding to the mode-line. Can be an integer to
 determine the exact padding."
   :group 'tron-doom-theme
   :type '(or integer boolean))
-(setq tron-doom-padded-modeline t)
+;;(setq tron-doom-padded-modeline t)
 
 ;;
 (def-doom-theme tron-doom
@@ -65,7 +65,7 @@ determine the exact padding."
 
    ;; face categories -- required for all themes
    (highlight      blue)
-   (vertical-bar   cyan)
+   (vertical-bar   blue)
    (selection      dark-blue)
    (builtin        magenta)
    (comments       (if tron-doom-brighter-comments dark-cyan base5))
@@ -95,7 +95,6 @@ determine the exact padding."
 
    (modeline-fg cyan)
    (modeline-fg-alt base3)
-   ;; (modeline-fg-alt (doom-lighten violet 0.6))
 
    (modeline-bg (doom-darken green 0.5))
    (modeline-bg-l
@@ -103,8 +102,10 @@ determine the exact padding."
         (doom-darken blue 0.45)
       `(,(doom-darken (car bg-alt) 0.125) ,@(cdr base0))))
    (modeline-bg-inactive   (doom-darken bg-alt 0.1))
-   (modeline-bg-inactive-l `(,(car bg-alt) ,@(cdr base1))))
+   (modeline-bg-inactive-l `(,(car bg-alt) ,@(cdr base1)))
 
+   (modeline-box "cyan")
+   (modeline-box-inactive (doom-darken blue 0.5)))
 
   ;; --- extra faces ------------------------
   ((elscreen-tab-other-screen-face :background "#353a42" :foreground "#1e2022")
@@ -121,12 +122,19 @@ determine the exact padding."
 
    (doom-modeline-bar :background (if -modeline-bright modeline-bg highlight))
 
-   (mode-line
+ '(modeline-box ((t (:background "#032f2f" :foreground "#a0ffff" :box (:line-width 1 :color "cyan")))))
+ '(modeline-box-inactive ((t (:background "#0b1416" :foreground "#23272e" :box (:line-width 1 :color "#cf7a00")))))
+
+ (mode-line
     :background modeline-bg :foreground modeline-fg
-    :box (if -modeline-pad `(:line-width ,-modeline-pad :color ,modeline-bg)))
+    :box (if -modeline-pad
+             `(:line-width ,-modeline-pad :color ,modeline-bg)
+           `(:line-width 1 :color ,modeline-box)))
    (mode-line-inactive
     :background modeline-bg-inactive :foreground modeline-fg-alt
-    :box (if -modeline-pad `(:line-width ,-modeline-pad :color ,modeline-bg-inactive)))
+    :box (if -modeline-pad
+             `(:line-width ,-modeline-pad :color ,modeline-bg-inactive)
+           `(:line-width 1 :color ,modeline-box-inactive))) 
    (mode-line-emphasis
     :foreground (if -modeline-bright base8 highlight))
 

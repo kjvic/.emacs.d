@@ -1,248 +1,248 @@
 * LaTeX config
 #+BEGIN_SRC emacs-lisp
-  (message "[krista] Loading tex...")
+(message "[krista] Loading tex...")
 
-  ;; AUCTEX
-  ;; auctex provides package tex
-  (use-package tex
-    :ensure auctex
-    :config
-    (setq TeX-auto-save t)         ; save buffer style info
-    (setq TeX-parse-self t)        ; automatically parse style info
-    (setq TeX-auto-untabify t)     ; no tabs
-    (setq-default TeX-master t)    ; default master TeX file == current buffer
-    (setq TeX-PDF-mode t)          ; TODO: what does this do?
-    (setq TeX-save-query nil)      ; TODO: what does this do?
-    (setq TeX-error-overview-open-after-TeX-run t) ; show errors (if any)
-    (setq TeX-auto-local ".auctex-auto") ; give builtin var a better name
+;; AUCTEX
+;; auctex provides package tex
+(use-package tex
+  :ensure auctex
+  :config
+  (setq TeX-auto-save t)         ; save buffer style info
+  (setq TeX-parse-self t)        ; automatically parse style info
+  (setq TeX-auto-untabify t)     ; no tabs
+  (setq-default TeX-master t)    ; default master TeX file == current buffer
+  (setq TeX-PDF-mode t)          ; TODO: what does this do?
+  (setq TeX-save-query nil)      ; TODO: what does this do?
+  (setq TeX-error-overview-open-after-TeX-run t) ; show errors (if any)
+  (setq TeX-auto-local ".auctex-auto") ; give builtin var a better name
 
-    ;; Don't ask permission before running TeX shell commands
-    (put 'TeX-command-extra-options 'safe-local-variable
-         (lambda (x) (string-equal x "-shell-escape")))
+  ;; Don't ask permission before running TeX shell commands
+  (put 'TeX-command-extra-options 'safe-local-variable
+       (lambda (x) (string-equal x "-shell-escape")))
 
-    ;; TODO: document this better
-    (defun krista/TeX-open-output-buffer ()
-      (interactive)
-      (let ((output-file (with-current-buffer TeX-command-buffer
-                           (expand-file-name
-                            (TeX-active-master
-                             (TeX-output-extension))))))
-        (find-file output-file)))
-    (add-to-list 'TeX-view-program-list
-                 (list "Emacs" #'krista/TeX-open-output-buffer))
-    (setq TeX-view-program-selection '((output-pdf "Emacs")))
-
-    ;; TODO: better docs for this function
-    ;; auto revert pdf buffer
-    (add-hook 'TeX-after-compilation-finished-functions 
-              #'TeX-revert-document-buffer)
-
-    ;; Don't confirm before cleaning files
-    (setq TeX-clean-confirm nil)
-    (defun tex-runall-clean ()
-      (interactive)
-      (TeX-command-run-all nil)
-      (TeX-clean))
-
-    (defun TeX-insert-pair (arg open-str close-str)
-      "Like TeX-insert-brackes but for any pair"
-      (interactive "P")
-      (if (TeX-active-mark)
-          (progn
-            (if (< (point) (mark)) (exchange-point-and-mark))
-            (insert close-str)
-            (save-excursion (goto-char (mark)) (insert open-str)))
-        (insert open-str)
-        (save-excursion
-          (if arg (forward-sexp (prefix-numeric-value arg)))
-          (insert close-str))))
-
-    ;; Insert inline/display math quickly
-    (defun LaTeX-insert-inline-math (arg)
-      (interactive "P")
-      (TeX-insert-pair arg "\\( " " \\)"))
-    (defun LaTeX-insert-display-math (arg)
-      (interactive "P")
-      (TeX-insert-pair arg "\\[ " " \\]"))
-    (defun LaTeX-mode-keybindings ()
-      (local-set-key (kbd "H-C-j") #'LaTeX-insert-inline-math)
-      (local-set-key (kbd "H-C-k") #'LaTeX-insert-display-math))
-    (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
-    (defun krista/TeX-mode-keybindings ()
-      (local-set-key (kbd "C-c b") #'tex-runall-clean)
-      (local-set-key (kbd "H b") #'LaTeX-math-bar))
-    (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
-    ;; Highlight other (closing/opening) paren
-    (setq latex-electric-env-pair-mode t)
-    ;; Auto-insert braces after ^ and _ in math mode
-    (setq TeX-electric-sub-and-superscript t)
-
-
-    (defun my-latex-settings (interactive)
-      (set-fill-column 80)             ; Wrap lines at n characters
-      (turn-on-auto-fill)              ; Automatically wrap lines
-      (prettify-symbols-mode)          ; Automatically render unicode
-      )
-    (add-hook 'LaTeX-mode-hook 'my-latex-settings)
-    ) ;; close use-package tex
-
-
-  (message "[krista] Loading latex...")
-  (use-package latex
-    :ensure nil
-    :config
-    (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-    (setq visual-line-mode t)
-    (setq LaTeX-math-menu-unicode t)
-    (setq LaTeX-math-mode t)
-    ) ;; Close use-package latex
-
-  (use-package reftex
-    :diminish reftex-mode
-    :config
-    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-    (setq reftex-plug-into-AUCTeX t))
-
-  ;; TODO: experiment with this more
-  (setq latex-templates-directory "~/.emacs.d/templates/latex-templates/")
-  (defun latex-template ()
+  ;; TODO: document this better
+  (defun krista/TeX-open-output-buffer ()
     (interactive)
-    (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
-           (selection (completing-read "LaTeX Template: "
-                                       (mapcar #'file-name-base files))))
-      (insert-file-contents (concat latex-templates-directory selection ".tex"))))
+    (let ((output-file (with-current-buffer TeX-command-buffer
+                         (expand-file-name
+                          (TeX-active-master
+                           (TeX-output-extension))))))
+      (find-file output-file)))
+  (add-to-list 'TeX-view-program-list
+               (list "Emacs" #'krista/TeX-open-output-buffer))
+  (setq TeX-view-program-selection '((output-pdf "Emacs")))
 
-   ;;; SPRUCE
-   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;  (use-package tex
-  ;;  :ensure auctex
-  ;; :defer 5
-  ;;    :config
-  ;;     ;;save buffer style info
-  ;;     (setq TeX-auto-save t)
-  ;;     ;;automatically parse style info
-  ;;     (setq TeX-parse-self t)
-  ;;     ;;no tabs
-  ;;     (setq TeX-auto-untabify t)
-  ;;     ;;TODO: unsure what this does
-  ;;     ;; (setq-default TeX-master 'dwim)
-  ;;     (setq TeX-PDF-mode t)
-  ;;     (defun spruce/TeX-open-output-buffer ()
-  ;;       (interactive)
-  ;;       (let ((output-file (with-current-buffer TeX-command-buffer
-  ;;                            (expand-file-name
-  ;;                             (TeX-active-master (TeX-output-extension))))))
-  ;;         (find-file output-file)))
-  ;;     (add-to-list 'TeX-view-program-list
-  ;;                  (list "Emacs" #'spruce/TeX-open-output-buffer))
-  ;;     (setq TeX-view-program-selection '((output-pdf "Emacs")))
+  ;; TODO: better docs for this function
+  ;; auto revert pdf buffer
+  (add-hook 'TeX-after-compilation-finished-functions 
+            #'TeX-revert-document-buffer)
+
+  ;; Don't confirm before cleaning files
+  (setq TeX-clean-confirm nil)
+  (defun tex-runall-clean ()
+    (interactive)
+    (TeX-command-run-all nil)
+    (TeX-clean))
+
+  (defun TeX-insert-pair (arg open-str close-str)
+    "Like TeX-insert-brackes but for any pair"
+    (interactive "P")
+    (if (TeX-active-mark)
+        (progn
+          (if (< (point) (mark)) (exchange-point-and-mark))
+          (insert close-str)
+          (save-excursion (goto-char (mark)) (insert open-str)))
+      (insert open-str)
+      (save-excursion
+        (if arg (forward-sexp (prefix-numeric-value arg)))
+        (insert close-str))))
+
+  ;; Insert inline/display math quickly
+  (defun LaTeX-insert-inline-math (arg)
+    (interactive "P")
+    (TeX-insert-pair arg "\\( " " \\)"))
+  (defun LaTeX-insert-display-math (arg)
+    (interactive "P")
+    (TeX-insert-pair arg "\\[ " " \\]"))
+  (defun LaTeX-mode-keybindings ()
+    (local-set-key (kbd "H-C-j") #'LaTeX-insert-inline-math)
+    (local-set-key (kbd "H-C-k") #'LaTeX-insert-display-math))
+  (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
+  (defun krista/TeX-mode-keybindings ()
+    (local-set-key (kbd "C-c b") #'tex-runall-clean)
+    (local-set-key (kbd "H b") #'LaTeX-math-bar))
+  (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
+  ;; Highlight other (closing/opening) paren
+  (setq latex-electric-env-pair-mode t)
+  ;; Auto-insert braces after ^ and _ in math mode
+  (setq TeX-electric-sub-and-superscript t)
 
 
-  ;;    ;; NOTE: This is in spruce's, but not krista's config
-  ;;    (defun latex-compile ()
-  ;;      (interactive)
-  ;;      (save-buffer)
-  ;;      (TeX-command "LaTeX" 'TeX-master-file))
+  (defun my-latex-settings (interactive)
+    (set-fill-column 80)             ; Wrap lines at n characters
+    (turn-on-auto-fill)              ; Automatically wrap lines
+    (prettify-symbols-mode)          ; Automatically render unicode
+    )
+  (add-hook 'LaTeX-mode-hook 'my-latex-settings)
+  ) ;; close use-package tex
 
-  ;;    ;; better name for local variable
-  ;;    ;; (setq TeX-auto-local ".auctex-auto")
 
-  ;;    ;; auto revert pdf buffer
-  ;;    ;; (add-hook 'TeX-after-compilation-finished-functions
-  ;;    ;;         #'TeX-revert-document-buffer)
-  ;;    ;; show errors if there were any
-  ;;    ;; (setq TeX-error-overview-open-after-TeX-run t)
+(message "[krista] Loading latex...")
+(use-package latex
+  :ensure nil
+  :config
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (setq visual-line-mode t)
+  (setq LaTeX-math-menu-unicode t)
+  (setq LaTeX-math-mode t)
+  ) ;; Close use-package latex
 
-  ;;    ;; don't confirm before cleaning files
-  ;;    (setq TeX-clean-confirm nil)
-  ;;    (setq TeX-save-query nil)
+(use-package reftex
+  :diminish reftex-mode
+  :config
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-plug-into-AUCTeX t))
 
-  ;;    (defun TeX-insert-pair (arg open-str close-str)
-  ;;      "Like TeX-insert-brackes but for any pair"
-  ;;      (interactive "P")
-  ;;      (if (TeX-active-mark)
-  ;;          (progn
-  ;;            (if (< (point) (mark)) (exchange-point-and-mark))
-  ;;            (insert close-str)
-  ;;            (save-excursion (goto-char (mark)) (insert open-str)))
-  ;;        (insert open-str)
-  ;;        (save-excursion
-  ;;          (if arg (forward-sexp (prefix-numeric-value arg)))
-  ;;          (insert close-str))))
+;; TODO: experiment with this more
+;; (setq latex-templates-directory "~/.emacs.d/templates/latex-templates/")
+;; (defun latex-template ()
+;;   (interactive)
+;;   (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
+;;          (selection (completing-read "LaTeX Template: "
+;;                                      (mapcar #'file-name-base files))))
+;;     (insert-file-contents (concat latex-templates-directory selection ".tex"))))
 
-  ;;    (setq TeX-electric-sub-and-superscript t)
+ ;;; SPRUCE
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  (use-package tex
+;;  :ensure auctex
+;; :defer 5
+;;    :config
+;;     ;;save buffer style info
+;;     (setq TeX-auto-save t)
+;;     ;;automatically parse style info
+;;     (setq TeX-parse-self t)
+;;     ;;no tabs
+;;     (setq TeX-auto-untabify t)
+;;     ;;TODO: unsure what this does
+;;     ;; (setq-default TeX-master 'dwim)
+;;     (setq TeX-PDF-mode t)
+;;     (defun spruce/TeX-open-output-buffer ()
+;;       (interactive)
+;;       (let ((output-file (with-current-buffer TeX-command-buffer
+;;                            (expand-file-name
+;;                             (TeX-active-master (TeX-output-extension))))))
+;;         (find-file output-file)))
+;;     (add-to-list 'TeX-view-program-list
+;;                  (list "Emacs" #'spruce/TeX-open-output-buffer))
+;;     (setq TeX-view-program-selection '((output-pdf "Emacs")))
 
-  ;;    (put 'TeX-command-extra-options 'safe-local-variable
-  ;;         (lambda (x) (string-equal x "-shell-escape")))
-  ;;    (setq-default TeX-command-extra-options "-shell-escape")
-  ;;
-  ;;    (use-package latex
-  ;;      :ensure nil
-  ;;      :config
-  ;;      (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  ;;      (setq LaTeX-math-menu-unicode t)
 
-  ;;      (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
-  ;;      (add-hook 'LaTeX-mode-hook
-  ;;                (lambda () (set-fill-column 90)))
-  ;;      (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
-  ;;      (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
-  ;;      (defun LaTeX-insert-inline-math (arg)
-  ;;        (interactive "P")
-  ;;        (TeX-insert-pair arg "\\( " " \\)"))
-  ;;      (defun LaTeX-insert-display-math (arg)
-  ;;        (interactive "P")
-  ;;        (TeX-insert-pair arg "\\[ " " \\]"))
+;;    ;; NOTE: This is in spruce's, but not krista's config
+;;    (defun latex-compile ()
+;;      (interactive)
+;;      (save-buffer)
+;;      (TeX-command "LaTeX" 'TeX-master-file))
 
-  ;;      (defun spruce/LaTeX-insert-problem (problem-number &optional is-last)
-  ;;        (beginning-of-line)
-  ;;        (let ((problem (concat "\\problem{" problem-number "}"))
-  ;;              (unfinished "\\unfinished{}"))
-  ;;          (insert problem "\n\n" unfinished "\n"
-  ;;                  (if is-last "" "\n"))))
+;;    ;; better name for local variable
+;;    ;; (setq TeX-auto-local ".auctex-auto")
 
-  ;;      (defun spruce/LaTeX-make-problem-list ()
-  ;;        (interactive)
-  ;;        (let ((data (split-string (thing-at-point 'line t))))
-  ;;          (when data
-  ;;            (delete-region (line-beginning-position)
-  ;;                           (line-end-position))
-  ;;            (mapc #'spruce/LaTeX-insert-problem (butlast data))
-  ;;            (spruce/LaTeX-insert-problem (car (last data)) t))))
+;;    ;; auto revert pdf buffer
+;;    ;; (add-hook 'TeX-after-compilation-finished-functions
+;;    ;;         #'TeX-revert-document-buffer)
+;;    ;; show errors if there were any
+;;    ;; (setq TeX-error-overview-open-after-TeX-run t)
 
-  ;;      (defun spruce/LaTeX-mode-keybindings ()
-  ;;        (bind-key "H-C-j" #'LaTeX-insert-inline-math
-  ;;                  (current-local-map))
-  ;;        (bind-key "H-C-k" #'LaTeX-insert-display-math
-  ;;                  (current-local-map))
-  ;;        (bind-key "C-c x p" #'spruce/LaTeX-make-problem-list
-  ;;                  (current-local-map))
-  ;;        (local-unset-key "\""))
+;;    ;; don't confirm before cleaning files
+;;    (setq TeX-clean-confirm nil)
+;;    (setq TeX-save-query nil)
 
-  ;;      (add-hook 'LaTeX-mode-hook #'spruce/LaTeX-mode-keybindings)
-  ;;      (with-eval-after-load 'smartparens
-  ;;        (add-hook 'TeX-mode-hook #'smartparens-mode))
-  ;;      (use-package font-latex
-  ;;        :ensure nil
-  ;;        :config
-  ;;        (set-face-attribute 'font-latex-sedate-face nil
-  ;;                            :inherit 'font-lock-constant-face
-  ;;                            :foreground 'unspecified))
-  ;;      :bind (:map
-  ;;             LaTeX-mode-map
-  ;;             ("C-c c" . latex-compile))))
+;;    (defun TeX-insert-pair (arg open-str close-str)
+;;      "Like TeX-insert-brackes but for any pair"
+;;      (interactive "P")
+;;      (if (TeX-active-mark)
+;;          (progn
+;;            (if (< (point) (mark)) (exchange-point-and-mark))
+;;            (insert close-str)
+;;            (save-excursion (goto-char (mark)) (insert open-str)))
+;;        (insert open-str)
+;;        (save-excursion
+;;          (if arg (forward-sexp (prefix-numeric-value arg)))
+;;          (insert close-str))))
 
-  ;;  (use-package reftex
-  ;;    :diminish reftex-mode
-  ;;    :config
-  ;;    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  ;;    (setq reftex-plug-into-AUCTeX t))
+;;    (setq TeX-electric-sub-and-superscript t)
 
-  ;;  (setq latex-templates-directory "~/.emacs.d/templates/latex-templates/")
-  ;;  (defun latex-template ()
-  ;;    (interactive)
-  ;;    (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
-  ;;           (selection (completing-read "LaTeX Template: "
-  ;;                                       (mapcar #'file-name-base files))))
-  ;;      (insert-file-contents (concat latex-templates-directory selection ".tex"))))
+;;    (put 'TeX-command-extra-options 'safe-local-variable
+;;         (lambda (x) (string-equal x "-shell-escape")))
+;;    (setq-default TeX-command-extra-options "-shell-escape")
+;;
+;;    (use-package latex
+;;      :ensure nil
+;;      :config
+;;      (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+;;      (setq LaTeX-math-menu-unicode t)
+
+;;      (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
+;;      (add-hook 'LaTeX-mode-hook
+;;                (lambda () (set-fill-column 90)))
+;;      (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+;;      (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
+;;      (defun LaTeX-insert-inline-math (arg)
+;;        (interactive "P")
+;;        (TeX-insert-pair arg "\\( " " \\)"))
+;;      (defun LaTeX-insert-display-math (arg)
+;;        (interactive "P")
+;;        (TeX-insert-pair arg "\\[ " " \\]"))
+
+;;      (defun spruce/LaTeX-insert-problem (problem-number &optional is-last)
+;;        (beginning-of-line)
+;;        (let ((problem (concat "\\problem{" problem-number "}"))
+;;              (unfinished "\\unfinished{}"))
+;;          (insert problem "\n\n" unfinished "\n"
+;;                  (if is-last "" "\n"))))
+
+;;      (defun spruce/LaTeX-make-problem-list ()
+;;        (interactive)
+;;        (let ((data (split-string (thing-at-point 'line t))))
+;;          (when data
+;;            (delete-region (line-beginning-position)
+;;                           (line-end-position))
+;;            (mapc #'spruce/LaTeX-insert-problem (butlast data))
+;;            (spruce/LaTeX-insert-problem (car (last data)) t))))
+
+;;      (defun spruce/LaTeX-mode-keybindings ()
+;;        (bind-key "H-C-j" #'LaTeX-insert-inline-math
+;;                  (current-local-map))
+;;        (bind-key "H-C-k" #'LaTeX-insert-display-math
+;;                  (current-local-map))
+;;        (bind-key "C-c x p" #'spruce/LaTeX-make-problem-list
+;;                  (current-local-map))
+;;        (local-unset-key "\""))
+
+;;      (add-hook 'LaTeX-mode-hook #'spruce/LaTeX-mode-keybindings)
+;;      (with-eval-after-load 'smartparens
+;;        (add-hook 'TeX-mode-hook #'smartparens-mode))
+;;      (use-package font-latex
+;;        :ensure nil
+;;        :config
+;;        (set-face-attribute 'font-latex-sedate-face nil
+;;                            :inherit 'font-lock-constant-face
+;;                            :foreground 'unspecified))
+;;      :bind (:map
+;;             LaTeX-mode-map
+;;             ("C-c c" . latex-compile))))
+
+;;  (use-package reftex
+;;    :diminish reftex-mode
+;;    :config
+;;    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+;;    (setq reftex-plug-into-AUCTeX t))
+
+;;  (setq latex-templates-directory "~/.emacs.d/templates/latex-templates/")
+;;  (defun latex-template ()
+;;    (interactive)
+;;    (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
+;;           (selection (completing-read "LaTeX Template: "
+;;                                       (mapcar #'file-name-base files))))
+;;      (insert-file-contents (concat latex-templates-directory selection ".tex"))))
 #+END_SRC

@@ -84,10 +84,256 @@
 (org-babel-load-file krista/modeline-config-file)
 #+END_SRC
 **** LaTeX
-#+BEGIN_SRC emacs-lisp
-;(krista/new-config-file latex "latex")
-;(org-babel-load-file krista/latex-config-file)
-#+END_SRC
+***** COMMENT Krista config
+#+BEGIN_EXAMPLE
+;; (krista/new-config-file krista-latex "krista-latex")
+;; (org-babel-load-file krista/krista-latex-config-file)
+(message "[krista] Loading tex...")
+
+;; AUCTEX
+;; auctex provides package tex
+(use-package tex
+  :ensure auctex
+  :config
+  (setq TeX-auto-save t)         ; save buffer style info
+  (setq TeX-parse-self t)        ; automatically parse style info
+  (setq TeX-auto-untabify t)     ; no tabs
+  (setq-default TeX-master t)    ; default master TeX file == current buffer
+  (setq TeX-PDF-mode t)          ; TODO: what does this do?
+  (setq TeX-save-query nil)      ; TODO: what does this do?
+  (setq TeX-error-overview-open-after-TeX-run t) ; show errors (if any)
+  (setq TeX-auto-local ".auctex-auto") ; give builtin var a better name
+
+  ;; Don't ask permission before running TeX shell commands
+  (put 'TeX-command-extra-options 'safe-local-variable
+       (lambda (x) (string-equal x "-shell-escape")))
+
+  ;; TODO: document this better
+  (defun krista/TeX-open-output-buffer ()
+    (interactive)
+    (let ((output-file (with-current-buffer TeX-command-buffer
+                         (expand-file-name
+                          (TeX-active-master
+                           (TeX-output-extension))))))
+      (find-file output-file)))
+  (add-to-list 'TeX-view-program-list
+               (list "Emacs" #'krista/TeX-open-output-buffer))
+  (setq TeX-view-program-selection '((output-pdf "Emacs")))
+
+  ;; TODO: better docs for this function
+  ;; auto revert pdf buffer
+  (add-hook 'TeX-after-compilation-finished-functions 
+            #'TeX-revert-document-buffer)
+
+  ;; Don't confirm before cleaning files
+  (setq TeX-clean-confirm nil)
+  (defun tex-runall-clean ()
+    (interactive)
+    (TeX-command-run-all nil)
+    (TeX-clean))
+
+  (defun TeX-insert-pair (arg open-str close-str)
+    "Like TeX-insert-brackes but for any pair"
+    (interactive "P")
+    (if (TeX-active-mark)
+        (progn
+          (if (< (point) (mark)) (exchange-point-and-mark))
+          (insert close-str)
+          (save-excursion (goto-char (mark)) (insert open-str)))
+      (insert open-str)
+      (save-excursion
+        (if arg (forward-sexp (prefix-numeric-value arg)))
+        (insert close-str))))
+
+  ;; Insert inline/display math quickly
+  (defun LaTeX-insert-inline-math (arg)
+    (interactive "P")
+    (TeX-insert-pair arg "\\( " " \\)"))
+  (defun LaTeX-insert-display-math (arg)
+    (interactive "P")
+    (TeX-insert-pair arg "\\[ " " \\]"))
+  (defun LaTeX-mode-keybindings ()
+    (local-set-key (kbd "H-C-j") #'LaTeX-insert-inline-math)
+    (local-set-key (kbd "H-C-k") #'LaTeX-insert-display-math))
+  (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
+  (defun krista/TeX-mode-keybindings ()
+    (local-set-key (kbd "C-c b") #'tex-runall-clean)
+    (local-set-key (kbd "H b") #'LaTeX-math-bar))
+  (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
+  ;; Highlight other (closing/opening) paren
+  (setq latex-electric-env-pair-mode t)
+  ;; Auto-insert braces after ^ and _ in math mode
+  (setq TeX-electric-sub-and-superscript t)
+
+
+  (defun my-latex-settings (interactive)
+    (set-fill-column 80)             ; Wrap lines at n characters
+    (turn-on-auto-fill)              ; Automatically wrap lines
+    (prettify-symbols-mode)          ; Automatically render unicode
+    )
+  (add-hook 'LaTeX-mode-hook 'my-latex-settings)
+  ) ;; close use-package tex
+
+
+;; (message "[krista] Loading latex...")
+;; (use-package latex
+;;   :ensure nil
+;;   :config
+  ;; (setq visual-line-mode t)
+  ;; (setq LaTeX-math-menu-unicode t)
+  ;; (setq LaTeX-math-mode t)
+  ;; ) ;; Close use-package latex
+;; (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+
+;; (use-package reftex
+;;   :diminish reftex-mode
+;;   :config
+;;   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+;;   (setq reftex-plug-into-AUCTeX t))
+#+END_EXAMPLE
+***** Spruce config
+#+BEGIN_EXAMPLE
+  ;; Project github: https://github.com/politza/pdf-tools
+  ;; Source: https://emacs.stackexchange.com/a/22591
+  ;;; Install epdfinfo via 'brew install pdf-tools' and then install the
+  ;;; pdf-tools elisp via the use-package below. To upgrade the epdfinfo
+  ;;; server, just do 'brew upgrade pdf-tools' prior to upgrading to newest
+  ;;; pdf-tools package using Emacs package system. If things get messed
+  ;;; up, just do 'brew uninstall pdf-tools', wipe out the elpa
+  ;;; pdf-tools package and reinstall both as at the start.
+  (use-package pdf-tools
+    :ensure t
+    :config
+    (custom-set-variables
+      '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
+    (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
+  (pdf-tools-install)
+
+  (use-package tex
+    :ensure auctex
+    :defer 5
+    :config
+    ;; TODO: fucks up prettify for some reason?
+    ;; (company-auctex-init)
+    ;; save buffer style info
+    (setq TeX-auto-save t)
+    ;; automatically parse style info
+    (setq TeX-parse-self t)
+    ;; no tabs
+    (setq TeX-auto-untabify t)
+    ;; TODO: unsure what this does
+    ;; (setq-default TeX-master 'dwim)
+    (setq TeX-PDF-mode t)
+    (defun spruce/TeX-open-output-buffer ()
+      (interactive)
+      (let ((output-file (with-current-buffer TeX-command-buffer
+                           (expand-file-name
+                            (TeX-active-master (TeX-output-extension))))))
+        (find-file output-file)))
+    (add-to-list 'TeX-view-program-list
+                 (list "Emacs" #'spruce/TeX-open-output-buffer))
+
+    (setq TeX-view-program-selection '((output-pdf "Emacs")))
+    (defun latex-compile ()
+      (interactive)
+      (save-buffer)
+      (TeX-command "LaTeX" 'TeX-master-file))
+
+    (setq TeX-auto-local ".auctex-auto")
+    ;; auto revert pdf buffer
+    (add-hook 'TeX-after-compilation-finished-functions
+              #'TeX-revert-document-buffer)
+    ;; show errors if there were any
+    (setq TeX-error-overview-open-after-TeX-run t)
+    ;; don't confirm before cleaning files
+    (setq TeX-clean-confirm nil)
+    (setq TeX-save-query nil)
+    (defun TeX-insert-pair (arg open-str close-str)
+      "Like TeX-insert-brackes but for any pair"
+      (interactive "P")
+      (if (TeX-active-mark)
+          (progn
+            (if (< (point) (mark)) (exchange-point-and-mark))
+            (insert close-str)
+            (save-excursion (goto-char (mark)) (insert open-str)))
+        (insert open-str)
+        (save-excursion
+          (if arg (forward-sexp (prefix-numeric-value arg)))
+          (insert close-str))))
+    (setq TeX-electric-sub-and-superscript t)
+    (put 'TeX-command-extra-options 'safe-local-variable
+         (lambda (x) (string-equal x "-shell-escape")))
+    (setq-default TeX-command-extra-options "-shell-escape")
+
+    (use-package latex
+      :ensure nil
+      :config
+      (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+      (setq LaTeX-math-menu-unicode t)
+      (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
+      (add-hook 'LaTeX-mode-hook
+                (lambda () (set-fill-column 90)))
+      (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+      (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
+
+      (defun spruce/LaTeX-insert-inline-math (arg)
+        (interactive "P")
+        (TeX-insert-pair arg "\\( " " \\)"))
+      (defun spruce/LaTeX-insert-display-math (arg)
+        (interactive "P")
+        (TeX-insert-pair arg "\\[ " " \\]"))
+
+      (defun spruce/LaTeX-insert-problem (problem-number &optional is-last)
+        (beginning-of-line)
+        (let ((problem (concat "\\problem{" problem-number "}"))
+              (unfinished "\\unfinished{}"))
+          (insert problem "\n\n" unfinished "\n"
+                  (if is-last "" "\n"))))
+
+      (defun spruce/LaTeX-make-problem-list ()
+        (interactive)
+        (let ((data (split-string (thing-at-point 'line t))))
+          (when data
+            (delete-region (line-beginning-position)
+                           (line-end-position))
+            (mapc #'spruce/LaTeX-insert-problem (butlast data))
+            (spruce/LaTeX-insert-problem (car (last data)) t))))
+
+      (defun spruce/LaTeX-mode-keybindings ()
+        (bind-key "H-C-j" #'spruce/LaTeX-insert-inline-math
+                  (current-local-map))
+        (bind-key "H-C-k" #'spruce/LaTeX-insert-display-math
+                  (current-local-map))
+        (bind-key "C-c x p" #'spruce/LaTeX-make-problem-list
+                  (current-local-map))
+        (local-unset-key "\""))
+
+      (add-hook 'LaTeX-mode-hook #'spruce/LaTeX-mode-keybindings)
+      (with-eval-after-load 'smartparens
+        (add-hook 'TeX-mode-hook #'smartparens-mode))
+      (use-package font-latex
+        :ensure nil
+        :config
+        (set-face-attribute 'font-latex-sedate-face nil
+                            :inherit 'font-lock-constant-face
+                            :foreground 'unspecified))
+      :bind (:map LaTeX-mode-map
+             ("C-!" . latex-compile))))
+
+  ;; (use-package reftex
+  ;;   :diminish reftex-mode
+  ;;   :config
+  ;;   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  ;;   (setq reftex-plug-into-AUCTeX t))
+
+  ;; (setq latex-templates-directory (with-user-d "templates" "latex-templates"))
+  ;; (defun latex-template ()
+  ;;   (interactive)
+  ;;   (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
+  ;;          (selection (completing-read "LaTeX Template: "
+  ;;                                      (mapcar #'file-name-base files))))
+  ;;     (insert-file-contents (concat latex-templates-directory selection ".tex"))))
+#+END_EXAMPLE
 ** Initial buffer to show at startup
 - When I start up emacs, I don't want to see the ugly default startup
   screen. However, I also want to be able to run =emacs somefile.txt=
@@ -98,7 +344,10 @@
   - [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Command_002dLine-Arguments.html][More on command line arguments]]
 - Config (via [[https://emacs.stackexchange.com/a/21106][stackexchange]])
   #+BEGIN_SRC emacs-lisp
-  (setq default-initial-buffer-choice "~/core/lists/todo.org")
+  (setq krista/todo-file "~/core/lists/todo.org")
+  (setq krista/at-a-glance-file "~/core/school/umich/F17/at-a-glance.org")
+  (setq krista/schedule-file "~/core/school/umich/F17/schedule.png")
+  (setq default-initial-buffer-choice krista/todo-file)
   (defun my-after-init-hook ()
     "Set initial buffer ONLY if no file is specified in command line args"
     (when (eq 1 (length command-line-args))
@@ -194,6 +443,15 @@ This is where I put things that help me modify my emacs install more efficiently
 ;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
 ;; (load custom-file :noerror)
 #+END_SRC
+** Identify the face under the cursor
+Source: https://stackoverflow.com/a/1242415
+#+BEGIN_SRC emacs-lisp
+(defun what-face (pos)
+  (interactive "d")
+  (let ((face (or (get-char-property (point) 'read-face-name)
+                  (get-char-property (point) 'face))))
+    (if face (message "Face: %s" face) (message "No face at %d" pos))))
+#+END_SRC
 * Global settings
 ** Better defaults
 *** Remove default startup message, text at the top of scratch buffers
@@ -284,6 +542,13 @@ Note: this resizes the frame, but does not enter the OS's native fullscreen mode
 #+BEGIN_SRC emacs-lisp
 (bind-key "C-c C-<return>" #'toggle-frame-fullscreen)
 #+END_SRC 
+*** Forbid vertical splitting
+https://stackoverflow.com/questions/24140672/how-can-i-make-ess-to-split-window-horizontally-by-default
+Not quite what I want, but helpful
+#+BEGIN_SRC emacs-lisp
+;; (setq split-height-threshold nil)
+;; (setq split-width-threshold 0)
+#+END_SRC
 ** Editing
 - This section contains variable settings and functions.
 - Rebind preexisting commands in [[*Global%20keybindings][*Global keybindings]]
@@ -401,10 +666,10 @@ out how to set it immediately, but this should suffice as startup config.
 
   (setq visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow)))
   #+END_SRC
-*** Fringe and border faces
+*** Hide the fringe
 #+BEGIN_SRC emacs-lisp
 (set-face-attribute 'fringe nil :background "#001519")
-(set-face-attribute 'vertical-border nil :foreground "#00d4d4")
+;;(set-face-attribute 'vertical-border nil :foreground "#cf7a00")
 #+END_SRC
 *** Fonts
 #+BEGIN_SRC emacs-lisp
@@ -420,7 +685,7 @@ out how to set it immediately, but this should suffice as startup config.
                     :family "Fira Code")
 
 (set-face-attribute 'region nil :background "#032929")
-(set-face-attribute 'vertical-border nil :foreground "#00d4d4")
+
 #+END_SRC
 ** Theme
 #+BEGIN_SRC emacs-lisp
@@ -434,6 +699,13 @@ out how to set it immediately, but this should suffice as startup config.
 
 ;; Enable flashing mode-line on errors
 (doom-themes-visual-bell-config)
+
+;; Set different faces for TODO items with different priority levels
+;; Source: https://emacs.stackexchange.com/a/17405
+(setq org-priority-faces '((?A . (:foreground "#cf7a00" :weight 'extrabold))
+                          (?B . (:foreground "#00a890" :weight 'bold))
+                          (?C . (:foreground "#075f5f"))))
+
 #+END_SRC
 
 * Major packages
@@ -458,6 +730,8 @@ out how to set it immediately, but this should suffice as startup config.
   <<org-code-snippets>>
   (message "[krista] Loading org-links...")
   <<org-links>>
+  (message "[krista] Loading org-tables...")
+  <<org-tables>>
   :bind (
          ("C-c c" . org-capture)
          ("C-c a" . org-agenda)
@@ -517,8 +791,8 @@ out how to set it immediately, but this should suffice as startup config.
 (setq org-hide-emphasis-markers t)
 
 ;; Make top-level headings larger, and lower-level headings progressively smaller
-(set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.2)
-(set-face-attribute 'org-level-2 nil :inherit 'outline-2 :height 1.0)
+;; (set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.2)
+;; (set-face-attribute 'org-level-2 nil :inherit 'outline-2 :height 1.0)
 
 ;; Use my theme as the color scheme for source blocks
 (setq org-src-fontify-natively t)
@@ -531,9 +805,15 @@ out how to set it immediately, but this should suffice as startup config.
 ;; <http://orgmode.org/manual/Clean-view.html>
 (setq org-startup-indented t)
 
+;; When you visit an agenda for the first time, still honor my startup preferences
+(setq org-agenda-inhibit-startup nil)
+
 ;; in org mode C-a/e moves to beginning of text in line, after header asterisks
 ;; however you can press it again to go all the way
 (setq org-special-ctrl-a/e t)
+
+;; Set default size for org tables
+(setq org-table-default-size "2x3")
 
 (set-face-attribute 'org-code nil
                     :inherit 'shadow
@@ -547,8 +827,14 @@ out how to set it immediately, but this should suffice as startup config.
                     :family "Andale Mono")
 
 ;; Custom Org keywords
-(setq org-todo-keywords '((sequence "TODO" "|" "DONE" "CANCELLED")))
-
+;; Multiple workflows: in-built TODO system, packing/moving
+(setq krista/packing-mode nil)
+(if krista/packing-mode
+    (setq org-todo-keywords
+          '((sequence "TODO(t)" "|" "DONE(d)" "CANCELLED(c)")
+            (sequence "GATHER(g)" "PACK(p)" "|" "LOAD(l)" "UNPACK(u)")))
+  (setq org-todo-keywords
+        '((sequence "TODO" "|" "DONE" "CANCELLED"))))
 ;; Org todo keyword faces
 (setq org-todo-keyword-faces '(("TODO" . (:foreground "#ff0f97" :weight bold))
                                ("DONE" . (:foreground "#075f5f" :weight bold))
@@ -566,31 +852,64 @@ out how to set it immediately, but this should suffice as startup config.
                "\\end{center}")))
 #+END_SRC
 *** Org-capture
-#+BEGIN_SRC emacs-lisp :noweb-ref org-capture :tangle no
+#+BEGIN_SRC emacs-lisp :noweb yes :noweb-ref org-capture :tangle yes
 ;; Org capture
 (setq org-default-notes-file (concat org-directory "/notes.org"))
 ;; To see what goes into an org-capture template, see
 ;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
 (setq org-capture-templates
-      '(("t" "todo" entry (file+olp "~/core/lists/todo.org" "todo-queue")
+      '(("a" "annoy" entry
+         (file+olp krista/todo-file "annoy" "refile")
+         "* %?\n %i\n")
+        ("h" "hw-style-guide" entry
+         (file+olp "~/core/school/powerpoint_shaming/tacky_hw_things.org" "tacky!")
+         "* %?\n %i\n")
+        ("m" "movies" entry
+         (file+olp "~/core/lists/movies.org" "refile")
+         "* %?\n %i\n")
+        ("q" "quotes" entry
+         (file+olp "~/core/lists/quotes.org" "quotes")
+         "* %?\n %i\n")
+        ("s" "shopping" entry
+         (file+olp krista/todo-file "shopping")
+         "* %?\n %i\n")
+        ("t" "todo" entry
+         (file+olp krista/todo-file "todo-queue")
          "* TODO %?\n %i\n")
-        ("a" "annoy" entry (file+olp "~/core/lists/annoy.org" "annoy")
+        ("u" "how to deal with umich" entry
+         (file+olp "~/core/lists/advice" "how to deal with umich")
          "* %?\n %i\n")
-        ("p" "project" entry (file+olp "~/core/lists/todo.org" "projects")
+        ("v" "advice" entry
+         (file+olp "~/core/lists/advice" "refile")
          "* %?\n %i\n")
-        ("s" "shopping" entry (file+olp "~/core/lists/todo.org" "shopping")
+        ("w" "workflow advice" entry
+         (file+olp "~/core/lists/advice" "workflow advice")
          "* %?\n %i\n")
-        ("q" "quotes" entry (file+olp "~/core/lists/quotes.org" "quotes")
-         "* %?\n %i\n")
-        ("h" "hw-style-guide" entry (file+olp "~/core/lists/tacky_hw_things.org" "tacky!")
-         "* %?\n %i\n")
-        ("g" "git-gotchas" entry (file+olp "~/core/lists/git-gotchas.org" "The gotchas")
-         "* %?\n %i\n")))
+        ))
+<<org-refile-targets>>
+#+END_SRC
+**** Org refile targets
+#+BEGIN_SRC emacs-lisp :noweb-ref org-refile-targets :tangle no
+(setq org-refile-use-outline-path t) ; Show full paths for refiling 
+(setq org-refile-allow-creating-parent-nodes (quote confirm)) ; allow refile to create parent tasks with confirmation
+
+;; Source:
+;; https://emacs.stackexchange.com/questions/22128/how-to-org-refile-to-a-target-within-the-current-file?rq=1
+;; Hmm. This only lets you pick from the buffer that you're currently visiting,
+;; but I want the file specified by the org capture template
+;; (defun my-org-files-list ()
+;;  (delq nil
+;;    (mapcar (lambda (buffer)
+;;      (buffer-file-name buffer))
+;;      (org-buffer-list 'files t))))
+
+(setq org-refile-targets '((org-agenda-files :maxlevel . 2)))
 #+END_SRC
 *** Org todo/agenda
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
 ;; Places to sniff when compiling a list of TODO items
-(setq org-agenda-files (list "~/core/lists/todo.org"))
+(setq org-agenda-files (list krista/todo-file
+                             krista/at-a-glance-file))
 
 ;; From http://orgmode.org/manual/Breaking-down-tasks.html 
 ;;
@@ -682,6 +1001,77 @@ Org link workflow:
 (setf org-make-link-description-function #'org-link-describe)
 #+END_SRC
 
+*** Org tables
+Source: https://emacs.stackexchange.com/a/30871
+#+BEGIN_SRC emacs-lisp :noweb-ref org-tables :tangle no
+(defun org-table-wrap-to-width (width) 
+  "Wrap current column to WIDTH."
+  (interactive (list (read-number "Enter column width: ")))
+  (org-table-check-inside-data-field)
+  (org-table-align)
+
+  (let (cline (ccol (org-table-current-column)) new-row-count (more t))
+    (org-table-goto-line 1)
+    (org-table-goto-column ccol)
+
+    (while more
+      (setq cline (org-table-current-line))
+
+      ;; Cut current field
+      (org-table-copy-region (point) (point) 'cut)
+
+      ;; Justify for width
+      (setq org-table-clip 
+            (mapcar 'list (org-wrap (caar org-table-clip) width nil)))
+
+      ;; Add new lines and fill
+      (setq new-row-count (1- (length org-table-clip)))
+      (if (> new-row-count 0)
+          (org-table-insert-n-row-below new-row-count)) 
+      (org-table-goto-line cline)
+      (org-table-goto-column ccol)
+      (org-table-paste-rectangle)
+      (org-table-goto-line (+ cline new-row-count))
+
+      ;; Move to next line
+      (setq more (org-table-goto-line (+ cline new-row-count 1)))
+      (org-table-goto-column ccol))
+
+    (org-table-goto-line 1)
+    (org-table-goto-column ccol)))
+
+;; ;; Default cell width
+;; (setq org-cell-fill-column 50)
+
+;; ;; Define a dwim, so the regular binding for M-q still works when I'm not in an
+;; ;; org-table data field
+;; (defun org-table-fill-dwim
+;;     (if (org-table-check-inside-data-field)
+;;         (org-table-wrap-to-width)
+;;       (fill-paragraph)))
+
+;; (add-hook 'org-mode-hook
+;;           (lambda () (bind-key "M-q" #'org-table-fill-dwim)))
+
+(defun org-table-insert-n-row-below (n)
+  "Insert N new lines below the current."
+  (let* ((line (buffer-substring (point-at-bol) (point-at-eol)))
+         (new (org-table-clean-line line)))
+    ;; Fix the first field if necessary
+    (if (string-match "^[ \t]*| *[#$] *|" line)
+        (setq new (replace-match (match-string 0 line) t t new)))
+    (beginning-of-line 2)
+    (setq new
+      (apply 'concat (make-list n (concat new "\n"))))
+    (let (org-table-may-need-update) (insert-before-markers new))  ;;; remove? 
+    (beginning-of-line 0)
+    (re-search-forward "| ?" (point-at-eol) t)
+    (and (or org-table-may-need-update org-table-overlay-coordinates) ;;; remove? 
+         (org-table-align))
+    (org-table-fix-formulas "@" nil (1- (org-table-current-dline)) n)))
+
+;; (global-set-key (kbd "C-c M-q") org-table-))
+#+END_SRC
 ** Helm
 *** Introduction to helm
 - Definition of "helm": noun - a tiller or wheel and any associated
@@ -717,6 +1107,7 @@ Org link workflow:
   (helm-mode t)
   <<helm-behavior>>
   <<helm-recentf>>
+  <<helm-ff-in-new-window>>
   :bind (
          <<helm-replace-defaults>>
          <<helm-actions>>
@@ -747,11 +1138,41 @@ This is the place to put it
 (setq krista/recentf-save-interval 300)
 (run-at-time (current-time) krista/recentf-save-interval 'recentf-save-list)
 #+END_SRC
+**** Find file + open new window
+Source: https://emacs.stackexchange.com/a/20845
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-ff-in-new-window :tangle no
+(defun helm-buffer-switch-to-new-window (_candidate)
+  "Display buffers in new windows."
+  ;; Select the bottom right window
+  (require 'winner)
+  (select-window (car (last (winner-sorted-window-list))))
+  ;; Display buffers in new windows
+  (dolist (buf (helm-marked-candidates))
+    (select-window (split-window-right))
+    (switch-to-buffer buf))
+  ;; Adjust size of windows
+  (balance-windows))
+
+(defun helm-buffer-switch-new-window ()
+  (interactive)
+  (with-helm-alive-p
+   (helm-quit-and-execute-action 'helm-buffer-switch-to-new-window)))
+
+;; NOTE: Change this with the keybinding for helm-buffer-switch-new-window!!!
+(add-to-list 'helm-type-buffer-actions
+             '("Display buffer(s) in new window(s) with C-x M-f" .
+               helm-buffer-switch-new-window) 'append)
+;; NOTE: Change this keybinding with the help-text, helm-type-buffer-actions
+(define-key helm-buffer-map (kbd "C-x M-f") #'helm-buffer-switch-new-window)
+;; Usage: C-x C-f as normal, but open with C-o
+#+END_SRC
 **** Override global keybindings (replace defaults)
 I like Helm so much that I'm willing to override the corresponding
 default Emacs functions. Also, Emacs defaults are "meh".
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-replace-defaults :tangle no
 ("M-x" . helm-M-x)
+;; NOTE: don't forget that you can use helm-locate for fuzzy file searching
+;; (e.g. equivalent to mdfind on macOS)
 ("C-x C-f" . helm-find-files)
 ("C-x C-r" . helm-recentf)
 
@@ -766,14 +1187,14 @@ default Emacs functions. Also, Emacs defaults are "meh".
 #+END_SRC
 **** helm actions
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-actions :tangle no
-:map helm-map
+;; :map helm-map
 ;; Helm persistent action does something useful for the given context, without
 ;; closing the helm popup
-("<tab>" . helm-execute-persistent-action)
-("C-i" . helm-execute-persistent-action) ; for use in terminal
+;; ("<tab>" . helm-execute-persistent-action)
+;; ("C-i" . helm-execute-persistent-action) ; for use in terminal
 ;; helm-select-action pulls up a menu of more complex actions that you can take
 ;; in a given context
-("C-z" . helm-select-action)
+;; ("C-z" . helm-select-action)
 #+END_SRC
 **** helm-descbinds (*desc*-ribe *bind*-ings)
 - Helm descbinds is a smarter replacement for "C-h k" to look up
@@ -788,7 +1209,7 @@ default Emacs functions. Also, Emacs defaults are "meh".
   :config (setq helm-descbinds-mode t)
   :bind ("C-h b" . helm-descbinds))
 #+END_SRC
-*** Helm swoop
+** Helm swoop
 - Swoop is like a better isearch. Works really nicely with helm.
 - [[https://github.com/ShingoFukuyama/helm-swoop][ShingoFukuyama's super-fancy helm config]]
 - Editing from Helm swoop. When doing C-s, you can
@@ -1627,3 +2048,10 @@ Apparently, the package does more than just automatically add the closing paren!
 ** TODO Install the alert package
 - provides Growl-like notifications
 - would be useful for org-calendar
+* heap
+#+BEGIN_SRC emacs-lisp
+(defun revert-buffer-no-prompt ()
+  "Revert buffer without confirm prompt"
+  (interactive)
+  (revert-buffer t t))
+#+END_SRC

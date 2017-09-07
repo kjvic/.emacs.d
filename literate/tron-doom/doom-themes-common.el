@@ -756,7 +756,7 @@
     (org-level-5 :inherit 'org-level-3)
     (org-level-6 :inherit 'org-level-3)
     (org-tag :foreground green :bold nil)
-    (org-priority :foreground red)
+    ;; (org-priority :foreground red)
     (org-ellipsis :underline nil :foreground violet)
     (org-hide :foreground bg)
     (org-table :foreground violet)
@@ -784,7 +784,7 @@
     (org-checkbox-statistics-todo :inherit 'org-todo)
     (org-checkbox-statistics-done :inherit 'org-done)
     (message-header-name :foreground green) ; FIXME move this
-
+    
     ;; rpm-spec-mode
     (rpm-spec-macro-face        :foreground yellow)
     (rpm-spec-var-face          :foreground violet)

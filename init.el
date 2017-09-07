@@ -23,5 +23,6 @@
       (expand-file-name
        (concat user-emacs-directory krista/bootstrap-org-file)))
 
+
 ;; Tangle all of my source blocks together, and then load the result
 (org-babel-load-file krista/bootstrap-org-path)
