@@ -83,257 +83,6 @@
 (krista/new-config-file modeline "modeline")
 (org-babel-load-file krista/modeline-config-file)
 #+END_SRC
-**** LaTeX
-***** COMMENT Krista config
-#+BEGIN_EXAMPLE
-;; (krista/new-config-file krista-latex "krista-latex")
-;; (org-babel-load-file krista/krista-latex-config-file)
-(message "[krista] Loading tex...")
-
-;; AUCTEX
-;; auctex provides package tex
-(use-package tex
-  :ensure auctex
-  :config
-  (setq TeX-auto-save t)         ; save buffer style info
-  (setq TeX-parse-self t)        ; automatically parse style info
-  (setq TeX-auto-untabify t)     ; no tabs
-  (setq-default TeX-master t)    ; default master TeX file == current buffer
-  (setq TeX-PDF-mode t)          ; TODO: what does this do?
-  (setq TeX-save-query nil)      ; TODO: what does this do?
-  (setq TeX-error-overview-open-after-TeX-run t) ; show errors (if any)
-  (setq TeX-auto-local ".auctex-auto") ; give builtin var a better name
-
-  ;; Don't ask permission before running TeX shell commands
-  (put 'TeX-command-extra-options 'safe-local-variable
-       (lambda (x) (string-equal x "-shell-escape")))
-
-  ;; TODO: document this better
-  (defun krista/TeX-open-output-buffer ()
-    (interactive)
-    (let ((output-file (with-current-buffer TeX-command-buffer
-                         (expand-file-name
-                          (TeX-active-master
-                           (TeX-output-extension))))))
-      (find-file output-file)))
-  (add-to-list 'TeX-view-program-list
-               (list "Emacs" #'krista/TeX-open-output-buffer))
-  (setq TeX-view-program-selection '((output-pdf "Emacs")))
-
-  ;; TODO: better docs for this function
-  ;; auto revert pdf buffer
-  (add-hook 'TeX-after-compilation-finished-functions 
-            #'TeX-revert-document-buffer)
-
-  ;; Don't confirm before cleaning files
-  (setq TeX-clean-confirm nil)
-  (defun tex-runall-clean ()
-    (interactive)
-    (TeX-command-run-all nil)
-    (TeX-clean))
-
-  (defun TeX-insert-pair (arg open-str close-str)
-    "Like TeX-insert-brackes but for any pair"
-    (interactive "P")
-    (if (TeX-active-mark)
-        (progn
-          (if (< (point) (mark)) (exchange-point-and-mark))
-          (insert close-str)
-          (save-excursion (goto-char (mark)) (insert open-str)))
-      (insert open-str)
-      (save-excursion
-        (if arg (forward-sexp (prefix-numeric-value arg)))
-        (insert close-str))))
-
-  ;; Insert inline/display math quickly
-  (defun LaTeX-insert-inline-math (arg)
-    (interactive "P")
-    (TeX-insert-pair arg "\\( " " \\)"))
-  (defun LaTeX-insert-display-math (arg)
-    (interactive "P")
-    (TeX-insert-pair arg "\\[ " " \\]"))
-  (defun LaTeX-mode-keybindings ()
-    (local-set-key (kbd "H-C-j") #'LaTeX-insert-inline-math)
-    (local-set-key (kbd "H-C-k") #'LaTeX-insert-display-math))
-  (add-hook 'LaTeX-mode-hook #'LaTeX-mode-keybindings)
-  (defun krista/TeX-mode-keybindings ()
-    (local-set-key (kbd "C-c b") #'tex-runall-clean)
-    (local-set-key (kbd "H b") #'LaTeX-math-bar))
-  (add-hook 'TeX-mode-hook #'TeX-mode-keybindings)
-  ;; Highlight other (closing/opening) paren
-  (setq latex-electric-env-pair-mode t)
-  ;; Auto-insert braces after ^ and _ in math mode
-  (setq TeX-electric-sub-and-superscript t)
-
-
-  (defun my-latex-settings (interactive)
-    (set-fill-column 80)             ; Wrap lines at n characters
-    (turn-on-auto-fill)              ; Automatically wrap lines
-    (prettify-symbols-mode)          ; Automatically render unicode
-    )
-  (add-hook 'LaTeX-mode-hook 'my-latex-settings)
-  ) ;; close use-package tex
-
-
-;; (message "[krista] Loading latex...")
-;; (use-package latex
-;;   :ensure nil
-;;   :config
-  ;; (setq visual-line-mode t)
-  ;; (setq LaTeX-math-menu-unicode t)
-  ;; (setq LaTeX-math-mode t)
-  ;; ) ;; Close use-package latex
-;; (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-
-;; (use-package reftex
-;;   :diminish reftex-mode
-;;   :config
-;;   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-;;   (setq reftex-plug-into-AUCTeX t))
-#+END_EXAMPLE
-***** Spruce config
-#+BEGIN_EXAMPLE
-  ;; Project github: https://github.com/politza/pdf-tools
-  ;; Source: https://emacs.stackexchange.com/a/22591
-  ;;; Install epdfinfo via 'brew install pdf-tools' and then install the
-  ;;; pdf-tools elisp via the use-package below. To upgrade the epdfinfo
-  ;;; server, just do 'brew upgrade pdf-tools' prior to upgrading to newest
-  ;;; pdf-tools package using Emacs package system. If things get messed
-  ;;; up, just do 'brew uninstall pdf-tools', wipe out the elpa
-  ;;; pdf-tools package and reinstall both as at the start.
-  (use-package pdf-tools
-    :ensure t
-    :config
-    (custom-set-variables
-      '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
-    (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
-  (pdf-tools-install)
-
-  (use-package tex
-    :ensure auctex
-    :defer 5
-    :config
-    ;; TODO: fucks up prettify for some reason?
-    ;; (company-auctex-init)
-    ;; save buffer style info
-    (setq TeX-auto-save t)
-    ;; automatically parse style info
-    (setq TeX-parse-self t)
-    ;; no tabs
-    (setq TeX-auto-untabify t)
-    ;; TODO: unsure what this does
-    ;; (setq-default TeX-master 'dwim)
-    (setq TeX-PDF-mode t)
-    (defun spruce/TeX-open-output-buffer ()
-      (interactive)
-      (let ((output-file (with-current-buffer TeX-command-buffer
-                           (expand-file-name
-                            (TeX-active-master (TeX-output-extension))))))
-        (find-file output-file)))
-    (add-to-list 'TeX-view-program-list
-                 (list "Emacs" #'spruce/TeX-open-output-buffer))
-
-    (setq TeX-view-program-selection '((output-pdf "Emacs")))
-    (defun latex-compile ()
-      (interactive)
-      (save-buffer)
-      (TeX-command "LaTeX" 'TeX-master-file))
-
-    (setq TeX-auto-local ".auctex-auto")
-    ;; auto revert pdf buffer
-    (add-hook 'TeX-after-compilation-finished-functions
-              #'TeX-revert-document-buffer)
-    ;; show errors if there were any
-    (setq TeX-error-overview-open-after-TeX-run t)
-    ;; don't confirm before cleaning files
-    (setq TeX-clean-confirm nil)
-    (setq TeX-save-query nil)
-    (defun TeX-insert-pair (arg open-str close-str)
-      "Like TeX-insert-brackes but for any pair"
-      (interactive "P")
-      (if (TeX-active-mark)
-          (progn
-            (if (< (point) (mark)) (exchange-point-and-mark))
-            (insert close-str)
-            (save-excursion (goto-char (mark)) (insert open-str)))
-        (insert open-str)
-        (save-excursion
-          (if arg (forward-sexp (prefix-numeric-value arg)))
-          (insert close-str))))
-    (setq TeX-electric-sub-and-superscript t)
-    (put 'TeX-command-extra-options 'safe-local-variable
-         (lambda (x) (string-equal x "-shell-escape")))
-    (setq-default TeX-command-extra-options "-shell-escape")
-
-    (use-package latex
-      :ensure nil
-      :config
-      (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-      (setq LaTeX-math-menu-unicode t)
-      (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
-      (add-hook 'LaTeX-mode-hook
-                (lambda () (set-fill-column 90)))
-      (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
-      (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
-
-      (defun spruce/LaTeX-insert-inline-math (arg)
-        (interactive "P")
-        (TeX-insert-pair arg "\\( " " \\)"))
-      (defun spruce/LaTeX-insert-display-math (arg)
-        (interactive "P")
-        (TeX-insert-pair arg "\\[ " " \\]"))
-
-      (defun spruce/LaTeX-insert-problem (problem-number &optional is-last)
-        (beginning-of-line)
-        (let ((problem (concat "\\problem{" problem-number "}"))
-              (unfinished "\\unfinished{}"))
-          (insert problem "\n\n" unfinished "\n"
-                  (if is-last "" "\n"))))
-
-      (defun spruce/LaTeX-make-problem-list ()
-        (interactive)
-        (let ((data (split-string (thing-at-point 'line t))))
-          (when data
-            (delete-region (line-beginning-position)
-                           (line-end-position))
-            (mapc #'spruce/LaTeX-insert-problem (butlast data))
-            (spruce/LaTeX-insert-problem (car (last data)) t))))
-
-      (defun spruce/LaTeX-mode-keybindings ()
-        (bind-key "H-C-j" #'spruce/LaTeX-insert-inline-math
-                  (current-local-map))
-        (bind-key "H-C-k" #'spruce/LaTeX-insert-display-math
-                  (current-local-map))
-        (bind-key "C-c x p" #'spruce/LaTeX-make-problem-list
-                  (current-local-map))
-        (local-unset-key "\""))
-
-      (add-hook 'LaTeX-mode-hook #'spruce/LaTeX-mode-keybindings)
-      (with-eval-after-load 'smartparens
-        (add-hook 'TeX-mode-hook #'smartparens-mode))
-      (use-package font-latex
-        :ensure nil
-        :config
-        (set-face-attribute 'font-latex-sedate-face nil
-                            :inherit 'font-lock-constant-face
-                            :foreground 'unspecified))
-      :bind (:map LaTeX-mode-map
-             ("C-!" . latex-compile))))
-
-  ;; (use-package reftex
-  ;;   :diminish reftex-mode
-  ;;   :config
-  ;;   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  ;;   (setq reftex-plug-into-AUCTeX t))
-
-  ;; (setq latex-templates-directory (with-user-d "templates" "latex-templates"))
-  ;; (defun latex-template ()
-  ;;   (interactive)
-  ;;   (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
-  ;;          (selection (completing-read "LaTeX Template: "
-  ;;                                      (mapcar #'file-name-base files))))
-  ;;     (insert-file-contents (concat latex-templates-directory selection ".tex"))))
-#+END_EXAMPLE
 ** Initial buffer to show at startup
 - When I start up emacs, I don't want to see the ugly default startup
   screen. However, I also want to be able to run =emacs somefile.txt=
@@ -344,8 +93,9 @@
   - [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Command_002dLine-Arguments.html][More on command line arguments]]
 - Config (via [[https://emacs.stackexchange.com/a/21106][stackexchange]])
   #+BEGIN_SRC emacs-lisp
-  (setq krista/todo-file "~/core/lists/todo.org")
-  (setq krista/at-a-glance-file "~/core/school/umich/F17/at-a-glance.org")
+  (setq krista/orgzly-dir "~/Dropbox/orgzly/")
+  (setq krista/todo-file (concat krista/orgzly-dir "todo.org"))
+  (setq krista/at-a-glance-file (concat krista/orgzly-dir "at-a-glance.org"))
   (setq krista/schedule-file "~/core/school/umich/F17/schedule.png")
   (setq default-initial-buffer-choice krista/todo-file)
   (defun my-after-init-hook ()
@@ -359,18 +109,18 @@
 This is where I put things that help me modify my emacs install more efficiently
 ** Quickly open, evaluate my config file
 #+BEGIN_SRC emacs-lisp
-(defun krista/open-config ()
+(defun krista/speedy-open-config ()
   "Quickly open my config file"
   (interactive)
   (find-file (or "~/.emacs.d/config.org"
                  user-init-file "")))
-(bind-key "C-c e" #'krista/open-config)
+(bind-key "C-c e" #'krista/speedy-open-config)
 
-(defun krista/eval-config ()
+(defun krista/speedy-eval-config ()
   "Quickly evaluate my config file"
   (interactive)
   (load-file user-init-file))
-(bind-key "C-c C-h" #'krista/eval-config)
+(bind-key "C-c C-h" #'krista/speedy-eval-config)
 #+END_SRC
 ** Evaluate a region, or the buffer (whatever's appropriate)
 #+BEGIN_SRC emacs-lisp
@@ -405,12 +155,6 @@ This is where I put things that help me modify my emacs install more efficiently
 (bind-key "M-]" #'kmacro-end-macro)
 ;; Call the last keyboard macro that was recorded
 (bind-key "C-l" #'call-last-kbd-macro)
-#+END_SRC
-** Quickly open melpa
-#+BEGIN_SRC emacs-lisp
-;; Speedy-open melpa
-(use-package paradox
-  :bind (("H-p" . paradox-list-packages)))
 #+END_SRC
 ** Emacs achievements
 - Unlock achievements to track your emacs journey
@@ -451,6 +195,7 @@ Source: https://stackoverflow.com/a/1242415
   (let ((face (or (get-char-property (point) 'read-face-name)
                   (get-char-property (point) 'face))))
     (if face (message "Face: %s" face) (message "No face at %d" pos))))
+;; (bind-key "H-f" what-face)
 #+END_SRC
 * Global settings
 ** Better defaults
@@ -525,7 +270,11 @@ Source: http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
 #+BEGIN_SRC emacs-lisp
 (setq sentence-end-double-space nil)
 #+END_SRC
-** Getting around
+*** Use 12-hour time with AM/PM instead of 24-hour time
+#+BEGIN_SRC emacs-lisp
+(setq display-time-24hr-format t)
+#+END_SRC
+** Buffer management
 See also: [[*Ace-window]]
 *** Don't scroll a full screenful at a time
 Keep some "context lines" around
@@ -548,6 +297,12 @@ Not quite what I want, but helpful
 #+BEGIN_SRC emacs-lisp
 ;; (setq split-height-threshold nil)
 ;; (setq split-width-threshold 0)
+#+END_SRC
+*** New frame (new "window" in os x parlance)
+#+BEGIN_SRC emacs-lisp
+(bind-key "H-n" #'make-frame)
+(bind-key "H-w" #'delete-frame)
+(bind-key "H-o" #'reveal-in-osx-finder)
 #+END_SRC
 ** Editing
 - This section contains variable settings and functions.
@@ -625,6 +380,45 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 #+END_SRC
+** Shell / filesystem
+*** Tramp
+#+BEGIN_SRC emacs-lisp
+(use-package tramp
+  :config
+  (setq tramp-default-method "ssh")
+
+  ;; Make tramp actually read my PATH variable
+  ;; NOTE: needed to restart emacs and rm ~/.emacs.d/tramp on my local to get
+  ;; this config to take effect
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+  
+  ;; Use SSH ControlMasters to try to keep any connections alive as long as
+  ;; possible. This gets rid of a lot of time spent reconnecting and
+  ;; re-inputting credentials
+  (setq tramp-ssh-controlmaster-options
+        "-o ControlMaster=auto -o ControlPersist=yes"))
+#+END_SRC
+*** Interacting with the operating system
+- Note: OS-specific settings should be in their own literate/OS.org file.
+- However, some OS-agnostic settings can still live here to reduce code duplication
+#+BEGIN_SRC emacs-lisp
+(bind-key "H-d" #'delete-file)
+(bind-key "H-m" #'rename-file) ;; H-m is for "mv"
+(bind-key "H-r" #'revert-buffer-no-prompt)
+#+END_SRC
+*** Quick find-file
+#+BEGIN_SRC emacs-lisp
+(defun krista/speedy-open-todo ()
+  "Quickly open my todo file"
+  (interactive)
+  (find-file krista/todo-file))
+(defun krista/speedy-open-at-a-glance ()
+  "Quickly open my at-a-glance file"
+  (interactive)
+  (find-file krista/at-a-glance-file))
+(bind-key "H-a" #'krista/speedy-open-at-a-glance)
+(bind-key "H-t" #'krista/speedy-open-todo)
+#+END_SRC
 * Appearance
 ** Aesthetic tweaks
 *** Set cursor appearance
@@ -673,8 +467,12 @@ out how to set it immediately, but this should suffice as startup config.
 #+END_SRC
 *** Fonts
 #+BEGIN_SRC emacs-lisp
-(set-face-attribute 'default nil :font "Fira Code-13")
-(set-face-attribute 'bold nil :weight 'extra-bold)
+(set-face-attribute 'default nil :font "Fira Code-13" :weight 'light)
+(set-face-attribute 'bold nil :weight 'demibold)
+;; https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs
+;; for the railwaycat emacs port
+(mac-auto-operator-composition-mode)
+
 
 (set-face-attribute 'bold-italic nil
                     :slant 'oblique
@@ -707,8 +505,140 @@ out how to set it immediately, but this should suffice as startup config.
                           (?C . (:foreground "#075f5f"))))
 
 #+END_SRC
-
 * Major packages
+** LaTeX
+#+BEGIN_SRC emacs-lisp
+(use-package tex
+  :ensure auctex
+  :defer 5
+  :config
+  ;; TODO: fucks up prettify for some reason?
+  ;; (company-auctex-init)
+  ;; save buffer style info
+  (setq TeX-auto-save t)
+  ;; automatically parse style info
+  (setq TeX-parse-self t)
+  ;; no tabs
+  (setq TeX-auto-untabify t)
+  ;; TODO: unsure what this does
+  ;; (setq-default TeX-master 'dwim)
+  (setq TeX-PDF-mode t)
+  (defun spruce/TeX-open-output-buffer ()
+    (interactive)
+    (let ((output-file (with-current-buffer TeX-command-buffer
+                         (expand-file-name
+                          (TeX-active-master (TeX-output-extension))))))
+      (find-file output-file)))
+  (add-to-list 'TeX-view-program-list
+               (list "Emacs" #'spruce/TeX-open-output-buffer))
+
+  (setq TeX-view-program-selection '((output-pdf "Emacs")))
+  ;; better name for local variable
+  (defun latex-compile ()
+    (interactive)
+    (save-buffer)
+    (TeX-command "LaTeX" 'TeX-master-file))
+
+  (setq TeX-auto-local ".auctex-auto")
+  ;; auto revert pdf buffer
+  (add-hook 'TeX-after-compilation-finished-functions
+            #'TeX-revert-document-buffer)
+  ;; show errors if there were any
+  (setq TeX-error-overview-open-after-TeX-run t)
+  ;; don't confirm before cleaning files
+  (setq TeX-clean-confirm nil)
+  (setq TeX-save-query nil)
+  (defun TeX-insert-pair (arg open-str close-str)
+    "Like TeX-insert-brackes but for any pair"
+    (interactive "P")
+    (if (TeX-active-mark)
+        (progn
+          (if (< (point) (mark)) (exchange-point-and-mark))
+          (insert close-str)
+          (save-excursion (goto-char (mark)) (insert open-str)))
+      (insert open-str)
+      (save-excursion
+        (if arg (forward-sexp (prefix-numeric-value arg)))
+        (insert close-str))))
+  (setq TeX-electric-sub-and-superscript t)
+  (put 'TeX-command-extra-options 'safe-local-variable
+       (lambda (x) (string-equal x "-shell-escape")))
+  (setq-default TeX-command-extra-options "-shell-escape")
+  (use-package latex
+    :ensure nil
+    :config
+    (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+    (setq LaTeX-math-menu-unicode t)
+    (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
+    (add-hook 'LaTeX-mode-hook
+              (lambda () (set-fill-column 90)))
+    (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+    ;; (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
+    (defun spruce/LaTeX-insert-inline-math (arg)
+      (interactive "P")
+      (TeX-insert-pair arg "\\( " " \\)"))
+    (defun spruce/LaTeX-insert-display-math (arg)
+      (interactive "P")
+      (TeX-insert-pair arg "\\[ " " \\]"))
+
+    (defun spruce/LaTeX-insert-problem (problem-number &optional is-last)
+      (beginning-of-line)
+      (let ((problem (concat "\\problem{" problem-number "}"))
+            (unfinished "\\unfinished{}"))
+        (insert problem "\n\n" unfinished "\n"
+                (if is-last "" "\n"))))
+
+    (defun spruce/LaTeX-make-problem-list ()
+      (interactive)
+      (let ((data (split-string (thing-at-point 'line t))))
+        (when data
+          (delete-region (line-beginning-position)
+                         (line-end-position))
+          (mapc #'spruce/LaTeX-insert-problem (butlast data))
+          (spruce/LaTeX-insert-problem (car (last data)) t))))
+
+    (defun spruce/LaTeX-mode-keybindings ()
+      (bind-key "H-C-j" #'spruce/LaTeX-insert-inline-math
+                (current-local-map))
+      (bind-key "H-C-k" #'spruce/LaTeX-insert-display-math
+                (current-local-map))
+      (bind-key "C-c x p" #'spruce/LaTeX-make-problem-list
+                (current-local-map))
+      (local-unset-key "\""))
+
+    (add-hook 'LaTeX-mode-hook #'spruce/LaTeX-mode-keybindings)
+    (add-hook 'org-mode-hook #'spruce/LaTeX-mode-keybindings)
+    (with-eval-after-load 'smartparens
+      (add-hook 'TeX-mode-hook #'smartparens-mode))
+    (use-package font-latex
+      :ensure nil
+      :config
+      (set-face-attribute 'font-latex-sedate-face nil
+                          :inherit 'font-lock-constant-face
+                          :foreground 'unspecified))
+    :bind (:map LaTeX-mode-map
+           ("C-c c" . latex-compile))))
+
+(use-package reftex
+  :diminish reftex-mode
+  :config
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-plug-into-AUCTeX t)
+  (setq reftex-toc-follow-mode t))
+
+;; Don't prompt me for section labels!!!
+;; Source: https://tex.stackexchange.com/a/194017
+;; (eval-after-load "latex"
+;;   '(progn
+;;      (defun LaTeX-label (env))))
+;; (setq latex-templates-directory (with-user-d "templates" "latex-templates"))
+;; (defun latex-template ()
+;;   (interactive)
+;;   (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
+;;          (selection (completing-read "LaTeX Template: "
+;;                                      (mapcar #'file-name-base files))))
+;;     (insert-file-contents (concat latex-templates-directory selection ".tex"))))
+#+END_SRC
 ** Org-mode
 *** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
@@ -748,8 +678,7 @@ out how to set it immediately, but this should suffice as startup config.
          ;;       for inserting inline / display math into
          ;;       regular LaTeX docs. This is to provide as
          ;;       seamless an experience as I can muster.
-         ("H-C-j" . LaTeX-insert-inline-math)
-         ("H-C-k" . LaTeX-insert-display-math)))
+         ))
 #+END_SRC
 *** Tips from http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html
 **** todo / schedule / deadline
@@ -773,11 +702,14 @@ out how to set it immediately, but this should suffice as startup config.
   (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝"))))
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
 
+;; Make LaTeX bigger when I'm presenting
+;; (setq org-format-latex-options (plist-put org-format-latex-options :scale 4.0))
+
 ;; Setting this to `t' will automatically render LaTeX special
 ;; characters, if possible/sensible
 ;; E.g. "\" + "alpha" becomes a lowercase alpha
 ;; I have it turned off, but it's here
-(setq org-pretty-entities t)
+;; (setq org-pretty-entities t)
 
 ;; Setting this to `t' will use {} to render sub/super-scripts
 ;; e.g. asdf_{123} is rendered as "asdf sub 123"
@@ -826,7 +758,18 @@ out how to set it immediately, but this should suffice as startup config.
                     :foreground "AntiqueWhite4"
                     :family "Andale Mono")
 
-;; Custom Org keywords
+;; Add custom Org keywords/"tags"/previews/metadata for text to follow
+;; For example, I like "thm" and "def" when taking math notes
+(font-lock-add-keywords 'org-mode
+                        '(("NOTE" . font-lock-comment-face)
+                          ("THM" . font-lock-comment-face)
+                          ("DATA" . font-lock-comment-face)
+                          ("EXAMPLE" . font-lock-comment-face)
+                          ("DEF" . font-lock-comment-face)
+                          ("LEMMA" . font-lock-comment-face)
+                          ("IDEA" . font-lock-comment-face)
+                          ("RMK" . font-lock-comment-face)))
+
 ;; Multiple workflows: in-built TODO system, packing/moving
 (setq krista/packing-mode nil)
 (if krista/packing-mode
@@ -834,11 +777,16 @@ out how to set it immediately, but this should suffice as startup config.
           '((sequence "TODO(t)" "|" "DONE(d)" "CANCELLED(c)")
             (sequence "GATHER(g)" "PACK(p)" "|" "LOAD(l)" "UNPACK(u)")))
   (setq org-todo-keywords
-        '((sequence "TODO" "|" "DONE" "CANCELLED"))))
+        (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+                (sequence "WAITING(w@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")))))
+
 ;; Org todo keyword faces
-(setq org-todo-keyword-faces '(("TODO" . (:foreground "#ff0f97" :weight bold))
-                               ("DONE" . (:foreground "#075f5f" :weight bold))
-                               ("CANCELLED") . (:foreground "#888a85" :weight bold)))
+(setq org-todo-keyword-faces
+      (quote (("TODO" :foreground "#75dbb7" :weight bold)
+              ("NEXT" :foreground "#888a85" :weight bold)
+              ("WAITING" :foreground "#888a85" :weight bold)
+              ("DONE" :foreground "#075f5f" :weight bold)
+              ("CANCELLED" :foreground "#075f5f" :weight bold))))
 #+END_SRC
 *** Exporting to LaTeX
 #+BEGIN_SRC emacs-lisp
@@ -877,13 +825,13 @@ out how to set it immediately, but this should suffice as startup config.
          (file+olp krista/todo-file "todo-queue")
          "* TODO %?\n %i\n")
         ("u" "how to deal with umich" entry
-         (file+olp "~/core/lists/advice" "how to deal with umich")
+         (file+olp "~/core/lists/advice.org" "how to deal with umich")
          "* %?\n %i\n")
         ("v" "advice" entry
-         (file+olp "~/core/lists/advice" "refile")
+         (file+olp "~/core/lists/advice.org" "refile")
          "* %?\n %i\n")
         ("w" "workflow advice" entry
-         (file+olp "~/core/lists/advice" "workflow advice")
+         (file+olp "~/core/lists/advice.org" "workflow advice")
          "* %?\n %i\n")
         ))
 <<org-refile-targets>>
@@ -905,30 +853,63 @@ out how to set it immediately, but this should suffice as startup config.
 
 (setq org-refile-targets '((org-agenda-files :maxlevel . 2)))
 #+END_SRC
-*** Org todo/agenda
+*** Agenda
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
 ;; Places to sniff when compiling a list of TODO items
 (setq org-agenda-files (list krista/todo-file
                              krista/at-a-glance-file))
 
-;; From http://orgmode.org/manual/Breaking-down-tasks.html 
-;;
-;; When showing progress stats for TODO completion, recursively
-;; consider the entire subtree
-(setq org-hierarchical-todo-statistics nil)
-;;
-;; "If you would like a TODO entry to automatically change to DONE
-;; when all children are done, you can use the following setup:"
-(defun org-summary-todo (n-done n-not-done)
-  "Switch entry to DONE when all subentries are done, to TODO otherwise."
-  (let (org-log-done org-log-states)   ; turn off logging
-    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+;; If non-nil: mousing over TODO items in org agenda => show TODO item in other buffer
+(setq org-agenda-start-with-follow-mode nil)
 
-(add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+;; Customize dates
+;; ----------------
 
-;; Source https://emacs.stackexchange.com/a/19876
-(setq-default org-display-custom-times t)
-(setq org-time-stamp-custom-formats '("<%A %b %e %Y>" . "<%A %b %e %Y %l:%M%p>"))
+;; Show all agenda dates - even if they are empty
+(setq org-agenda-show-all-dates t)
+
+;; Start the week on Sunday
+;; https://emacs.stackexchange.com/a/28913
+(setq org-agenda-start-on-weekday 0)
+
+;; Show the whole week
+(setq org-agenda-span 7)
+
+;; Don't display items that are done
+(setq org-agenda-skip-scheduled-if-done t)
+(setq org-agenda-skip-deadline-if-done t)
+;; Don't display deadlines for scheduled items
+(setq org-agenda-skip-deadline-prewarning-if-scheduled 'pre-scheduled)
+;; Don't display upcoming deadlines under each day
+(setq org-agenda-only-exact-dates t)
+(setq org-deadline-warning-days 0)
+
+;;Non-nil means skip scheduled delay when entry also has a deadline
+(setq org-agenda-skip-scheduled-delay-if-deadline t)
+
+(setq org-agenda-sorting-strategy
+      '((agenda habit-down time-up deadline-up scheduled-up category-up priority-down)
+        (todo priority-down category-up)
+        (tags priority-down category-keep)
+        (search category-keep)))
+;; Aesthetics 
+;; ------------
+
+;; https://emacs.stackexchange.com/a/17832
+(setq org-agenda-prefix-format '(
+                                 (agenda  . "    • %-32b ") ;; bullet + 32-char "breadcrumb"
+                                 (todo  . " %i ")))
+;; (setq org-agenda-tags-column -100) ; take advantage of the screen width
+
+;; Don't use a time grid in the agenda view
+(setq org-agenda-use-time-grid nil)
+
+;; Make 'q' kill the org agenda buffer
+(setq org-agenda-sticky nil)
+
+(setq org-agenda-inhibit-startup t)
+(setq org-agenda-use-tag-inheritance t)
+(setq org-agenda-show-log t)
 #+END_SRC
 *** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
@@ -966,6 +947,8 @@ Example: Start a new elisp block in org mode by typing <el and then pressing TAB
              '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
 (add-to-list 'org-structure-template-alist
              '("c" "#+BEGIN_SRC C\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("txt" "#+BEGIN_SRC txt\n?\n#+END_SRC" ""))
 (add-to-list 'org-structure-template-alist
              '("cpp" "#+BEGIN_SRC C++\n?\n#+END_SRC" ""))
 (add-to-list 'org-structure-template-alist
@@ -1072,6 +1055,33 @@ Source: https://emacs.stackexchange.com/a/30871
 
 ;; (global-set-key (kbd "C-c M-q") org-table-))
 #+END_SRC
+** Calfw
+CAL-endar F-rameW-ork
+#+BEGIN_SRC emacs-lisp
+(use-package calfw
+  :config 
+  ;; M-x cfw:open-org-calendar
+  (use-package calfw-org
+    :config (setq cfw:org-overwrite-default-keybinding t))
+;; Unicode characters
+  ;; (setq cfw:fchar-junction ?╋
+  ;;       cfw:fchar-vertical-line ?┃
+  ;;       cfw:fchar-horizontal-line ?━
+  ;;       cfw:fchar-left-junction ?┣
+  ;;       cfw:fchar-right-junction ?┫
+  ;;       cfw:fchar-top-junction ?┯
+  ;;       cfw:fchar-top-left-corner ?┏
+  ;;       cfw:fchar-top-right-corner ?┓)
+ (setq cfw:fchar-junction ?╬
+      cfw:fchar-vertical-line ?║
+      cfw:fchar-horizontal-line ?═
+      cfw:fchar-left-junction ?╠
+      cfw:fchar-right-junction ?╣
+      cfw:fchar-top-junction ?╦
+      cfw:fchar-top-left-corner ?╔
+      cfw:fchar-top-right-corner ?╗))
+(bind-key "H-c" #'cfw:open-org-calendar)
+#+END_SRC
 ** Helm
 *** Introduction to helm
 - Definition of "helm": noun - a tiller or wheel and any associated
@@ -1135,7 +1145,7 @@ This is the place to put it
 ;; Auto-save a list of recently-opened files
 ;; NOTE: This ensures accurate recentf info in case of a
 ;; less-than-graceful exit
-(setq krista/recentf-save-interval 300)
+(setq krista/recentf-save-interval 30000)
 (run-at-time (current-time) krista/recentf-save-interval 'recentf-save-list)
 #+END_SRC
 **** Find file + open new window
@@ -1184,6 +1194,8 @@ default Emacs functions. Also, Emacs defaults are "meh".
 
 ;; Display bookmarks for frequently-visited spots on my file system
 ("C-x r l" . helm-bookmarks)
+
+("M-I" . helm-semantic-or-imenu)
 #+END_SRC
 **** helm actions
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-actions :tangle no
@@ -1353,11 +1365,14 @@ speed, but I think that it's worth the (teeny!) speed hit.
 ** Company
 *** company (COM-plete ANY-thing)
 #+BEGIN_SRC emacs-lisp
+(message "[krista] Loading company...")
 (use-package company 
   :diminish
   :config
   (global-company-mode)
-  :bind (("C-;" . company-complete)))
+  ;; Trigger suggestions faster (default value: 0.5 (seconds))
+  (setq company-idle-delay 0.1)
+  :bind (("C-;" . company-complete-selection)))
 
 ;; Scroll through completion options with C-n and C-p (instead of M-n
 ;; and M-p)
@@ -1368,6 +1383,14 @@ speed, but I think that it's worth the (teeny!) speed hit.
   (define-key company-active-map (kbd "C-n") #'company-select-next)
   (define-key company-active-map (kbd "C-p") #'company-select-previous))
 
+;; Backends
+(use-package company-irony)
+(use-package company-c-headers)
+(with-eval-after-load 'company
+  (add-to-list 'company-backends 'company-irony)
+  (add-to-list 'company-backends 'company-c-headers))
+
+;; Theme
 (custom-set-faces
  ;; Auto-completion preview (for the case where there's a unique suggestion)
  ;; ------------------------------------------------------------------------
@@ -1399,6 +1422,7 @@ speed, but I think that it's worth the (teeny!) speed hit.
     (t (:inherit company-tooltip-selection))))
 
  ;; TODO: move this
+ '(org-tag ((t (:foreground "#075f5f" :slant oblique))))
  '(org-date ((t (:foreground "Cyan" :underline "#075f5f")))))
 #+END_SRC
 *** helm-company
@@ -1468,6 +1492,16 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 (setq vc-annotate-very-old-color nil)
 #+END_SRC
 * Minor packages
+** paradox
+Paradox is better package management
+#+BEGIN_SRC emacs-lisp
+;; Speedy-open melpa
+(use-package paradox
+  :bind (("H-p" . paradox-list-packages)))
+;; Set to t => Don't ask me to integrate with github every time I want to look
+;; at melpa!
+(with-eval-after-load 'paradox (setq paradox-github-token t))
+#+END_SRC
 ** Cheatsheet
 *** What is cheatsheet?
 Cheatsheet gives quick access to read-only buffers.
@@ -1496,7 +1530,7 @@ Here's an example cheat. Follow this format in your config
   <<magit-cheats>>
   <<projectile-cheats>>
   <<builtin-cheats>>
-  :bind (("H-c" . cheatsheet-show)))
+  :bind (("H-C" . cheatsheet-show)))
 #+END_SRC
 **** Common cheats for use throughout Emacs
 #+BEGIN_SRC emacs-lisp :noweb-ref common-cheats :tangle yes
@@ -1767,7 +1801,9 @@ the display until you restart Emacs.
 (use-package yasnippet
   :diminish yas-minor-mode
   :config
-  (yas-global-mode t))
+  (yas-global-mode 1)
+  :bind
+  ("H-y" . yas-insert-snippet))
 #+END_SRC
 ** Ace Window
 #+BEGIN_SRC emacs-lisp
@@ -1794,12 +1830,22 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
   :diminish)
 ;; Permanently enable syntax checking
 (add-hook 'after-init-hook #'global-flycheck-mode)
+(add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
+(add-hook 'c++-mode-hook (lambda () (setq flycheck-clang-language-standard "c++11")))
 #+END_SRC
 *** Usage
 via http://www.flycheck.org/en/latest/user/quickstart.html#enable-
 - =C-c ! n=: go forward to next error
 - =C-c ! p=: go backward to prev. error
 - =C-c ! l=: show a popup list of errors
+** Transpose-frame
+Provides 
+- flip-frame
+- transpose-frame
+- flop-frame
+#+BEGIN_SRC emacs-lisp
+(use-package transpose-frame)
+#+END_SRC
 ** Smartparens
 This config is adapted from Spruce Bondera's .emacs.d
 #+BEGIN_SRC emacs-lisp
@@ -1811,10 +1857,10 @@ This config is adapted from Spruce Bondera's .emacs.d
   ;; There's several modes in which I usually prefer strings to be treated
   ;; similar to s-expressions. In others its less relevant/string literals are
   ;; less common.
-  (setq sp-navigate-consider-stringlike-sexp
-        (append sp-navigate-consider-stringlike-sexp (list 'python-mode
-                                                           'org-mode
-                                                           'coffeescript-mode)))
+  ;;(setq sp-navigate-consider-stringlike-sexp
+  ;;      (append sp-navigate-consider-stringlike-sexp (list 'python-mode
+  ;;                                                         'org-mode
+  ;;                                                         'coffeescript-mode)))
 
   ;; This overlay ended up being on basically all the time and overriding my
   ;; syntax highlighting. More distracting than helpful.
@@ -1832,6 +1878,9 @@ This config is adapted from Spruce Bondera's .emacs.d
   ;; I don't like that. This line turns it off.
   (setq sp-escape-quotes-after-insert nil)
 
+  ;; https://smartparens.readthedocs.io/en/latest/pair-management.html
+  (sp-pair "$" "$")   ;; latex inline math mode. Pairs can have same opening and closing string
+
   :bind (("C-M-f" . sp-forward-sexp)
          ("C-M-b" . sp-backward-sexp)
          ("C-M-u" . sp-backward-up-sexp)
@@ -1845,6 +1894,41 @@ This config is adapted from Spruce Bondera's .emacs.d
 
 ;; Enable smartparens globally
 (smartparens-global-mode)
+#+END_SRC
+** Multi-web mode
+#+BEGIN_SRC emacs-lisp
+(use-package multi-web-mode
+  :config
+  (setq mweb-default-major-mode 'html-mode)
+  (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
+                    (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
+                    (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
+  (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
+  (multi-web-global-mode 1))
+#+END_SRC
+** Dumb-jump
+- Keybindings: 
+  - C-M-g : dumb-jump go
+  - C-M-p : dumb-jump prev.
+  - C-M-q : dumb-jump quick look
+Visual studio has a "Go to definition" option in the context menu. It's nice. Gimme!
+#+BEGIN_SRC emacs-lisp
+(use-package dumb-jump
+  :config
+  (dumb-jump-mode 1)
+  (setq dumb-jump-selector 'helm)
+  (setq dumb-jump-prefer-searcher 'rg))
+#+END_SRC
+** Hide-show mode
+- Keybindings: https://www.emacswiki.org/emacs/HideShow
+- hs == short for hide-show
+#+BEGIN_SRC emacs-lisp
+;; (hs-minor-mode)
+(load-library "hideshow")
+(global-set-key (kbd "C--") 'hs-toggle-hiding)
+(global-set-key (kbd "C-M--") 'hs-hide-all)
+(global-set-key (kbd "C-M-=") 'hs-show-all)
+(add-hook 'c-mode-common-hook   'hs-minor-mode)
 #+END_SRC
 * Programming
 ** Whitespace preferences
@@ -1878,7 +1962,7 @@ This config is adapted from Spruce Bondera's .emacs.d
 (setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
 (setq whitespace-action '(auto-cleanup))
 (setq-default indent-tabs-mode nil)
-(setq tab-width 8)
+(setq tab-width 2)
 (setq-default fill-column 80)
                                         ;(defvaralias 'c-basic-offset 'tab-width)
 #+END_SRC
@@ -1891,29 +1975,42 @@ This config is adapted from Spruce Bondera's .emacs.d
          c-mode-base-map
          ("C-c b" . compile)
          ("M-j" . join-line)))
-;; Give me preconfigured autocompletions for C and C++!
-;; (add-hook 'c-mode-hook
-;;             (lambda ()
-;;               (add-to-list 'ac-sources 'ac-source-c-headers)
-;;               (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
 
-                                        ; My wildly unpopular bracing style
-                                        ; Secret: I really use Ratliffe, but this does the trick
-(setq krista-c-style
-      '((setq c-default-style "whitesmith")
-        (setq-default c-basic-offset 4)))
-
-;;(setq c-default-style "whitesmith")
-;;(setq-default c-basic-offset 4)
-
-                                        ; Alternate settings that don't piss other programmers off as much:
-
+;; My wildly unpopular bracing style
+;; Secret: I really use Ratliffe, but this does the trick
+;; (setq krista-c-style
+;;       '((setq c-default-style "whitesmith")
+;;         (setq-default c-basic-offset 4)))
+;; Alternate settings that don't piss other programmers off as much:
 (setq conformity-c-style
-      '((setq c-default-style "python")
-        (setq-default c-basic-offset 2)))
+      '((setq c-default-style "stroustrup")
+        (setq-default c-basic-offset 2)
+        (setq c-basic-offset 2)
+        (setq-default python-indent 2)
+        (setq python-indent 2)))
 
 (add-hook 'c-mode-common-hook
-          (lambda () (c-add-style "krista-c-style" krista-c-style t)))
+          (lambda () (c-add-style "conformity-c-style" conformity-c-style t)))
+(add-hook 'c++-mode-hook
+          (lambda () (c-add-style "conformity-c-style" conformity-c-style t)))
+(setq-default c-basic-offset 2)
+(setq c-basic-offset 2)
+
+(use-package modern-cpp-font-lock)
+(add-hook 'c++-mode-hook #'modern-c++-font-lock-mode)
+
+;; (defface font-lock-operator-face
+;;   '((((class color)
+;;        :background "darkseagreen2")))
+;;   "Basic face for highlighting."
+;;   :group 'basic-faces)
+
+;; ;; You'll have a hard time missing these colors
+;; (set-face-foreground 'font-lock-operator-face "red")
+;; (set-face-background 'font-lock-operator-face "blue")
+
+;; (font-lock-add-keywords 'c++-mode
+;;   '(("\\(~:^&\|!<>:=,.?\\+*/%-]\\)" 0 'font-lock-operator-face)))
 #+END_SRC
 *** Python
 **** Pylint minor mode
@@ -1947,8 +2044,8 @@ This config is adapted from Spruce Bondera's .emacs.d
 (add-hook 'python-mode-hook
           (lambda ()
             (setq indent-tabs-mode nil)
-            (setq tab-width 4)
-            (setq python-indent 4)))
+            (setq tab-width 2)
+            (setq python-indent 2)))
 #+END_SRC
 *** Slime (lisp)
 #+BEGIN_SRC emacs-lisp
@@ -2000,6 +2097,8 @@ issue, then CHECK CONFIG.EL
 - http://ergoemacs.org/emacs/emacs.html
 - https://emacsdojo.github.io/
 * Further plans
+** TODO Org context
+https://github.com/thisirs/org-context
 ** TODO Kinesis-specific keyboard issues
 - My hands were hurting after long typing sessions. As a computer
   science student, I forsaw this as being a potentially-huge problem
@@ -2032,6 +2131,7 @@ issue, then CHECK CONFIG.EL
 - Ideally, the package would output an org doc with an undo-tree -like
   interface for retracing my steps in debugging
 ** TODO Set up steam integration with emacs
+** TODO install & configure hackernews mode
 ** TODO Emacs/W3
 #+BEGIN_SRC emacs-lisp
 ;; (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
