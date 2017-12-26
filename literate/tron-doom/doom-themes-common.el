@@ -14,7 +14,9 @@
 
     (default :background bg :foreground fg)
     (fringe :inherit 'default :foreground base5)
-    (region               :background region     :foreground nil   :distant-foreground (doom-darken fg 0.2))
+    (region               :background region     :foreground nil   :distant-foreground (doom-darken fg 0.2)
+			  ;;:box `(:line-width 3 :color ,magenta)
+			  )
     (highlight            :background highlight  :foreground base0 :distant-foreground base8)
     (cursor               :background highlight)
     (shadow               :foreground base5)
@@ -40,27 +42,28 @@
     (font-lock-doc-face                  :inherit 'font-lock-comment-face :foreground doc-comments)
     (font-lock-constant-face             :foreground constants)
     (font-lock-function-name-face        :foreground functions)
-    (font-lock-keyword-face              :foreground keywords)
+    (font-lock-keyword-face              :foreground keywords :weight 'medium)
     (font-lock-string-face               :foreground strings)
     (font-lock-type-face                 :foreground type)
     (font-lock-variable-name-face        :foreground variables)
     (font-lock-warning-face              :inherit 'warning)
     (font-lock-negation-char-face        :inherit 'bold :foreground operators)
-    (font-lock-preprocessor-face         :inherit 'bold :foreground operators)
-    (font-lock-preprocessor-char-face    :inherit 'bold :foreground operators)
+    (font-lock-preprocessor-face         :foreground operators)
+    (font-lock-preprocessor-char-face    :foreground operators)
     (font-lock-regexp-grouping-backslash :inherit 'bold :foreground operators)
     (font-lock-regexp-grouping-construct :inherit 'bold :foreground operators)
 
     ;; mode-line / header-line
     (mode-line           :background modeline-bg
                          :foreground modeline-fg
-                         :box (:line-width modeline-height :color modeline-bg))
+                         ;;:box (:line-width modeline-height :color modeline-bg)
+			 )
 
     (mode-line-inactive  :background bg-alt :foreground fg-alt :distant-foreground bg-alt)
     (mode-line-emphasis  :foreground highlight :distant-foreground bg)
     (mode-line-highlight :inherit 'highlight :distant-foreground bg)
     (mode-line-buffer-id :foreground fg :bold bold :distant-foreground bg)
-    (header-line :inherit 'mode-line :distant-foreground bg)
+    (header-line :inherit :foreground bg :bold bold :background fg)
 
 
     ;; --- built-in plugin faces --------------
@@ -268,16 +271,16 @@
     (evil-snipe-matches-face     :foreground highlight :underline t :bold bold)
 
     ;; flycheck
-    (flycheck-error     :underline `(:style wave :color ,red))
-    (flycheck-warning   :underline `(:style wave :color ,yellow))
-    (flycheck-info      :underline `(:style wave :color ,green))
+    (flycheck-error     :underline `(:style line :color ,red))
+    (flycheck-warning   :underline `(:style line :color ,yellow))
+    (flycheck-info      :underline `(:style line :color ,green))
 
     ;; flymake
-    (flymake-warnline :background bg :underline `(:style wave :color ,orange))
-    (flymake-errline  :background bg :underline `(:style wave :color ,red))
+    (flymake-warnline :background bg :underline `(:style line :color ,orange))
+    (flymake-errline  :background bg :underline `(:style line :color ,red))
 
     ;; flyspell
-    (flyspell-incorrect :underline `(:style wave :color ,error) :inherit 'unspecified)
+    (flyspell-incorrect :underline `(:style line :color ,error) :inherit 'unspecified)
 
     ;; git-gutter
     (git-gutter:modified :foreground vc-modified)
@@ -484,7 +487,7 @@
     (magit-bisect-skip       :foreground orange)
     (magit-blame-date        :foreground red)
     (magit-blame-heading     :foreground orange :background base3)
-    (magit-branch-current    :foreground blue)
+    (magit-branch-current    :foreground red)
     (magit-branch-local      :foreground cyan)
     (magit-branch-remote     :foreground green)
     (magit-cherry-equivalent :foreground violet)
@@ -583,11 +586,11 @@
     (reb-match-3 :foreground yellow  :inverse-video t)
 
     ;; show-paren
-    (show-paren-match    :foreground red   :background base0 :bold bold)
+    (show-paren-match    :foreground red   :background bg    :bold bold)
     (show-paren-mismatch :foreground base0 :background red   :bold bold)
 
     ;; smartparens
-    (sp-pair-overlay-face :background region)
+    (sp-pair-overlay-face :background bg)
 
     ;; smartparens
     (sp-show-pair-match-face    (&inherit show-paren-match))
@@ -704,6 +707,26 @@
     (jdee-font-lock-bold-face :inherit 'bold)
     (jdee-font-lock-link-face :foreground blue :italic nil :underline t)
 
+    ;; cfw mode
+    (cfw:face-title              :foreground magenta :inherit 'variable-pitch :box nil :height 2.0 :family "Fira Code")
+    (cfw:face-header             :foreground (doom-darken magenta 0.2) :weight 'bold :family "Fira Code")
+    (cfw:face-sunday             :foreground (doom-darken blue 0.4) :background modeline-bg :weight 'bold :family "Fira Code")
+    (cfw:face-saturday           :foreground (doom-darken blue 0.4) :background modeline-bg :weight 'bold :family "Fira Code")
+    (cfw:face-holiday            :background modeline-bg :foreground periwinkle :family "Fira Code")
+    (cfw:face-grid               :foreground (doom-darken blue 0.5) :weight 'thin :family "Fira Code") ;; Time grid
+    (cfw:face-default-content    :foreground fg)
+    (cfw:face-periods            :foreground "cyan")
+    (cfw:face-day-title          :background modeline-bg)
+    (cfw:face-default-day        :weight 'bold :inherit 'cfw:face-day-title)
+    (cfw:face-annotation         :foreground bg-alt :inherit 'cfw:face-day-title)
+    (cfw:face-disable            :foreground teal :inherit 'cfw:face-day-title)
+    (cfw:face-today-title        :foreground magenta :background modeline-bg :weight 'bold)
+    (cfw:face-today              :foreground cyan :background: bg :weight 'bold)
+    (cfw:face-select             :foreground bg :background violet)
+    (cfw:face-toolbar            :inherit 'mode-line :box nil)
+    (cfw:face-toolbar-button-off :foreground dark-blue :inherit 'mode-line :box nil)
+    (cfw:face-toolbar-button-on  :foreground teal :inherit 'mode-line :box nil)
+    
     ;; js2-mode
     (js2-function-param  :foreground variables)
     (js2-function-call   :foreground functions)
@@ -743,19 +766,33 @@
     (markdown-inline-code-face :inherit '(markdown-code-face markdown-pre-face))
 
     ;; org-agenda
-    (org-agenda-structure :foreground blue)
-    (org-agenda-date      :foreground violet)
+    (org-agenda-structure :inherit 'mode-line :box nil)
+    (org-agenda-date      :foreground blue :height 1.3)
+    (org-agenda-date-weekend      :foreground (doom-darken blue 0.4) :height 1.3)
+    (org-agenda-date-today :inherit 'org-agenda-date
+                           :background blue
+                           :foreground bg
+			   ;;:box `(:line-width 2 :color ,orange :style pressed-button)
+                           :slant 'italic
+                           :weight 'bold)
+    (org-time-grid :foreground (doom-darken violet 0.4))
     (org-agenda-done      :inherit 'org-done)
+    (org-scheduled-previously      :inherit 'org-scheduled)
     (org-agenda-dimmed-todo-face :foreground comments)
+    (org-warning :foreground salad)
+    (org-upcoming-deadline :foreground (doom-darken salad 0.3))
+    (org-agenda-calendar-event :foreground salad)
 
     ;; org-mode
-    (org-level-1 :foreground blue :bold bold :height 1.2)
-    (org-level-2 :foreground violet :bold bold :height 1.0)
-    (org-level-3 :bold bold :foreground teal)
-    (org-level-4 :inherit 'org-level-3)
-    (org-level-5 :inherit 'org-level-3)
-    (org-level-6 :inherit 'org-level-3)
-    (org-tag :foreground green :bold nil)
+    (org-level-1 :foreground blue :height 1.2)
+    (org-level-2 :foreground (doom-darken blue 0.3) :height 1.0)
+    (org-level-3 :foreground (doom-darken blue 0.5))
+    (org-level-4 :foreground (doom-darken blue 0.6))
+    (org-level-5 :inherit 'org-level-1 :height 1.0)
+    (org-level-6 :inherit 'org-level-2)
+    (org-level-7 :inherit 'org-level-3)
+    (org-level-8 :inherit 'org-level-4)
+    (org-tag :foreground green :bold nil :slant 'italic)
     ;; (org-priority :foreground red)
     (org-ellipsis :underline nil :foreground violet)
     (org-hide :foreground bg)
@@ -776,10 +813,10 @@
     (org-list-dt               :foreground highlight)
     (org-footnote              :foreground orange)
     (org-date                  :foreground violet)
-    (org-headline-done         :foreground base5 )
+    (org-headline-done         :foreground base5 :strike-through t)
     (org-todo                  :bold 'inherit :foreground highlight)
-    (org-done                  :inherit 'org-headline-done :bold 'inherit)
-    (org-special-keyword       :foreground magenta)
+    (org-done                  :inherit 'org-headline-done)
+    (org-special-keyword       :foreground violet)
     (org-checkbox :inherit 'org-todo)
     (org-checkbox-statistics-todo :inherit 'org-todo)
     (org-checkbox-statistics-done :inherit 'org-done)
