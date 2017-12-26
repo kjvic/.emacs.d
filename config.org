@@ -1082,285 +1082,7 @@ CAL-endar F-rameW-ork
       cfw:fchar-top-right-corner ?╗))
 (bind-key "H-c" #'cfw:open-org-calendar)
 #+END_SRC
-** Helm
-*** Introduction to helm
-- Definition of "helm": noun - a tiller or wheel and any associated
-  equipment for steering a ship or boat.
-  - "she stayed at the helm, alert for tankers"
-  - synonyms: tiller, wheel; steering gear, rudder
-- As you may have anticipated, it's also an Emacs package
-- I include the definition of the common word, because it sums up the
-  package well; Helm is an interface for "steering" interactions. In
-  particular, Helm provides a search interface which filters results
-  visually.
-  - If you do C-s and then press tab twice, a list of suggestions pops
-    up. Helm skips the bullshit and shows suggestions from the get-go
-  - The functionality is similar to how Google searches will give a
-    real-time popup with common queries that match what you've typed.
-- In particular, Helm provides serious enhancement for the following:
-  - searches within files (C-s)
-  - navigation to files on your filesystem (C-x f)
-  - buffer selection (C-x b)
-  - M-x commands (the default binding for execute-extended-command)
-*** Config
-#+BEGIN_SRC emacs-lisp :noweb tangle
-(message "[krista] Loading helm...")
-(use-package helm
-  :diminish helm-mode
-  ;; helm-config is a bootstrapping package. According to
-  ;;   https://github.com/emacs-helm/helm/issues/744 it's not
-  ;;   required, but I checked out the source, and it looks like it
-  ;;   provides some core niceties that I've enjoyed
-  :init (require 'helm-config)
   :config
-  ;; Enable Helm globally
-  (helm-mode t)
-  <<helm-behavior>>
-  <<helm-recentf>>
-  <<helm-ff-in-new-window>>
-  :bind (
-         <<helm-replace-defaults>>
-         <<helm-actions>>
-         ))
-<<helm-descbinds>>
-#+END_SRC
-**** Helm behavior
-Sometimes, I just want to tweak something about how Helm functions.
-This is the place to put it
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-behavior :tangle no
-;; Make it so that Helm auto-selects the only match for a query
-;; Source: https://emacs.stackexchange.com/questions/13273/how-can-i-quickly-enter-a-directory-in-helm-find-file-when-there-is-only-one-to
-;; Note: ff is *F*ind *F*ile
-;; (setq helm-ff-auto-update-initial-value t)
-#+END_SRC
-**** helm-recentf
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-recentf :tangle no
-(message "[krista] Loading helm-recentf...")
-(require 'recentf)
-(recentf-mode t)
-(setq recentf-max-menu-items 200)
-(setq recentf-max-saved-items 200)
-(setq helm-recentf-max-menu-items 200)
-
-;; Auto-save a list of recently-opened files
-;; NOTE: This ensures accurate recentf info in case of a
-;; less-than-graceful exit
-(setq krista/recentf-save-interval 30000)
-(run-at-time (current-time) krista/recentf-save-interval 'recentf-save-list)
-#+END_SRC
-**** Find file + open new window
-Source: https://emacs.stackexchange.com/a/20845
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-ff-in-new-window :tangle no
-(defun helm-buffer-switch-to-new-window (_candidate)
-  "Display buffers in new windows."
-  ;; Select the bottom right window
-  (require 'winner)
-  (select-window (car (last (winner-sorted-window-list))))
-  ;; Display buffers in new windows
-  (dolist (buf (helm-marked-candidates))
-    (select-window (split-window-right))
-    (switch-to-buffer buf))
-  ;; Adjust size of windows
-  (balance-windows))
-
-(defun helm-buffer-switch-new-window ()
-  (interactive)
-  (with-helm-alive-p
-   (helm-quit-and-execute-action 'helm-buffer-switch-to-new-window)))
-
-;; NOTE: Change this with the keybinding for helm-buffer-switch-new-window!!!
-(add-to-list 'helm-type-buffer-actions
-             '("Display buffer(s) in new window(s) with C-x M-f" .
-               helm-buffer-switch-new-window) 'append)
-;; NOTE: Change this keybinding with the help-text, helm-type-buffer-actions
-(define-key helm-buffer-map (kbd "C-x M-f") #'helm-buffer-switch-new-window)
-;; Usage: C-x C-f as normal, but open with C-o
-#+END_SRC
-**** Override global keybindings (replace defaults)
-I like Helm so much that I'm willing to override the corresponding
-default Emacs functions. Also, Emacs defaults are "meh".
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-replace-defaults :tangle no
-("M-x" . helm-M-x)
-;; NOTE: don't forget that you can use helm-locate for fuzzy file searching
-;; (e.g. equivalent to mdfind on macOS)
-("C-x C-f" . helm-find-files)
-("C-x C-r" . helm-recentf)
-
-;; helm-mini shows recentf, the buffers list, and a "create buffer" prompt
-("C-x b" . helm-mini)
-
-;; helm-buffers-list just shows the buffers list
-("C-x C-b" . helm-buffers-list)
-
-;; Display bookmarks for frequently-visited spots on my file system
-("C-x r l" . helm-bookmarks)
-
-("M-I" . helm-semantic-or-imenu)
-#+END_SRC
-**** helm actions
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-actions :tangle no
-;; :map helm-map
-;; Helm persistent action does something useful for the given context, without
-;; closing the helm popup
-;; ("<tab>" . helm-execute-persistent-action)
-;; ("C-i" . helm-execute-persistent-action) ; for use in terminal
-;; helm-select-action pulls up a menu of more complex actions that you can take
-;; in a given context
-;; ("C-z" . helm-select-action)
-#+END_SRC
-**** helm-descbinds (*desc*-ribe *bind*-ings)
-- Helm descbinds is a smarter replacement for "C-h k" to look up
-  functions by keybinding
-- Invoke with "C-h b"
-- Press TAB for options (e.g. execute the selected command, look up
-  documentation, etc.)
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-descbinds :tangle no
-(message "[krista] Loading helm-descbinds...")
-(use-package helm-descbinds
-  :diminish helm-descbinds-mode
-  :config (setq helm-descbinds-mode t)
-  :bind ("C-h b" . helm-descbinds))
-#+END_SRC
-** Helm swoop
-- Swoop is like a better isearch. Works really nicely with helm.
-- [[https://github.com/ShingoFukuyama/helm-swoop][ShingoFukuyama's super-fancy helm config]]
-- Editing from Helm swoop. When doing C-s, you can
-  - do "C-c C-e" to edit all matching lines
-  - select lines with C-<space>, and /then/ do "C-c C-e" to edit just
-    the /selected/ lines
-#+BEGIN_SRC emacs-lisp :noweb tangle
-(message "[krista] Loading helm-swoop...")
-(use-package helm-swoop
-  :config <<helm-swoop-syntax-highlighting>>
-  <<helm-swoop-reactivate-mark>>
-  <<helm-swoop-behavior>>
-  <<helm-swoop-aesthetics>>
-  :bind 
-  ;; Use swoop instead of isearch
-  (("C-s" . helm-swoop-without-pre-input)
-   ;; r is for "Reuse", b/c this reuses the input from the last query
-   ("C-r" . helm-swoop)
-
-   ;; M-s is for multi-swoop
-   ;; ...TODO write a description for multi-swoop
-   ("C-M-s" . helm-multi-swoop-projectile)
-
-   ;; Bindings so I can still use isearch (if for some crazy reason, I
-   ;; want to use isearch rather than swoop)
-   ("C-c s" . isearch-forward)
-   ("C-c r" . isearch-backward)))
-#+END_SRC
-**** Keep syntax highlighting
-Retain syntax highlighting in swoop. It's a tradeoff between this and
-speed, but I think that it's worth the (teeny!) speed hit.
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-syntax-highlighting :tangle no
-(setq helm-swoop-speed-or-color t)
-#+END_SRC
-**** Mark reactivation
-- Source: Spruce Bondera's fabulous config page 
-- Description: For some reason helm-swoop deactivates the mark on
-  search selection. This wrapper fixes that, by wrapping helm-swoop in
-  a function that will reactivate the mark if it was set before search
-  started.
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-reactivate-mark :tangle no
-(defun krista/helm-swoop-mark-wrapper (original &rest search)
-  "Check the state of the mark before calling helm-swoop and
-  re-activate it after swooping if it was active before-hand"
-  (let ((marked mark-active))
-    (apply original search)
-    (when marked (activate-mark))))
-(advice-add 'helm-swoop :around #'krista/helm-swoop-mark-wrapper)
-#+END_SRC
-**** behavior
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-behavior :tangle no
-;; If you're at the bottom of the list of swoop matches, and you try
-;; to go down another line, then you wrap around again
-(setq helm-swoop-move-to-line-cycle t)
-
-;; Enable fuzzy matching
-(setq helm-swoop-use-fuzzy-match nil)
-#+END_SRC
-**** aesthetics
-#+BEGIN_SRC emacs-lisp :noweb-ref helm-swoop-aesthetics :tangle no
-;; Face for directories in the find-file popup
-(set-face-attribute 'helm-ff-directory nil
-                    :foreground "#42071d"
-                    :background "#00a890")
-(set-face-attribute 'helm-ff-executable nil
-                    :foreground "green"
-                    :underline t)
-
-(set-face-attribute 'helm-source-header nil
-                    :background "turquoise4"
-                    :foreground "#f0ffff"
-                    :weight 'semi-bold
-                    :height 1.3
-                    :family "Fira Code")
-
-(set-face-attribute 'helm-swoop-target-word-face nil
-                    :background "#00d4d4"
-                    :foreground "#f0ffff")
-(set-face-attribute 'helm-selection nil
-                    :foreground "#f0ffff"
-                    :background "#cf7a00"
-                    :weight 'semi-bold)
-(set-face-attribute 'helm-swoop-target-line-face nil
-                    :foreground "#f0ffff"
-                    :background "#804532"
-                    :weight 'semi-bold)
-
-#+END_SRC
-*** Helm window splitting
-#+BEGIN_SRC emacs-lisp
-;; nil => split within this window
-;;(setq helm-full-frame nil)
-;; If nil don’t split and replace helm-buffer by the action buffer
-;; in same window.
-;;(setq helm-show-action-window-other-window nil)
-
-;; If you have your frame like this:
-;;  --------------
-;;  |      |     |
-;;  |      |     |
-;;  |  *   |     |
-;;  |active|other|
-;;  --------------
-;;
-;; and then do M-x, I do NOT want helm to do this:
-;;  --------------
-;;  |      |     |
-;;  |      |     |
-;;  |      |  *  |
-;;  |active|helm |
-;;  --------------
-;; 
-;; Instead, I want helm to do THIS:
-;;  --------------
-;;  |      |     |
-;;  |active|     |
-;;  |------|     |
-;;  |helm *|other|
-;;  --------------
-;;
-;; Source: https://github.com/emacs-helm/helm/issues/169
-;; This line keeps helm on the same side
-;; (setq helm-split-window-default-side 'same)
-;; open helm buffer inside current window, don't occupy whole other window
-(setq helm-split-window-in-side-p t)
-
-;; Split windows in half like *this*:
-;; ------------
-;; |          |
-;; |  Buffer  |
-;; |          |
-;; ------------
-;; |   Helm   |
-;; ------------
-(setq helm-swoop-split-direction 'split-window-vertically)
-
-;; Even if there are multiple windows open, /still/ split the window
-;; in half
-(setq helm-swoop-split-with-multiple-windows t)
 #+END_SRC
 ** Company
 *** company (COM-plete ANY-thing)
@@ -1425,16 +1147,6 @@ speed, but I think that it's worth the (teeny!) speed hit.
  '(org-tag ((t (:foreground "#075f5f" :slant oblique))))
  '(org-date ((t (:foreground "Cyan" :underline "#075f5f")))))
 #+END_SRC
-*** helm-company
-- company uses popup/tooltip-style suggestions which appear under the point
-- sometimes, I want to navigate through the completion options using helm
-- solution: helm-company
-#+BEGIN_SRC emacs-lisp
-(with-eval-after-load 'company
-  (use-package helm-company :diminish)
-  (bind-key "C-'"  'helm-company company-mode-map)
-  (bind-key "C-'" 'helm-company company-active-map))
-#+END_SRC
 ** Projectile
 *** Projectile proper
 #+BEGIN_SRC emacs-lisp
@@ -1442,15 +1154,8 @@ speed, but I think that it's worth the (teeny!) speed hit.
 (use-package projectile
   :diminish
   :config
-  (setq projectile-completion-system 'helm)
+  ;; (setq projectile-completion-system 'helm)
   (projectile-global-mode))
-#+END_SRC
-*** Helm projectile
-#+BEGIN_SRC emacs-lisp
-(use-package helm-projectile
-  :config
-  (with-eval-after-load 'projectile (helm-projectile-on))
-  (setq projectile-mode t))
 #+END_SRC
 ** Magit
 *** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
@@ -1781,7 +1486,7 @@ Much thanks goes to the AUCTeX Reference Card for version 11.89
                 :description "Help for getting more help")
 #+END_SRC
 *** TODO use popwin to make it so that
-**** the cheatsheet pops up in a sensible place (just like helm), i.e. the cheatsheet does not occupy the adjacent buffer
+**** the cheatsheet pops up in a sensible place, i.e. the cheatsheet does not occupy the adjacent buffer
 **** closing the cheatsheet does not run "delete-window" (C-x 0) on the buffer that it occupied
 *** TODO make this entire section less hideous. (Seriously, the [[*LaTeX%20cheats][LaTeX cheats]] section is p fugly)
 *** NOTE: funky load behavior
@@ -1916,7 +1621,7 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 (use-package dumb-jump
   :config
   (dumb-jump-mode 1)
-  (setq dumb-jump-selector 'helm)
+  ;; (setq dumb-jump-selector 'helm)
   (setq dumb-jump-prefer-searcher 'rg))
 #+END_SRC
 ** Hide-show mode
@@ -2090,7 +1795,6 @@ issue, then CHECK CONFIG.EL
 *** Within emacs
 - =M-x describe-[key, face, mode, etc.]=
   - =C-h [k, o, f, m]=: Quick keybindings for the describe-.* functions
-- For helm: [[*helm-descbinds%20(*desc*-ribe%20*bind*-ings)][*helm-descbinds (*desc*-ribe *bind*-ings)]]
 - Custom help written by me: [[*Cheatsheet]]
 *** Online
 - http://pages.sachachua.com/.emacs.d/Sacha.html
