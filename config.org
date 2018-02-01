@@ -1760,6 +1760,17 @@ the display until you restart Emacs.
 (use-package ace-jump-mode
   :bind ("M-J" . ace-jump-mode))
 #+END_SRC
+** Shackle
+https://github.com/wasamasa/shackle
+#+BEGIN_SRC emacs-lisp
+(use-package shackle 
+  :config
+  (setq shackle-default-alignment 'below)
+  (setq shackle-default-size 0.33)
+  (setq shackle-default-rule '(:select t :popup t :same nil))
+  ;; <<org-src-shackle-config>>
+  (shackle-mode 1))
+#+END_SRC
 ** Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+BEGIN_SRC emacs-lisp
@@ -2088,6 +2099,8 @@ issue, then CHECK CONFIG.EL
 - http://ergoemacs.org/emacs/emacs.html
 - https://emacsdojo.github.io/
 * Further plans
+** TODO Gtd goals
+https://github.com/jethrokuan/.emacs.d/blob/master/config.org#org-mode-for-gtd
 ** TODO Org context
 https://github.com/thisirs/org-context
 ** TODO Kinesis-specific keyboard issues
@@ -2122,6 +2135,7 @@ https://github.com/thisirs/org-context
 - Ideally, the package would output an org doc with an undo-tree -like
   interface for retracing my steps in debugging
 ** TODO Set up steam integration with emacs
+** TODO spotify controls in emacs
 ** TODO install & configure hackernews mode
 ** TODO Emacs/W3
 #+BEGIN_SRC emacs-lisp
@@ -2133,8 +2147,6 @@ https://github.com/thisirs/org-context
 ;; (use-package multiple-cursors
 ;;  :bind (("C-S-c C-S-c" . mc/edit-lines)))
 #+END_SRC
-** TODO +Install Corral+ Figure out smartparens
-Apparently, the package does more than just automatically add the closing paren!
 ** TODO Add more to yasnippet
 ** TODO Install the alert package
 - provides Growl-like notifications
