@@ -166,8 +166,8 @@ This is where I put things that help me modify my emacs install more efficiently
 #+END_SRC
 ** Freekeys
 #+BEGIN_SRC emacs-lisp
-(use-package free-keys
-  :bind ("M-F" . free-keys))
+;; (use-package free-keys
+;;   :bind ("M-F" . free-keys))
 #+END_SRC
 ** Benchmark init
 - Figure out where you're burning time!!!
@@ -186,16 +186,6 @@ This is where I put things that help me modify my emacs install more efficiently
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 ;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
 ;; (load custom-file :noerror)
-#+END_SRC
-** Identify the face under the cursor
-Source: https://stackoverflow.com/a/1242415
-#+BEGIN_SRC emacs-lisp
-(defun what-face (pos)
-  (interactive "d")
-  (let ((face (or (get-char-property (point) 'read-face-name)
-                  (get-char-property (point) 'face))))
-    (if face (message "Face: %s" face) (message "No face at %d" pos))))
-;; (bind-key "H-f" what-face)
 #+END_SRC
 * Global settings
 ** Better defaults
@@ -272,7 +262,11 @@ Source: http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
 #+END_SRC
 *** Use 12-hour time with AM/PM instead of 24-hour time
 #+BEGIN_SRC emacs-lisp
-(setq display-time-24hr-format t)
+(setq display-time-24hr-format nil)
+
+;; Source: https://emacs.stackexchange.com/a/20819
+(setq display-time-string-forms
+      '(12-hours ":" minutes am-pm))
 #+END_SRC
 ** Buffer management
 See also: [[*Ace-window]]
@@ -287,7 +281,7 @@ Keep some "context lines" around
 (bind-key "C-c o" #'previous-multiframe-window)
 #+END_SRC
 *** Toggle fullscreen
-Note: this resizes the frame, but does not enter the OS's native fullscreen mode
+Note: this resizes/maximizes the frame, but does not enter the OS's native fullscreen mode
 #+BEGIN_SRC emacs-lisp
 (bind-key "C-c C-<return>" #'toggle-frame-fullscreen)
 #+END_SRC 
@@ -403,8 +397,14 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
 - However, some OS-agnostic settings can still live here to reduce code duplication
 #+BEGIN_SRC emacs-lisp
 (bind-key "H-d" #'delete-file)
-(bind-key "H-m" #'rename-file) ;; H-m is for "mv"
-(bind-key "H-r" #'revert-buffer-no-prompt)
+(bind-key "H-r" #'rename-file)
+
+;; I don't want a prompt, but I /do/ want some verification when a revert happens
+(defun krista/revert-buffer-no-prompt-yes-message ()
+  "Revert buffer without a yes/no prompt, and then show a message"
+  (revert-buffer-no-prompt)
+  (message "Buffer reverted"))
+(bind-key "H-R" #'krista/revert-buffer-no-prompt-yes-message)
 #+END_SRC
 *** Quick find-file
 #+BEGIN_SRC emacs-lisp
@@ -418,6 +418,93 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
   (find-file krista/at-a-glance-file))
 (bind-key "H-a" #'krista/speedy-open-at-a-glance)
 (bind-key "H-t" #'krista/speedy-open-todo)
+#+END_SRC
+*** Copy file path to clipboard
+#+BEGIN_SRC emacs-lisp
+;; Source: https://stackoverflow.com/a/2417617
+(defun copy-file-name-to-clipboard ()
+  "Put the current file name on the clipboard"
+  (interactive)
+  (let ((filename (if (equal major-mode 'dired-mode)
+                      default-directory
+                    (buffer-file-name))))
+    (when filename
+      (with-temp-buffer
+        (insert filename)
+        (clipboard-kill-region (point-min) (point-max)))
+      (message filename))))
+(bind-key "H-f" #'copy-file-name-to-clipboard)
+#+END_SRC
+** Timestamps
+#+BEGIN_SRC emacs-lisp
+;; Show the time
+(display-time-mode 1)
+;; Do show the date
+(setq display-time-day-and-date t)
+;; %l == hour, in 12-hour time
+;; %M == minute
+;; %p == AM/PM; %#p == am/pm
+;; %a == abbreviated name of the day of week (e.g. Sat for Saturday)
+;; %b == abbreviated name of the month (e.g. Aug for August)
+;; %e == day of month (1-31)
+;; %Z == name of time zone
+(setq display-time-format "%l:%M%#p %a, %b.%e (%Z)")
+
+;; Customize dates
+;; ----------------
+
+(with-eval-after-load 'org-mode
+  ;; Use am/pm instead of 24-hour time!
+  ;; Source: http://dept.stat.lsa.umich.edu/~jerrick/org_agenda_calendar.html
+  (setq org-agenda-timegrid-use-ampm 1)
+  (setq-default org-display-custom-times t)
+
+  (setq org-time-stamp-custom-formats
+        ;; [abbreviated day of week] [abbreviated month] [day of month] [4-digit year]
+        '("<%a %b %e %Y>"
+          ;; ^^ + [hour (1-12)]:[minute] [am/pm] [timezone offset]
+          . "<%a %b %e %Y %l:%M%p>"))
+
+  ;; TODO: see this for custom time formats
+  ;; https://orgmode.org/manual/Custom-time-format.html#Custom-time-format
+
+  ;; Org timestamp DWIM
+  ;; Source: https://emacs.stackexchange.com/a/3320
+  (defvar time-range-with-pm-suffix '("1:00" . "6:59"))
+  (defun org-analyze-date-dwim (original-fun ans org-def org-defdecode)
+    (let* ((time (funcall original-fun ans org-def org-defdecode))
+           (minute (nth 1 time))
+           (hour (nth 2 time))
+           (minutes (+ minute (* 60 hour)))
+           s)
+      (when (and (< hour 12)
+                 (not (string-match "am" ans))
+                 (>= minutes (org-hh:mm-string-to-minutes (car time-range-with-pm-suffix)))
+                 (<= minutes (org-hh:mm-string-to-minutes (cdr time-range-with-pm-suffix))))
+        (setf (nth 2 time) (+ hour 12))
+        (when (boundp 'org-end-time-was-given)
+          (setq s org-end-time-was-given)
+          (if (and s (string-match "^\\([0-9]+\\)\\(:[0-9]+\\)$" s))
+              (setq org-end-time-was-given
+                    (concat (number-to-string (+ 12 (string-to-number (match-string 1 s))))
+                            (match-string 2 s))))))
+      time))
+  (advice-add 'org-read-date-analyze :around #'org-analyze-date-dwim)
+
+
+  ;; Don't penalize me for accidentally typing too much!
+  ;; Source: https://emacs.stackexchange.com/a/2591
+  (defvar parse-time-weekdays-longer
+    '(("sund" . 0) ("tues" . 2) ("thurs" . 4)))
+  (defvar parse-time-months-longer
+    '(("janu" . 1) ("dece" . 12)))
+  (eval-after-load 'parse-time
+    '(progn
+       (setq parse-time-weekdays (nconc parse-time-weekdays
+                                        parse-time-weekdays-longer))
+       (setq parse-time-months (nconc parse-time-months
+                                      parse-time-months-longer))))
+  )
 #+END_SRC
 * Appearance
 ** Aesthetic tweaks
@@ -807,11 +894,11 @@ out how to set it immediately, but this should suffice as startup config.
 ;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
 (setq org-capture-templates
       '(("a" "annoy" entry
-         (file+olp krista/todo-file "annoy" "refile")
+         (file+olp krista/todo-file "feng shui" "annoy" "refile")
          "* %?\n %i\n")
-        ("h" "hw-style-guide" entry
-         (file+olp "~/core/school/powerpoint_shaming/tacky_hw_things.org" "tacky!")
-         "* %?\n %i\n")
+        ;; ("h" "hw-style-guide" entry
+        ;;  (file+olp "~/core/school/powerpoint_shaming/tacky_hw_things.org" "tacky!")
+        ;;  "* %?\n %i\n")
         ("m" "movies" entry
          (file+olp "~/core/lists/movies.org" "refile")
          "* %?\n %i\n")
@@ -824,15 +911,12 @@ out how to set it immediately, but this should suffice as startup config.
         ("t" "todo" entry
          (file+olp krista/todo-file "todo-queue")
          "* TODO %?\n %i\n")
-        ("u" "how to deal with umich" entry
-         (file+olp "~/core/lists/advice.org" "how to deal with umich")
-         "* %?\n %i\n")
-        ("v" "advice" entry
-         (file+olp "~/core/lists/advice.org" "refile")
-         "* %?\n %i\n")
-        ("w" "workflow advice" entry
-         (file+olp "~/core/lists/advice.org" "workflow advice")
-         "* %?\n %i\n")
+        ;; ("v" "advice" entry
+        ;;  (file+olp "~/core/lists/advice.org" "refile")
+        ;;  "* %?\n %i\n")
+        ;; ("w" "workflow advice" entry
+        ;;  (file+olp "~/core/lists/advice.org" "workflow advice")
+        ;;  "* %?\n %i\n")
         ))
 <<org-refile-targets>>
 #+END_SRC
@@ -861,9 +945,6 @@ out how to set it immediately, but this should suffice as startup config.
 
 ;; If non-nil: mousing over TODO items in org agenda => show TODO item in other buffer
 (setq org-agenda-start-with-follow-mode nil)
-
-;; Customize dates
-;; ----------------
 
 ;; Show all agenda dates - even if they are empty
 (setq org-agenda-show-all-dates t)
@@ -1060,10 +1141,14 @@ CAL-endar F-rameW-ork
 #+BEGIN_SRC emacs-lisp
 (use-package calfw
   :config 
-  ;; M-x cfw:open-org-calendar
+
   (use-package calfw-org
-    :config (setq cfw:org-overwrite-default-keybinding t))
-;; Unicode characters
+    :config
+    (setq cfw:org-overwrite-default-keybinding t)
+    (bind-key "H-c" #'cfw:open-org-calendar)
+    )
+
+  ;; Unicode characters
   ;; (setq cfw:fchar-junction ?╋
   ;;       cfw:fchar-vertical-line ?┃
   ;;       cfw:fchar-horizontal-line ?━
@@ -1072,17 +1157,160 @@ CAL-endar F-rameW-ork
   ;;       cfw:fchar-top-junction ?┯
   ;;       cfw:fchar-top-left-corner ?┏
   ;;       cfw:fchar-top-right-corner ?┓)
- (setq cfw:fchar-junction ?╬
-      cfw:fchar-vertical-line ?║
-      cfw:fchar-horizontal-line ?═
-      cfw:fchar-left-junction ?╠
-      cfw:fchar-right-junction ?╣
-      cfw:fchar-top-junction ?╦
-      cfw:fchar-top-left-corner ?╔
-      cfw:fchar-top-right-corner ?╗))
-(bind-key "H-c" #'cfw:open-org-calendar)
+  (setq cfw:fchar-junction ?╬
+        cfw:fchar-vertical-line ?║
+        cfw:fchar-horizontal-line ?═
+        cfw:fchar-left-junction ?╠
+        cfw:fchar-right-junction ?╣
+        cfw:fchar-top-junction ?╦
+        cfw:fchar-top-left-corner ?╔
+        cfw:fchar-top-right-corner ?╗)
+
+  (setq cfw:render-line-breaker 'cfw:render-line-breaker-none)
+  )
+
 #+END_SRC
+** Ivy/Swiper/Counsel
+- Comparison with helm
+  - Ivy
+    - Like Helm
+    - Standalone package
+  - Swiper
+    - Like Helm swoop
+    - Relies on Ivy
+  - Counsel
+  - Like Helm descbinds + Helm persistent action
+  - Relies on Swiper + Ivy
+#+BEGIN_SRC emacs-lisp
+(use-package ivy :ensure t
+  :diminish (ivy-mode . "")
+  :bind
+  ;; (:map ivy-mode-map
+  ;;  ("C-'" . ivy-avy))
   :config
+  (ivy-mode 1)
+
+  ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+  (setq ivy-use-virtual-buffers t)
+
+  ;; number of result lines to display
+  ;; (setq ivy-height 15)
+
+  ;; does not count candidates
+  ;; (setq ivy-count-format "")
+
+  ;; no regexp by default / remove initial ^ input.
+  (setq ivy-initial-inputs-alist nil)
+
+  ;; configure regexp engine.
+  (setq ivy-re-builders-alist '((t . ivy--regex-plus)
+                                (t . ivy--regex-fuzzy)
+                                (t   . ivy--regex-ignore-order)))
+
+  (setq enable-recursive-minibuffers t)
+  (setq ivy-display-style 'fancy)
+  (setq ivy-count-format "(%d/%d) ")
+
+  (global-set-key (kbd "C-s") 'swiper)
+  ;; Resume ivy session
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (global-set-key (kbd "M-I") 'counsel-imenu)
+  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+  (global-set-key (kbd "C-h b") 'counsel-descbinds)
+  (global-set-key (kbd "C-h f") 'counsel-describe-function)
+  (global-set-key (kbd "C-h v") 'counsel-describe-variable)
+  (global-set-key (kbd "C-h F") 'counsel-describe-face)
+  (global-set-key (kbd "M-y") 'counsel-yank-pop)
+  (global-set-key (kbd "<f1> l") 'counsel-find-library)
+  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-c j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-x l") 'counsel-locate)
+  (global-set-key (kbd "C-S") 'counsel-grep-or-swiper)
+  (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+  (global-set-key [remap switch-to-buffer] 'ivy-switch-buffer)
+  )
+
+;; I used Helm before using Ivy, so I still have the muscle memory C-l to move
+;; up a directory. This snippet allows me to bind C-l to interact helm-style
+;; Source: https://github.com/abo-abo/swiper/issues/1257
+(defun ivy-backward-directory ()
+  "Forward to `kill-start-of-line'.
+On error (read-only), call `ivy-on-del-error-function'."
+  (interactive)
+  (if (and ivy--directory (= (minibuffer-prompt-end) (point)))
+      (progn
+        (let ((old-dir (file-name-nondirectory
+                        (directory-file-name ivy--directory)))
+              idx)
+          (ivy--cd (file-name-directory
+                    (directory-file-name
+                     (expand-file-name
+                      ivy--directory))))
+          (ivy--exhibit)
+          (when (setq idx (cl-position
+                           (file-name-as-directory old-dir)
+                           ivy--old-cands
+                           :test 'equal))
+            (ivy-set-index idx))))
+    (condition-case nil
+        (kill-start-of-line) ; a little different here
+      (error
+       (when ivy-on-del-error-function
+         (funcall ivy-on-del-error-function))))))
+
+
+;; Ivy interface for bookmarks
+;; Source: http://blog.binchen.org/posts/hello-ivy-mode-bye-helm.html
+;; (defun ivy-bookmark-goto ()
+;;   "Open ANY bookmark"
+;;   (interactive)
+;;   (let (bookmarks filename)
+;;     ;; load bookmarks
+;;     (unless (featurep 'bookmark)
+;;       (require 'bookmark))
+;;     (bookmark-maybe-load-default-file)
+;;     (setq bookmarks (and (boundp 'bookmark-alist) bookmark-alist))
+
+;;     ;; do the real thing
+;;     (ivy-read "bookmarks:"
+;;               (delq nil (mapcar (lambda (bookmark)
+;;                                   (let (key)
+;;                                     ;; build key which will be displayed
+;;                                     (cond
+;;                                      ((and (assoc 'filename bookmark) (cdr (assoc 'filename bookmark)))
+;;                                       (setq key (format "%s (%s)" (car bookmark) (cdr (assoc 'filename bookmark)))))
+;;                                      ((and (assoc 'location bookmark) (cdr (assoc 'location bookmark)))
+;;                                       ;; bmkp-jump-w3m is from bookmark+
+;;                                       (unless (featurep 'bookmark+)
+;;                                         (require 'bookmark+))
+;;                                       (setq key (format "%s (%s)" (car bookmark) (cdr (assoc 'location bookmark)))))
+;;                                      (t
+;;                                       (setq key (car bookmark))))
+;;                                     ;; re-shape the data so full bookmark be passed to ivy-read:action
+;;                                     (cons key bookmark)))
+;;                                 bookmarks))
+;;               :action (lambda (bookmark)
+;;                         (bookmark-jump bookmark)))
+;;     ))
+;; (bind-key "C-x r l" #'ivy-bookmark-goto)
+
+;; Make ivy play nice with "C-c w" (org-refile)
+;; Source: https://github.com/abo-abo/swiper/issues/986#issuecomment-300482804
+(setq org-goto-interface 'outline-path-completion)
+(setq org-outline-path-complete-in-steps nil)
+
+(eval-after-load 'ivy
+  '(progn
+     (define-key ivy-minibuffer-map (kbd "C-l") 'ivy-backward-directory)))
+
+
+(use-package helm
+  :config
+  (global-set-key (kbd "C-x C-r") 'helm-recentf))
 #+END_SRC
 ** Company
 *** company (COM-plete ANY-thing)
@@ -1148,14 +1376,22 @@ CAL-endar F-rameW-ork
  '(org-date ((t (:foreground "Cyan" :underline "#075f5f")))))
 #+END_SRC
 ** Projectile
-*** Projectile proper
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :noweb tangle
 (message "[krista] Loading projectile...")
 (use-package projectile
   :diminish
   :config
-  ;; (setq projectile-completion-system 'helm)
-  (projectile-global-mode))
+  (setq projectile-completion-system 'ivy)
+  (projectile-global-mode)
+  <<counsel-projectile>>
+  )
+#+END_SRC
+*** counsel projectile
+#+BEGIN_SRC emacs-lisp :noweb-ref counsel-projectile :tangle yes
+(use-package counsel-projectile
+  :diminish
+  :config
+  (counsel-projectile-mode))
 #+END_SRC
 ** Magit
 *** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
@@ -1197,6 +1433,10 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 (setq vc-annotate-very-old-color nil)
 #+END_SRC
 * Minor packages
+** bookmark+ (bmkp)
+#+BEGIN_SRC emacs-lisp
+(use-package bookmark+)
+#+END_SRC
 ** paradox
 Paradox is better package management
 #+BEGIN_SRC emacs-lisp
@@ -1515,6 +1755,11 @@ the display until you restart Emacs.
 (use-package ace-window
   :bind (("M-P" . ace-window)))
 #+END_SRC
+** Ace Jump
+#+BEGIN_SRC emacs-lisp
+(use-package ace-jump-mode
+  :bind ("M-J" . ace-jump-mode))
+#+END_SRC
 ** Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+BEGIN_SRC emacs-lisp
@@ -1681,6 +1926,20 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
          ("C-c b" . compile)
          ("M-j" . join-line)))
 
+(use-package cpputils-cmake
+  :config
+  (add-hook 'c-mode-common-hook
+            (lambda ()
+              (if (derived-mode-p 'c-mode 'c++-mode)
+                  (cppcm-reload-all))))
+  )
+
+;; (use-package cmake-ide
+;;   :config
+;;   (use-package rtags) ;; optional, must have rtags installed
+;;   (cmake-ide-setup)
+;;   )
+
 ;; My wildly unpopular bracing style
 ;; Secret: I really use Ratliffe, but this does the trick
 ;; (setq krista-c-style
@@ -1744,8 +2003,9 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
          (get-buffer-process (current-buffer))
          nil "_"))))
   #+END_SRC
-**** Press <tab> to indent with 4 spaces
+**** Press <tab> to indent with 2 spaces
 #+BEGIN_SRC emacs-lisp
+(setq python-indent 2)
 (add-hook 'python-mode-hook
           (lambda ()
             (setq indent-tabs-mode nil)
@@ -1761,6 +2021,33 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 *** haskell
 #+BEGIN_SRC emacs-lisp
 (use-package haskell-mode)
+#+END_SRC
+*** C#
+#+BEGIN_SRC emacs-lisp
+(use-package csharp-mode
+:config
+  (autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
+  (setq auto-mode-alist
+     (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
+  )
+
+
+  (defun my-csharp-mode-fn ()
+     "function that runs when csharp-mode is initialized for a buffer."
+     (turn-on-auto-revert-mode)
+     (setq indent-tabs-mode nil)
+    (setq c-syntactic-indentation t)
+    (c-set-style "ellemtel")
+    (setq c-basic-offset 4)
+    (setq truncate-lines t)
+    (setq tab-width 4)
+    (local-set-key (kbd "C-c C-c") 'recompile))
+(add-hook  'csharp-mode-hook 'my-csharp-mode-fn t)
+
+(add-hook 'csharp-mode-hook 'omnisharp-mode)
+(eval-after-load
+    'company
+  '(add-to-list 'company-backends 'company-omnisharp))
 #+END_SRC
 * Getting help
 This section is not part of my config file per say, but contains instructions
@@ -1858,4 +2145,5 @@ Apparently, the package does more than just automatically add the closing paren!
   "Revert buffer without confirm prompt"
   (interactive)
   (revert-buffer t t))
+(bind-key "H-R" #'revert-buffer-no-prompt)
 #+END_SRC

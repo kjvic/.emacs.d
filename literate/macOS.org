@@ -14,10 +14,8 @@ This stuff is required for flycheck to work
 :diminish
 :config (exec-path-from-shell-initialize))
 #+END_SRC
-* Helm fuzzy matching
-Helm-locate kinda sucks. Whoops. Following [[https://github.com/syl20bnr/spacemacs/issues/3280][this]] fix makes it use =mdfind= instead
+* Ivy locate command
 #+BEGIN_SRC emacs-lisp
-  (with-eval-after-load 'helm
-    (setq helm-locate-fuzzy-match nil)
-    (setq helm-locate-command "mdfind -name %s %s"))
+(with-eval-after-load 'ivy
+      (setq counsel-locate-cmd 'counsel-locate-cmd-mdfind))
 #+END_SRC

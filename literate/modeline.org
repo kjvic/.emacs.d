@@ -43,20 +43,6 @@
 (setq krista-buffer-readonly-string "≝") ; ≝, ↯, ≔, ⟂, ∅, , ※
 (setq krista-buffer-unchanged-string "=") ; ≅ =
 
-;; Show the time
-(display-time-mode 1)
-;; Do show the date
-(setq display-time-day-and-date t)
-(setq display-time-24hr-format nil)
-;; %l == hour, in 12-hour time
-;; %M == minute
-;; %p == AM/PM; %#p == am/pm
-;; %a == abbreviated name of the day of week (e.g. Sat for Saturday)
-;; %b == abbreviated name of the month (e.g. Aug for August)
-;; %e == day of month (1-31)
-;; %Z == name of time zone
-(setq display-time-format "%l:%M%#p %a, %b.%e (%Z)")
-
 (defun krista-get-buffer-modified-status() 
   ;; What to display if the buffer is read-only
   '(:eval

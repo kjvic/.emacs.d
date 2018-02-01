@@ -169,7 +169,10 @@
     (bmkp-file-handler :background red)
     (bmkp-function :foreground green)
     (bmkp-gnus :foreground orange)
-    (bmkp-heading :foreground yellow)
+    ;; Equivalent to org agenda heading
+    (bmkp-heading :height 1.2
+                  :foreground magenta
+                  :weight 'bold)
     (bmkp-info :foreground cyan)
     (bmkp-light-autonamed :foreground bg-alt :background cyan)
     (bmkp-light-autonamed-region :foreground bg-alt :background red)
@@ -178,12 +181,12 @@
     (bmkp-light-mark :foreground bg :background cyan)
     (bmkp-light-non-autonamed :foreground bg :background violet)
     (bmkp-light-non-autonamed-region :foreground bg :background red)
-    (bmkp-local-directory :foreground bg :background violet)
+    (bmkp-local-directory :foreground magenta :background bg)
     (bmkp-local-file-with-region :foreground yellow)
-    (bmkp-local-file-without-region :foreground comments)
+    (bmkp-local-file-without-region :foreground violet)
     (bmkp-man :foreground violet)
     (bmkp-no-jump :foreground comments)
-    (bmkp-no-local :foreground yellow)
+    (bmkp-no-local :foreground "#804532" :strike-through "#804532")
     (bmkp-non-file :foreground green)
     (bmkp-remote-file :foreground orange)
     (bmkp-sequence :foreground blue)
@@ -721,7 +724,7 @@
     (cfw:face-annotation         :foreground bg-alt :inherit 'cfw:face-day-title)
     (cfw:face-disable            :foreground teal :inherit 'cfw:face-day-title)
     (cfw:face-today-title        :foreground magenta :background modeline-bg :weight 'bold)
-    (cfw:face-today              :foreground cyan :background: bg :weight 'bold)
+    (cfw:face-today              :foreground cyan :background: bg)
     (cfw:face-select             :foreground bg :background violet)
     (cfw:face-toolbar            :inherit 'mode-line :box nil)
     (cfw:face-toolbar-button-off :foreground dark-blue :inherit 'mode-line :box nil)
@@ -772,12 +775,12 @@
     (org-agenda-date-today :inherit 'org-agenda-date
                            :background blue
                            :foreground bg
-			   ;;:box `(:line-width 2 :color ,orange :style pressed-button)
-                           :slant 'italic
                            :weight 'bold)
     (org-time-grid :foreground (doom-darken violet 0.4))
     (org-agenda-done      :inherit 'org-done)
-    (org-scheduled-previously      :inherit 'org-scheduled)
+    (org-scheduled      :inherit 'default)
+    (org-scheduled-today      :inherit 'org-scheduled)
+    (org-scheduled-previously      :inherit 'default)
     (org-agenda-dimmed-todo-face :foreground comments)
     (org-warning :foreground salad)
     (org-upcoming-deadline :foreground (doom-darken salad 0.3))
@@ -810,13 +813,15 @@
     (org-code                  :foreground orange)
     (org-verbatim              :foreground green)
     (org-formula               :foreground cyan)
-    (org-list-dt               :foreground highlight)
+    ;; org-list-dt is the first part ("Item") of one of these org mode bullets:
+    ;; - Item :: Description
+    (org-list-dt               :foreground magenta)
     (org-footnote              :foreground orange)
     (org-date                  :foreground violet)
     (org-headline-done         :foreground base5 :strike-through t)
     (org-todo                  :bold 'inherit :foreground highlight)
     (org-done                  :inherit 'org-headline-done)
-    (org-special-keyword       :foreground violet)
+    (org-special-keyword       :foreground cold-olive)
     (org-checkbox :inherit 'org-todo)
     (org-checkbox-statistics-todo :inherit 'org-todo)
     (org-checkbox-statistics-done :inherit 'org-done)
