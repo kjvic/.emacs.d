@@ -459,6 +459,19 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
   (setq org-agenda-timegrid-use-ampm 1)
   (setq-default org-display-custom-times t)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
   (setq org-time-stamp-custom-formats
         ;; [abbreviated day of week] [abbreviated month] [day of month] [4-digit year]
         '("<%a %b %e %Y>"
@@ -520,7 +533,7 @@ out how to set it immediately, but this should suffice as startup config.
 - Fringe wrap indicators are used to show that a line is wider than
   the current window. 
 - The default fringe wrap indicators are a curly arrow
-- I prefer an elipsis:
+- I prefer an ellipsis:
   #+BEGIN_SRC emacs-lisp
    ;; Only relevant if indicate-empty-line is set to t
    (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0]) 
@@ -752,7 +765,7 @@ out how to set it immediately, but this should suffice as startup config.
   :bind (
          ("C-c c" . org-capture)
          ("C-c a" . org-agenda)
-
+         ("H-A" . org-archive-subtree)
          ;; Links!
          ;; - C-c C-l will insert link,
          ;; - C-c C-o will open the link at the point
@@ -766,6 +779,7 @@ out how to set it immediately, but this should suffice as startup config.
          ;;       regular LaTeX docs. This is to provide as
          ;;       seamless an experience as I can muster.
          ))
+
 #+END_SRC
 *** Tips from http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html
 **** todo / schedule / deadline
@@ -786,7 +800,8 @@ out how to set it immediately, but this should suffice as startup config.
 (use-package org-bullets
   :diminish
   :config
-  (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝"))))
+  ;; (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝"))))
+  (setq org-bullets-bullet-list (quote ("•" "•" "•" "•"))))
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
 
 ;; Make LaTeX bigger when I'm presenting
@@ -864,18 +879,29 @@ out how to set it immediately, but this should suffice as startup config.
           '((sequence "TODO(t)" "|" "DONE(d)" "CANCELLED(c)")
             (sequence "GATHER(g)" "PACK(p)" "|" "LOAD(l)" "UNPACK(u)")))
   (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
-                (sequence "WAITING(w@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")))))
+        (quote ((sequence "NEXT(n)" "TODO(t)" "WAITING(w@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")
+                ;; (sequence "WAITING(w@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")
+))))
 
 ;; Org todo keyword faces
+;; NOTE: see also: doom-themes-common.el, where org-todo, org-done are defined
 (setq org-todo-keyword-faces
-      (quote (("TODO" :foreground "#75dbb7" :weight bold)
-              ("NEXT" :foreground "#888a85" :weight bold)
-              ("WAITING" :foreground "#888a85" :weight bold)
-              ("DONE" :foreground "#075f5f" :weight bold)
-              ("CANCELLED" :foreground "#075f5f" :weight bold))))
+      '(("TODO" :foreground "#58615a")
+        ("NEXT" :foreground "#888a85")
+        ("WAITING" :foreground "#58615a")
+        ("DONE" :foreground "#075f5f")
+        ("CANCELLED" :foreground "#075f5f")))
+
+;; Org "there's more under this headline/bullet!" ellipsis
+;; ‣ ⁕ ↷ ↝ → ⇀ ⇢ ⇾ ⋱ 〉 ► ▻ ➝ ➛ ⟝ ⟶ ⫎ ⬎ ✳
+(set-display-table-slot standard-display-table
+                        'selective-display (string-to-vector " ⬎"))
+
+
+;; Source: https://www.reddit.com/r/orgmode/comments/3c4xdk/spacing_between_items_when_trees_are_folded/
+(setq org-cycle-separator-lines 1)
 #+END_SRC
-*** Exporting to LaTeX
+*** Exporting to LaTeX⋱⋱⋱⋱
 #+BEGIN_SRC emacs-lisp
 ;; Put newlines around my images, please!
 ;; http://emacs.stackexchange.com/questions/5363/centered-figures-in-org-mode-latex-export?rq=1
@@ -959,14 +985,16 @@ out how to set it immediately, but this should suffice as startup config.
 ;; Don't display items that are done
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)
-;; Don't display deadlines for scheduled items
-(setq org-agenda-skip-deadline-prewarning-if-scheduled 'pre-scheduled)
-;; Don't display upcoming deadlines under each day
-(setq org-agenda-only-exact-dates t)
-(setq org-deadline-warning-days 0)
 
-;;Non-nil means skip scheduled delay when entry also has a deadline
-(setq org-agenda-skip-scheduled-delay-if-deadline t)
+;; Don't display countdown-style warnings for scheduled items
+;; (setq org-agenda-skip-deadline-prewarning-if-scheduled 'pre-scheduled)
+
+;; t => skip scheduled delay when entry also has a deadline
+;;(setq org-agenda-skip-scheduled-delay-if-deadline t)
+;; Don't display upcoming deadlines under each day
+;; (setq org-agenda-only-exact-dates t)
+;; (setq org-deadline-warning-days 0)
+
 
 (setq org-agenda-sorting-strategy
       '((agenda habit-down time-up deadline-up scheduled-up category-up priority-down)
@@ -978,8 +1006,8 @@ out how to set it immediately, but this should suffice as startup config.
 
 ;; https://emacs.stackexchange.com/a/17832
 (setq org-agenda-prefix-format '(
-                                 (agenda  . "    • %-32b ") ;; bullet + 32-char "breadcrumb"
-                                 (todo  . " %i ")))
+'((agenda . "    • %-11t%-32b")
+  (todo . "    • %-11t%-32b"))))
 ;; (setq org-agenda-tags-column -100) ; take advantage of the screen width
 
 ;; Don't use a time grid in the agenda view
@@ -990,7 +1018,10 @@ out how to set it immediately, but this should suffice as startup config.
 
 (setq org-agenda-inhibit-startup t)
 (setq org-agenda-use-tag-inheritance t)
-(setq org-agenda-show-log t)
+;; (setq org-agenda-show-log t)
+
+;; Put my archives in a different folder
+(setq org-archive-location "~/core/lists/archives/%s-archive::")
 #+END_SRC
 *** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
@@ -1064,7 +1095,6 @@ Org link workflow:
     (read-string "Description: " nil)))
 (setf org-make-link-description-function #'org-link-describe)
 #+END_SRC
-
 *** Org tables
 Source: https://emacs.stackexchange.com/a/30871
 #+BEGIN_SRC emacs-lisp :noweb-ref org-tables :tangle no
@@ -1314,6 +1344,7 @@ On error (read-only), call `ivy-on-del-error-function'."
 #+END_SRC
 ** Company
 *** company (COM-plete ANY-thing)
+DEADLINE: <2018-02-07 Wed>
 #+BEGIN_SRC emacs-lisp
 (message "[krista] Loading company...")
 (use-package company 
@@ -1372,8 +1403,7 @@ On error (read-only), call `ivy-on-del-error-function'."
     (t (:inherit company-tooltip-selection))))
 
  ;; TODO: move this
- '(org-tag ((t (:foreground "#075f5f" :slant oblique))))
- '(org-date ((t (:foreground "Cyan" :underline "#075f5f")))))
+ '(org-tag ((t (:foreground "#075f5f" :slant oblique)))))
 #+END_SRC
 ** Projectile
 #+BEGIN_SRC emacs-lisp :noweb tangle
@@ -1402,7 +1432,7 @@ On error (read-only), call `ivy-on-del-error-function'."
   :config
   <<magit-color-scheme>>
   ;; Default arguments to magit log
-  (setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
+  ;; (setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
   :bind
   (("C-c g" . magit-status)))
 #+END_SRC
@@ -1475,6 +1505,7 @@ Here's an example cheat. Follow this format in your config
   <<magit-cheats>>
   <<projectile-cheats>>
   <<builtin-cheats>>
+  <<agenda-cheats>>
   :bind (("H-C" . cheatsheet-show)))
 #+END_SRC
 **** Common cheats for use throughout Emacs
@@ -1725,6 +1756,46 @@ Much thanks goes to the AUCTeX Reference Card for version 11.89
                 :key "C-h ?"
                 :description "Help for getting more help")
 #+END_SRC
+**** org-agenda cheats
+Help: https://orgmode.org/manual/Agenda-commands.html
+#+BEGIN_SRC emacs-lisp
+(cheatsheet-add :group 'org-agenda
+                :key "F"
+                :description "Toggle follow mode")
+(cheatsheet-add :group 'org-agenda
+                :key "v [d|w|t|m|y|SPC]"
+                :description "Toggle view: [(d)ay|(w)eek|for(t)night|(m)onth|(y)ear|reset]")
+(cheatsheet-add :group 'org-agenda
+                :key "[.|j]"
+                :description "Goto [(.) today|(j) date]")
+(cheatsheet-add :group 'org-agenda
+                :key "C-c C-x C-c     (org-agenda-columns)"
+                :description "Show column view")
+(cheatsheet-add :group 'org-agenda
+                :key "[/ | < | ^ | = | _ | (literal |)]"
+                :description "Filter by [(/)tag|(<)category|(^)top headline|(=)regex|(_)effort|(literal |)none]")
+(cheatsheet-add :group 'org-agenda
+                :key "[C-_ | r]"
+                :description "Undo/redo")
+(cheatsheet-add :group 'org-agenda
+                :key "C-c C-w"
+                :description "refile entry at point")
+(cheatsheet-add :group 'org-agenda
+                :key "[T|:]"
+                :description "[Show|set] tags for entry at point")
+(cheatsheet-add :group 'org-agenda
+                :key "[P|,]"
+                :description "[Show|set] priority for entry at point")
+(cheatsheet-add :group 'org-agenda
+                :key "[+|-]"
+                :description "[Increase|Decrease] priority for entry at point")
+(cheatsheet-add :group 'org-agenda
+                :key "[m|u]"
+                :description "[mark|unmark] item for bulk action")
+(cheatsheet-add :group 'org-agenda
+                :key "B [$|A|t|+|-|s|d|r]"
+                :description "Bulk [($)archive|(A)rchive w/sibling|change (t)odo state|(+/-) add/rm tag|re(s)chedule|change (d)eadline|(r)efile]")
+#+END_SRC 
 *** TODO use popwin to make it so that
 **** the cheatsheet pops up in a sensible place, i.e. the cheatsheet does not occupy the adjacent buffer
 **** closing the cheatsheet does not run "delete-window" (C-x 0) on the buffer that it occupied
@@ -1894,10 +1965,13 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 * Programming
 ** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
-;; Show trailing whitespace by default
 (message "[krista] Loading whitespace preferences...")
-(use-package whitespace)
-(setq-default show-trailing-whitespace nil)
+(setq tab-width 4)
+
+;;(use-package whitespace)
+
+;; Show trailing whitespace by default
+;;(setq-default show-trailing-whitespace nil)
                                         ;(add-hook 'before-save-hook 'delete-trailing-whitespace)
 ;; ... but don't show trailing whitespace if I'm in
 ;; - a minibuffer
@@ -1919,19 +1993,25 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 ;; the function no-trailing-whitespace, available:
 ;; https://ogbe.net/emacsconfig.html
 
-(add-hook 'python-mode-hook 'whitespace-mode)
-(setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
-(setq whitespace-action '(auto-cleanup))
-(setq-default indent-tabs-mode nil)
-(setq tab-width 2)
-(setq-default fill-column 80)
-                                        ;(defvaralias 'c-basic-offset 'tab-width)
+;; This is commented out because it automatically cleans up whitespace on save
+;; This can be a pain when collaborating with other people, so I have it disabled by default
+;; TODO: set up to auto-enable or disable based on number of collaborators
+
+;; (add-hook 'python-mode-hook 'whitespace-mode)
+;; (setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
+;; (setq whitespace-action '(auto-cleanup))
 #+END_SRC
 ** Programming languages
 *** C / C++
 #+BEGIN_SRC emacs-lisp
 (message "[krista] Loading cc-mode...")
 (use-package cc-mode
+  :config
+  ;; This function matches any existing whitespace style that can be found
+  ;; Source: Spruce Bondera's config
+  (with-eval-after-load 'dtrt-indent
+    (add-hook 'c-mode-common-hook
+              (lambda () (dtrt-indent-mode t))))
   :bind (:map
          c-mode-base-map
          ("C-c b" . compile)
@@ -1945,31 +2025,12 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
                   (cppcm-reload-all))))
   )
 
-;; (use-package cmake-ide
-;;   :config
-;;   (use-package rtags) ;; optional, must have rtags installed
-;;   (cmake-ide-setup)
-;;   )
-
-;; My wildly unpopular bracing style
-;; Secret: I really use Ratliffe, but this does the trick
-;; (setq krista-c-style
-;;       '((setq c-default-style "whitesmith")
-;;         (setq-default c-basic-offset 4)))
-;; Alternate settings that don't piss other programmers off as much:
-(setq conformity-c-style
-      '((setq c-default-style "stroustrup")
-        (setq-default c-basic-offset 2)
-        (setq c-basic-offset 2)
-        (setq-default python-indent 2)
-        (setq python-indent 2)))
-
-(add-hook 'c-mode-common-hook
-          (lambda () (c-add-style "conformity-c-style" conformity-c-style t)))
-(add-hook 'c++-mode-hook
-          (lambda () (c-add-style "conformity-c-style" conformity-c-style t)))
-(setq-default c-basic-offset 2)
-(setq c-basic-offset 2)
+(c-add-style "krista-style"             ; title
+             '("python"                 ; inherit from the python style
+               (indent-tabs-mode . nil) ; indents: use spaces, not tabs
+               (c-basic-offset . 4)     ; indents: 4 chars wide
+               (fill-column . 80)))     ; when to wrap line? (In chars)
+(setq c-default-style "krista-style")
 
 (use-package modern-cpp-font-lock)
 (add-hook 'c++-mode-hook #'modern-c++-font-lock-mode)
@@ -2036,24 +2097,30 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 *** C#
 #+BEGIN_SRC emacs-lisp
 (use-package csharp-mode
-:config
+  :config
+
+  ;; TODO: try removing this. Spruce said that it's unnecessary -- should look into that
   (autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
   (setq auto-mode-alist
-     (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
+        (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
+
+  ;; Csharp mode Whitespace preferences
+  (c-add-style "krista-csharp-style"      ; title
+             '("python"                 ; inherit from the python style
+               (indent-tabs-mode . nil) ; indents: use spaces, not tabs
+               (c-basic-offset . 4)     ; indents: 4 chars wide
+               (fill-column . 80)))     ; when to wrap line? (In chars)
+
+  (add-hook 'csharp-mode-hook (lambda () (c-set-style "krista-csharp-style")))
+  :bind
+  ("C-c C-c" . recompile)
   )
 
 
-  (defun my-csharp-mode-fn ()
-     "function that runs when csharp-mode is initialized for a buffer."
-     (turn-on-auto-revert-mode)
-     (setq indent-tabs-mode nil)
-    (setq c-syntactic-indentation t)
-    (c-set-style "ellemtel")
-    (setq c-basic-offset 4)
-    (setq truncate-lines t)
-    (setq tab-width 4)
-    (local-set-key (kbd "C-c C-c") 'recompile))
-(add-hook  'csharp-mode-hook 'my-csharp-mode-fn t)
+
+
+;; TODO: Set as default csharp style
+;; (add-hook  'csharp-mode-hook 'my-csharp-mode t)
 
 (add-hook 'csharp-mode-hook 'omnisharp-mode)
 (eval-after-load

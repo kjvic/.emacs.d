@@ -817,10 +817,18 @@
     ;; - Item :: Description
     (org-list-dt               :foreground magenta)
     (org-footnote              :foreground orange)
-    (org-date                  :foreground violet)
-    (org-headline-done         :foreground base5 :strike-through t)
-    (org-todo                  :bold 'inherit :foreground highlight)
+    (org-date                  :foreground metal)
+    (org-todo                  :foreground dark-blue)
+    (org-headline-done         :foreground green :strike-through t)
     (org-done                  :inherit 'org-headline-done)
+    (org-todo-keyword-faces
+     '(
+       ("TODO" :foreground dark-blue)
+       ("NEXT" :foreground (doom-lighten teal 0.2))
+       ("WAITING" :foreground dark-blue)
+       ("DONE" :foreground green)
+       ("CANCELLED" :foreground green)
+       ))
     (org-special-keyword       :foreground cold-olive)
     (org-checkbox :inherit 'org-todo)
     (org-checkbox-statistics-todo :inherit 'org-todo)
