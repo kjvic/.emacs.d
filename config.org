@@ -1355,21 +1355,20 @@ DEADLINE: <2018-02-07 Wed>
   (setq company-idle-delay 0.1)
   :bind (("C-;" . company-complete-selection)))
 
-;; Scroll through completion options with C-n and C-p (instead of M-n
-;; and M-p)
-;; Source: https://emacs.stackexchange.com/a/2990
-(with-eval-after-load 'company
-  (define-key company-active-map (kbd "M-n") nil)
-  (define-key company-active-map (kbd "M-p") nil)
-  (define-key company-active-map (kbd "C-n") #'company-select-next)
-  (define-key company-active-map (kbd "C-p") #'company-select-previous))
 
 ;; Backends
 (use-package company-irony)
 (use-package company-c-headers)
 (with-eval-after-load 'company
   (add-to-list 'company-backends 'company-irony)
-  (add-to-list 'company-backends 'company-c-headers))
+  (add-to-list 'company-backends 'company-c-headers)
+  ;; Scroll through completion options with C-n and C-p (instead of M-n
+  ;; and M-p)
+  ;; Source: https://emacs.stackexchange.com/a/2990
+  (define-key company-active-map (kbd "M-n") nil)
+  (define-key company-active-map (kbd "M-p") nil)
+  (define-key company-active-map (kbd "C-n") #'company-select-next)
+  (define-key company-active-map (kbd "C-p") #'company-select-previous))
 
 ;; Theme
 (custom-set-faces
