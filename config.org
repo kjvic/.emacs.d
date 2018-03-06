@@ -575,15 +575,15 @@ out how to set it immediately, but this should suffice as startup config.
 ** Theme
 #+BEGIN_SRC emacs-lisp
 ;; Load my theme
-(add-to-list 'custom-theme-load-path (concat user-emacs-directory "literate/tron-doom/"))
-(load-theme 'tron-doom t) ; t for "don't ask me to load this theme"
+;; (add-to-list 'custom-theme-load-path (concat user-emacs-directory "literate/tron-doom/"))
+;; (load-theme 'tron-doom t) ; t for "don't ask me to load this theme"
 
 ;; Global settings (defaults)
-(setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-      doom-themes-enable-italic t) ; if nil, italics is universally disabled
+;; (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+;;       doom-themes-enable-italic t) ; if nil, italics is universally disabled
 
-;; Enable flashing mode-line on errors
-(doom-themes-visual-bell-config)
+;; ;; Enable flashing mode-line on errors
+;; (doom-themes-visual-bell-config)
 
 ;; Set different faces for TODO items with different priority levels
 ;; Source: https://emacs.stackexchange.com/a/17405
@@ -739,6 +739,7 @@ out how to set it immediately, but this should suffice as startup config.
   <<org-capture>>
   (message "[krista] Loading org-agenda...")
   <<org-agenda>>
+  <<org-super-agenda>>
   (message "[krista] Loading org-inline-images...")
   <<org-inline-images>>
   (message "[krista] Loading org-tree-behavior...")
@@ -1018,29 +1019,30 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 (setq org-archive-location "~/core/lists/archives/%s-archive::")
 
 ;; https://emacs.stackexchange.com/a/14883
-(setq org-agenda-custom-commands
-      '(("D" "Deadlines"
-         ((tags-todo "DEADLINE=\"<today>\""
-                     ((org-agenda-overriding-header "Due Today"))
-                     )
-          (tags-todo "+DEADLINE<\"<+5d>\"+DEADLINE>\"<today>\""
-                     ((org-agenda-overriding-header "Due Sooner")))
-          (tags-todo "+DEADLINE>\"<today>\""
-                     ((org-agenda-overriding-header "Due Soon")))
-         ))))
+;; (setq org-agenda-custom-commands
+;;       '(("D" "Deadlines"
+;;          ((tags-todo "DEADLINE=\"<today>\""
+;;                      ((org-agenda-overriding-header "Due Today"))
+;;                      )
+;;           (tags-todo "+DEADLINE<\"<+5d>\"+DEADLINE>\"<today>\""
+;;                      ((org-agenda-overriding-header "Due Sooner")))
+;;           (tags-todo "+DEADLINE>\"<today>\""
+;;                      ((org-agenda-overriding-header "Due Soon")))
+;;          ))))
 
-(setq org-agenda-custom-commands
-      '(("S" "School"
-  (tags "review" ((org-agenda-files '("~/Dropbox/orgzly/at-a-glance.org"))))
-       ;; limits the tag search to at-a-glance.org
-)))
+;; (setq org-agenda-custom-commands
+;;       '(("S" "School"
+;;   (tags "review" ((org-agenda-files '("~/Dropbox/orgzly/at-a-glance.org"))))
+;;        ;; limits the tag search to at-a-glance.org
+;; )))
 
                           ;; limits the tag search to the file circuspeanuts.org
 ;; Source: https://emacs.stackexchange.com/a/14869
 ;; yes, I want a newline
 ;; (setq org-agenda-block-separator "--------------------------------------------------")
 ;; (setq org-agenda-block-separator ?-)
-(setq org-agenda-compact-blocks nil)
+
+;;(setq org-agenda-compact-blocks nil)
 
 ;; Source: https://stackoverflow.com/a/40534778
 ;;   (defun my-custom-agenda-fn ()
@@ -1060,38 +1062,68 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;;    )
 ;; (add-hook 'org-agenda-finalize-hook 'my-custom-agenda-fn)
 #+END_SRC
-**** Super-agenda
+*** Super-agenda
 https://github.com/alphapapa/org-super-agenda
-#+BEGIN_SRC emacs-lisp
-;; (use-package org-super-agenda 
-;;   :config
-;;   (org-super-agenda-mode)
+**** config itself
+#+BEGIN_SRC emacs-lisp :noweb-ref org-super-agenda :tangle no
+(use-package org-super-agenda 
+  :config
+  (org-super-agenda-mode)
+  (setq org-super-agenda-fontify-whole-header-line t)
+
+  (setq org-super-agenda-groups
+	'(
+	  (:name "Schedule"
+		 :time-grid t)
+	  (:name "Today"
+		 :scheduled today)
+	  (:name "Due today"
+		 :deadline today)
+	  (:name "Due soon"
+		 :deadline future)
+	  (:name "Overdue"
+		 :deadline past)
+	  (:name "Unimportant"
+		 :todo ("SOMEDAY" "MAYBE" "CHECK" "TO-READ" "TO-WATCH")
+		 :order 100)
+	  (:name "Waiting..."
+		 :todo "WAITING"
+		 :order 98)
+	  (:name "Scheduled earlier"
+		 :scheduled past)
+	  ))
+
+  ;; (setq ((org-super-agenda-groups
+  ;; 	 '(
+  ;; 	   (:name "Schedule"
+  ;; 		  :time-grid t)
+  ;; 	   (:name "Today"
+  ;; 		  :scheduled today)
+  ;; 	   (:name "Due today"
+  ;; 		  :deadline today)
+  ;; 	   (:name "Due soon"
+  ;; 		  :deadline future)
+  ;; 	   (:name "Overdue"
+  ;; 		  :deadline past)
+  ;; 	   (:name "Unimportant"
+  ;; 		  :todo ("SOMEDAY" "MAYBE" "CHECK" "TO-READ" "TO-WATCH")
+  ;; 		  :order 100)
+  ;; 	   (:name "Waiting..."
+  ;; 		  :todo "WAITING"
+  ;; 		  :order 98)
+  ;; 	   (:name "Scheduled earlier"
+  ;; 		  :scheduled past)
+  ;; 	   )))
+  ;;   (org-agenda nil "a")) ;; or (org-agenda-list))?
 
 
-;; (let ((org-super-agenda-groups
-;;        '((:log t)  ; Automatically named "Log"
-;;          (:name "Schedule"
-;;                 :time-grid t)
-;;          (:name "Today"
-;;                 :scheduled today)
-;;          (:name "Due today"
-;;                 :deadline today)
-;;          (:name "Due soon"
-;;                 :deadline future)
-;;          (:name "Overdue"
-;;                 :deadline past)
-;;          (:name "Unimportant"
-;;                 :todo ("SOMEDAY" "MAYBE" "CHECK" "TO-READ" "TO-WATCH")
-;;                 :order 100)
-;;          (:name "Waiting..."
-;;                 :todo "WAITING"
-;;                 :order 98)
-;;          (:name "Scheduled earlier"
-;;                 :scheduled past))))
-;;   (org-agenda-list))
-
-;;   )
+  ;; END use-package group
+  )
 #+END_SRC
+**** troubleshooting
+Error during redisplay: (eval (propertize mode-name (quote face) (quote font-lock-builtin-face))) signaled (wrong-type-argument stringp ("Org-Agenda" "" " " (:eval (org-agenda-span-name org-agenda-current-span)) "" "" "" " Ddl" "" "" "" "" "" "" "" "" "")) [3 times]
+user-error: Don’t know which date to use for the calendar commandError during redisplay: (eval (propertize mode-name (quote face) (quote font-lock-builtin-face))) signaled (wrong-type-argument stringp ("Org-Agenda" "" " " (:eval (org-agenda-span-name org-agenda-current-span)) "" "" "" " Ddl" "" "" "" "" "" "" "" "" ""))
+Error during redisplay: (eval (propertize mode-name (quote face) (quote font-lock-builtin-face))) signaled (wrong-type-argument stringp ("Org-Agenda" "" " " (:eval (org-agenda-span-name org-agenda-current-span)) "" "" "" " Ddl" "" "" "" "" "" "" "" "" "")) [6 times]
 *** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
 ;; Let me resize them plz!
