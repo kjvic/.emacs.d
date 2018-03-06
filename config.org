@@ -744,7 +744,9 @@ out how to set it immediately, but this should suffice as startup config.
   (message "[krista] Loading org-tree-behavior...")
   <<org-tree-behavior>>
   (message "[krista] Loading org-code-snippets...")
-  <<org-code-snippets>>
+  ;; <<org-code-snippets>>
+  <<org-quick-source-blocks>>
+  <<org-babel-config>>
   (message "[krista] Loading org-links...")
   <<org-links>>
   (message "[krista] Loading org-tables...")
@@ -1058,6 +1060,38 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;;    )
 ;; (add-hook 'org-agenda-finalize-hook 'my-custom-agenda-fn)
 #+END_SRC
+**** Super-agenda
+https://github.com/alphapapa/org-super-agenda
+#+BEGIN_SRC emacs-lisp
+;; (use-package org-super-agenda 
+;;   :config
+;;   (org-super-agenda-mode)
+
+
+;; (let ((org-super-agenda-groups
+;;        '((:log t)  ; Automatically named "Log"
+;;          (:name "Schedule"
+;;                 :time-grid t)
+;;          (:name "Today"
+;;                 :scheduled today)
+;;          (:name "Due today"
+;;                 :deadline today)
+;;          (:name "Due soon"
+;;                 :deadline future)
+;;          (:name "Overdue"
+;;                 :deadline past)
+;;          (:name "Unimportant"
+;;                 :todo ("SOMEDAY" "MAYBE" "CHECK" "TO-READ" "TO-WATCH")
+;;                 :order 100)
+;;          (:name "Waiting..."
+;;                 :todo "WAITING"
+;;                 :order 98)
+;;          (:name "Scheduled earlier"
+;;                 :scheduled past))))
+;;   (org-agenda-list))
+
+;;   )
+#+END_SRC
 *** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
 ;; Let me resize them plz!
@@ -1081,11 +1115,13 @@ Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to
     (setq org-cycle-emulate-tab old-tab-style)))
 (bind-key "C-<tab>" #'krista/org-cycle-current-subtree)
 #+END_SRC
-*** Code snippets in org
-#+BEGIN_SRC emacs-lisp :noweb-ref org-code-snippets :noweb tangle :tangle yes
-<<org-quick-source-blocks>>
-<<org-babel-config>>
-#+END_SRC
+*** TODO FIXME Code snippets in org
+# #+BEGIN_SRC emacs-lisp :noweb-ref org-code-snippets :noweb tangle :tangle yes
+;; Tmp
+;; <<org-quick-source-blocks>>
+;; Tmp2
+;; <<org-babel-config>>
+# #+END_SRC
 **** Quickly add source blocks
 Example: Start a new elisp block in org mode by typing <el and then pressing TAB
 ***** Config
