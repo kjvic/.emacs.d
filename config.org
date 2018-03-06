@@ -459,19 +459,6 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
   (setq org-agenda-timegrid-use-ampm 1)
   (setq-default org-display-custom-times t)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   (setq org-time-stamp-custom-formats
         ;; [abbreviated day of week] [abbreviated month] [day of month] [4-digit year]
         '("<%a %b %e %Y>"
@@ -600,8 +587,8 @@ out how to set it immediately, but this should suffice as startup config.
 
 ;; Set different faces for TODO items with different priority levels
 ;; Source: https://emacs.stackexchange.com/a/17405
-(setq org-priority-faces '((?A . (:foreground "#cf7a00" :weight 'extrabold))
-                          (?B . (:foreground "#00a890" :weight 'bold))
+(setq org-priority-faces '((?A . (:foreground "#cf7a00" :weight extrabold))
+                          (?B . (:foreground "#00a890" :weight bold))
                           (?C . (:foreground "#075f5f"))))
 
 #+END_SRC
@@ -964,6 +951,7 @@ out how to set it immediately, but this should suffice as startup config.
 (setq org-refile-targets '((org-agenda-files :maxlevel . 2)))
 #+END_SRC
 *** Agenda
+For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw-data-for-an-org-mode-agenda-without-an-agenda-view/12563#12563
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
 ;; Places to sniff when compiling a list of TODO items
 (setq org-agenda-files (list krista/todo-file
@@ -986,6 +974,10 @@ out how to set it immediately, but this should suffice as startup config.
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)
 
+;; Source: https://emacs.stackexchange.com/a/12618
+(setq org-agenda-repeating-timestamp-show-all nil)
+;; In the future (Org 9.1): (setq org-agenda-show-future-repeats nil)
+
 ;; Don't display countdown-style warnings for scheduled items
 ;; (setq org-agenda-skip-deadline-prewarning-if-scheduled 'pre-scheduled)
 
@@ -997,7 +989,7 @@ out how to set it immediately, but this should suffice as startup config.
 
 
 (setq org-agenda-sorting-strategy
-      '((agenda habit-down time-up deadline-up scheduled-up category-up priority-down)
+      '((agenda habit-down time-up deadline-up scheduled-up tag-up category-up priority-down)
         (todo priority-down category-up)
         (tags priority-down category-keep)
         (search category-keep)))
@@ -1022,6 +1014,49 @@ out how to set it immediately, but this should suffice as startup config.
 
 ;; Put my archives in a different folder
 (setq org-archive-location "~/core/lists/archives/%s-archive::")
+
+;; https://emacs.stackexchange.com/a/14883
+(setq org-agenda-custom-commands
+      '(("D" "Deadlines"
+         ((tags-todo "DEADLINE=\"<today>\""
+                     ((org-agenda-overriding-header "Due Today"))
+                     )
+          (tags-todo "+DEADLINE<\"<+5d>\"+DEADLINE>\"<today>\""
+                     ((org-agenda-overriding-header "Due Sooner")))
+          (tags-todo "+DEADLINE>\"<today>\""
+                     ((org-agenda-overriding-header "Due Soon")))
+         ))))
+
+(setq org-agenda-custom-commands
+      '(("S" "School"
+  (tags "review" ((org-agenda-files '("~/Dropbox/orgzly/at-a-glance.org"))))
+       ;; limits the tag search to at-a-glance.org
+)))
+
+                          ;; limits the tag search to the file circuspeanuts.org
+;; Source: https://emacs.stackexchange.com/a/14869
+;; yes, I want a newline
+;; (setq org-agenda-block-separator "--------------------------------------------------")
+;; (setq org-agenda-block-separator ?-)
+(setq org-agenda-compact-blocks nil)
+
+;; Source: https://stackoverflow.com/a/40534778
+;;   (defun my-custom-agenda-fn ()
+;;     (save-excursion
+;;      (let ((delimit "------------------------"))
+;;       (org-agenda-goto-today)
+;;       (dolist
+;;           (priority '("\\[#A\\]" "\\[#B\\]" "\\[#C\\]" "\\[#D\\]" "\\[#E\\]"))
+;;         (when (re-search-forward priority nil t)
+;;           (goto-char (point-at-bol)) (insert (concat delimit "\n"))))
+;;       (org-agenda-goto-today)
+;;       (when (re-search-forward delimit nil t)
+;;         (delete-region
+;;          (progn (forward-visible-line 0) (point))
+;;          (progn (forward-visible-line 1) (point))))
+;;       ))
+;;    )
+;; (add-hook 'org-agenda-finalize-hook 'my-custom-agenda-fn)
 #+END_SRC
 *** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
