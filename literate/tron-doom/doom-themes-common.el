@@ -769,7 +769,7 @@
     (markdown-inline-code-face :inherit '(markdown-code-face markdown-pre-face))
 
     ;; org-agenda
-    (org-agenda-structure :inherit 'mode-line :box nil)
+    (org-agenda-structure :foreground modeline-fg :background modeline-bg)
     (org-agenda-date      :foreground blue :height 1.3)
     (org-agenda-date-weekend      :foreground (doom-darken blue 0.4) :height 1.3)
     (org-agenda-date-today :inherit 'org-agenda-date

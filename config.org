@@ -1040,9 +1040,9 @@ https://github.com/alphapapa/org-super-agenda
 
   (setq org-super-agenda-groups
 	'(
-	  (:name "Schedule"
+	  (:name "Scheduled for today"
 		 :time-grid t)
-	  (:name "Today"
+	  (:name "Todo goals for today"
 		 :scheduled today)
 	  (:name "Due today"
 		 :deadline today)
@@ -1050,17 +1050,31 @@ https://github.com/alphapapa/org-super-agenda
 		 :deadline future)
 	  (:name "Overdue"
 		 :deadline past)
-	  (:name "Unimportant"
-		 :todo ("SOMEDAY" "MAYBE" "CHECK" "TO-READ" "TO-WATCH")
-		 :order 100)
-	  (:name "Waiting..."
+	  (:name "Backlog"
+		 :scheduled past)
+	  (:name "Blocked/Waiting"
 		 :todo "WAITING"
 		 :order 98)
-	  (:name "Scheduled earlier"
-		 :scheduled past)
+	  (:name "Back-burner"
+		 :todo ("SOMEDAY" "MAYBE" "CHECK" "TO-READ" "TO-WATCH")
+		 :order 100)
 	  ))
 
-  ;; (setq ((org-super-agenda-groups
+  ;; Source: https://stackoverflow.com/a/35905794
+  (setq org-agenda-prefix-format '((todo . "  %-7t%-32b")
+                   ;; Commented-out version has brackets around the top-level breadcrumb
+				   ;; (agenda . " %-7t %-12:c %-20(concat \"[\"(org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") ")
+				   (agenda . " %-7t %-12:c %-20(org-format-outline-path (list (nth 0 (org-get-outline-path)))) ")
+				   ))
+  )
+
+  ;; REMARK: The following config is incorrect, because it only sets
+  ;; the variable org-super-agenda-groups for the first time you open
+  ;; the agenda after startup!!!
+  ;; 
+  ;; This was very hard to debug -- hopefully it helps someone
+  ;;
+  ;; (let ((org-super-agenda-groups
   ;; 	 '(
   ;; 	   (:name "Schedule"
   ;; 		  :time-grid t)
@@ -1081,11 +1095,7 @@ https://github.com/alphapapa/org-super-agenda
   ;; 	   (:name "Scheduled earlier"
   ;; 		  :scheduled past)
   ;; 	   )))
-  ;;   (org-agenda nil "a")) ;; or (org-agenda-list))?
-
-
-  ;; END use-package group
-  )
+  ;;   (org-agenda nil "a"))
 #+END_SRC
 **** troubleshooting
 Error during redisplay: (eval (propertize mode-name (quote face) (quote font-lock-builtin-face))) signaled (wrong-type-argument stringp ("Org-Agenda" "" " " (:eval (org-agenda-span-name org-agenda-current-span)) "" "" "" " Ddl" "" "" "" "" "" "" "" "" "")) [3 times]
@@ -2173,14 +2183,6 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
   (setq auto-mode-alist
         (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
 
-  ;; Csharp mode Whitespace preferences
-  (c-add-style "krista-csharp-style"      ; title
-             '("python"                 ; inherit from the python style
-               (indent-tabs-mode . nil) ; indents: use spaces, not tabs
-               (c-basic-offset . 4)     ; indents: 4 chars wide
-               (fill-column . 80)))     ; when to wrap line? (In chars)
-
-  (add-hook 'csharp-mode-hook (lambda () (c-set-style "krista-csharp-style")))
   :bind
   ("C-c C-c" . recompile)
   )
