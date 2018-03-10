@@ -2190,7 +2190,15 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 
 
 
-;; TODO: Set as default csharp style
+
+  ;; Csharp mode Whitespace preferences
+  (c-add-style "krista-csharp-style"      ; title
+             '("python"                 ; inherit from the python style
+               (indent-tabs-mode . nil) ; indents: use spaces, not tabs
+               (c-basic-offset . 4)     ; indents: 4 chars wide
+               (fill-column . 80)))     ; when to wrap line? (In chars)
+
+  (add-hook 'csharp-mode-hook (lambda () (c-set-style "krista-csharp-style")));; TODO: Set as default csharp style
 ;; (add-hook  'csharp-mode-hook 'my-csharp-mode t)
 
 (add-hook 'csharp-mode-hook 'omnisharp-mode)
