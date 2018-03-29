@@ -1500,7 +1500,9 @@ DEADLINE: <2018-02-07 Wed>
 (use-package counsel-projectile
   :diminish
   :config
-  (counsel-projectile-mode))
+  (counsel-projectile-mode)
+  :bind
+  ("C-c p r" . projectile-replace-regexp))
 #+END_SRC
 ** Magit
 *** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
