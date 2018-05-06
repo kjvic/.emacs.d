@@ -108,6 +108,7 @@
    '(:eval (propertize mode-name
                        'face 'font-lock-builtin-face))
    " "
+   ;; Includes battery info from fancy-battery
    mode-line-misc-info
    " "
    mode-line-end-spaces))

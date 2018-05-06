@@ -3,7 +3,7 @@
 #+PROPERTY: header-args :tangle yes
 #+OPTIONS: toc:2
 * Bootstrap
- Get emacs off the ground!
+Get emacs off the ground!
 ** Load-path
 *** Config
 #+BEGIN_SRC emacs-lisp
@@ -590,7 +590,7 @@ out how to set it immediately, but this should suffice as startup config.
       doom-themes-enable-italic t) ; if nil, italics is universally disabled
 
 ;; Enable flashing mode-line on errors
-(doom-themes-visual-bell-config)
+;; (doom-themes-visual-bell-config)
 
 ;; Set different faces for TODO items with different priority levels
 ;; Source: https://emacs.stackexchange.com/a/17405
@@ -758,6 +758,8 @@ out how to set it immediately, but this should suffice as startup config.
   <<org-links>>
   (message "[krista] Loading org-tables...")
   <<org-tables>>
+  (message "[krista] Loading markdown-as-org...")
+  <<markdown-as-org>>
   :bind (
          ("C-c c" . org-capture)
          ("C-c a" . org-agenda)
@@ -783,9 +785,9 @@ out how to set it immediately, but this should suffice as startup config.
 - C-c C-s :: org-schedule
 - C-c C-d :: org-deadline
 - M-shift-RET :: org-insert-todo-heading
-  - Adds newline
-  - Adds bullet at same indentation level
-  - Bullet automatically has a `TODO' header
+                 - Adds newline
+                 - Adds bullet at same indentation level
+                 - Bullet automatically has a `TODO' header
 **** agenda view:
 - hit `t' to mark an item DONE
 - hit `l' to enter log display
@@ -827,6 +829,27 @@ out how to set it immediately, but this should suffice as startup config.
 ;; Use my theme as the color scheme for source blocks
 (setq org-src-fontify-natively t)
 
+;; If a heading has a priority set, then fontify the whole
+(setq org-agenda-fontify-priorities t)
+
+;; Use a non-monospaced font for org-mode buffers
+;; Source: https://emacs.stackexchange.com/a/3044
+;; Helper function: Use variable width font faces in current buffer
+(defun my-buffer-face-mode-variable-width ()
+  "Set font to a variable width (proportional) fonts in current buffer"
+  (interactive)
+  (setq buffer-face-mode-face '(:family "System Font"))
+  (buffer-face-mode))
+;; Helper function: Use monospaced font faces in current buffer
+(defun my-buffer-face-mode-fixed-width ()
+  "Sets a fixed width (monospace) font in current buffer"
+  (interactive)
+  (setq buffer-face-mode-face '(:family "Fira Code"))
+  (buffer-face-mode))
+;; Set default font faces for org-mode
+;; (add-hook 'org-mode-hook 'my-buffer-face-mode-variable-width)
+;; (add-hook 'org-agenda-mode-hook 'my-buffer-face-mode-variable-width)
+
 ;; Don't add a weird indent to source blocks
 (setq org-src-preserve-indentation nil
       org-edit-src-content-indentation 0)
@@ -834,12 +857,16 @@ out how to set it immediately, but this should suffice as startup config.
 ;; Org mode clean view
 ;; <http://orgmode.org/manual/Clean-view.html>
 (setq org-startup-indented t)
+(setq org-indent-indentation-per-level 4)
+(setq org-hide-leading-stars t)
+(setq org-startup-indented t)
+(setq org-adapt-indentation t)
 
 ;; When you visit an agenda for the first time, still honor my startup preferences
 (setq org-agenda-inhibit-startup nil)
 
-;; in org mode C-a/e moves to beginning of text in line, after header asterisks
-;; however you can press it again to go all the way
+;; In org mode C-a/e moves to beginning of text in line, after header asterisks
+;; ( however you can press C-a/C-e again to go all the way to the beginning/end)
 (setq org-special-ctrl-a/e t)
 
 ;; Set default size for org tables
@@ -875,16 +902,17 @@ out how to set it immediately, but this should suffice as startup config.
           '((sequence "TODO(t)" "|" "DONE(d)" "CANCELLED(c)")
             (sequence "GATHER(g)" "PACK(p)" "|" "LOAD(l)" "UNPACK(u)")))
   (setq org-todo-keywords
-        (quote ((sequence "NEXT(n)" "TODO(t)" "WAITING(w@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")
+        (quote ((sequence "TODO(t)" "INPROGRESS(p)" "ACTIVE(a)" "BLOCKED(b@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")
                 ;; (sequence "WAITING(w@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")
-))))
+		))))
 
 ;; Org todo keyword faces
 ;; NOTE: see also: doom-themes-common.el, where org-todo, org-done are defined
 (setq org-todo-keyword-faces
       '(("TODO" :foreground "#58615a")
-        ("NEXT" :foreground "#888a85")
-        ("WAITING" :foreground "#58615a")
+        ("INPROGRESS" :foreground "#888a85")
+        ("ACTIVE" :foreground "#804532")
+        ("BLOCKED" :foreground "#58615a")
         ("DONE" :foreground "#075f5f")
         ("CANCELLED" :foreground "#075f5f")))
 
@@ -897,7 +925,7 @@ out how to set it immediately, but this should suffice as startup config.
 ;; Source: https://www.reddit.com/r/orgmode/comments/3c4xdk/spacing_between_items_when_trees_are_folded/
 (setq org-cycle-separator-lines 1)
 #+END_SRC
-*** Exporting to LaTeX⋱⋱⋱⋱
+*** Exporting to LaTeX
 #+BEGIN_SRC emacs-lisp
 ;; Put newlines around my images, please!
 ;; http://emacs.stackexchange.com/questions/5363/centered-figures-in-org-mode-latex-export?rq=1
@@ -916,7 +944,7 @@ out how to set it immediately, but this should suffice as startup config.
 ;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
 (setq org-capture-templates
       '(("a" "annoy" entry
-         (file+olp krista/todo-file "feng shui" "annoy" "refile")
+         (file+olp krista/todo-file "annoy" "refile")
          "* %?\n %i\n")
         ;; ("h" "hw-style-guide" entry
         ;;  (file+olp "~/core/school/powerpoint_shaming/tacky_hw_things.org" "tacky!")
@@ -1000,7 +1028,7 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 
 
 (setq org-agenda-sorting-strategy
-      '((agenda habit-down time-up deadline-up scheduled-up tag-up category-up priority-down)
+      '((agenda habit-down time-up priority-down deadline-up scheduled-up category-up tag-up)
         (todo priority-down category-up)
         (tags priority-down category-keep)
         (search category-keep)))
@@ -1011,7 +1039,7 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 
 ;; Don't use a time grid in the agenda view
 (setq org-agenda-use-time-grid nil)
-;; Don't use a time grid anywhere else, either!
+;; Don't use a time grid anywhere else, either! (Required to make agenda work :P)
 (setq org-agenda-time-grid
       '((daily today require-timed)
 	(800 1000 1200 1400 1600 1800 2000)
@@ -1040,12 +1068,12 @@ https://github.com/alphapapa/org-super-agenda
 
   (setq org-super-agenda-groups
 	'(
-	  (:name "Scheduled for today"
-		 :time-grid t)
-	  (:name "Todo goals for today"
+	  (:name "Scheduled today"
+		 :time-grid t
 		 :scheduled today)
 	  (:name "Due today"
-		 :deadline today)
+		 :time-grid t
+           :deadline today)
 	  (:name "Due soon"
 		 :deadline future)
 	  (:name "Overdue"
@@ -1063,8 +1091,9 @@ https://github.com/alphapapa/org-super-agenda
   ;; Source: https://stackoverflow.com/a/35905794
   (setq org-agenda-prefix-format '((todo . "  %-7t%-32b")
                    ;; Commented-out version has brackets around the top-level breadcrumb
-				   ;; (agenda . " %-7t %-12:c %-20(concat \"[\"(org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") ")
-				   (agenda . " %-7t %-12:c %-20(org-format-outline-path (list (nth 0 (org-get-outline-path)))) ")
+				   ;; (agenda . " %-7t %-12:c %-20(concat \"[\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") ")
+;; (agenda . " %7t %-11s%12c %-20(concat \"[]\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") ")
+(agenda . " %7t %12c %-15(concat \"[\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") ")
 				   ))
   )
 
@@ -1111,6 +1140,9 @@ Error during redisplay: (eval (propertize mode-name (quote face) (quote font-loc
 
 ;; By default, *do* display inline images
 (setq org-startup-with-inline-images t)
+
+;; TODO set this up
+;; (use-package org-download)
 #+END_SRC
 *** Tweaks to tree behavior
 Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to the whole subtree!
@@ -1139,6 +1171,8 @@ Example: Start a new elisp block in org mode by typing <el and then pressing TAB
              '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
 (add-to-list 'org-structure-template-alist
              '("c" "#+BEGIN_SRC C\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("cs" "#+BEGIN_SRC csharp\n?\n#+END_SRC" ""))
 (add-to-list 'org-structure-template-alist
              '("txt" "#+BEGIN_SRC txt\n?\n#+END_SRC" ""))
 (add-to-list 'org-structure-template-alist
@@ -1246,6 +1280,21 @@ Source: https://emacs.stackexchange.com/a/30871
 
 ;; (global-set-key (kbd "C-c M-q") org-table-))
 #+END_SRC
+*** markdown as org mode
+Remark: this requires config
+Credit: the fabulous Spruce Bondera
+#+BEGIN_SRC emacs-lisp :noweb-ref markdown-as-org :tangle no
+(defun spruce/edit-markdown-as-org ()
+  (interactive)
+  (save-buffer)
+  (let* ((filename (buffer-file-name))
+         (org-buffer-name (concat (file-name-base filename) ".org"))
+         (org-buffer (generate-new-buffer org-buffer-name)))
+    (shell-command (format "pandoc %s -f markdown -t org" filename)
+                   org-buffer)
+    (with-current-buffer org-buffer
+      (org-mode))))
+#+END_SRC
 ** Calfw
 CAL-endar F-rameW-ork
 #+BEGIN_SRC emacs-lisp
@@ -1340,6 +1389,7 @@ CAL-endar F-rameW-ork
   (global-set-key (kbd "C-c k") 'counsel-ag)
   (global-set-key (kbd "C-x l") 'counsel-locate)
   (global-set-key (kbd "C-S") 'counsel-grep-or-swiper)
+  (setq counsel-grep-base-command "grep -Ei -n -e %s %s")
   (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
   (global-set-key [remap switch-to-buffer] 'ivy-switch-buffer)
   )
@@ -1500,9 +1550,7 @@ DEADLINE: <2018-02-07 Wed>
 (use-package counsel-projectile
   :diminish
   :config
-  (counsel-projectile-mode)
-  :bind
-  ("C-c p r" . projectile-replace-regexp))
+  (counsel-projectile-mode))
 #+END_SRC
 ** Magit
 *** [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
@@ -2041,7 +2089,9 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 (global-set-key (kbd "C--") 'hs-toggle-hiding)
 (global-set-key (kbd "C-M--") 'hs-hide-all)
 (global-set-key (kbd "C-M-=") 'hs-show-all)
-(add-hook 'c-mode-common-hook   'hs-minor-mode)
+(add-hook 'c-mode-common-hook 'hs-minor-mode)
+(add-hook 'cc-mode-hook 'hs-minor-mode)
+(add-hook 'csharp-mode-hook 'hs-minor-mode)
 #+END_SRC
 * Programming
 ** Whitespace preferences
@@ -2186,21 +2236,17 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
         (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
 
   :bind
-  ("C-c C-c" . recompile)
-  )
+  ("C-c C-c" . recompile))
 
-
-
-
-
-  ;; Csharp mode Whitespace preferences
-  (c-add-style "krista-csharp-style"      ; title
+;; Csharp mode Whitespace preferences
+(c-add-style "krista-csharp-style"      ; title
              '("python"                 ; inherit from the python style
                (indent-tabs-mode . nil) ; indents: use spaces, not tabs
                (c-basic-offset . 4)     ; indents: 4 chars wide
                (fill-column . 80)))     ; when to wrap line? (In chars)
 
-  (add-hook 'csharp-mode-hook (lambda () (c-set-style "krista-csharp-style")));; TODO: Set as default csharp style
+(add-hook 'csharp-mode-hook (lambda () (c-set-style "krista-csharp-style")))
+;; TODO: Set default csharp style
 ;; (add-hook  'csharp-mode-hook 'my-csharp-mode t)
 
 (add-hook 'csharp-mode-hook 'omnisharp-mode)
@@ -2249,8 +2295,31 @@ issue, then CHECK CONFIG.EL
 * Further plans
 ** TODO Gtd goals
 https://github.com/jethrokuan/.emacs.d/blob/master/config.org#org-mode-for-gtd
-** TODO Org context
+** Improvements to org mode
+*** TODO meta: check out melpa packages for "org-$PACKAGENAME"
+*** TODO org gcal
+https://github.com/myuhe/org-gcal.el
+*** TODO org dotemacs
+Summary: Store your emacs config as an org file, and choose which bits to load.
+Requires: org-7.9.3, cl-lib-1.0
+Homepage: https://github.com/vapniks/org-dotemacs
+*** TODO better priorities
+Summary: Display org priorities as custom strings
+Homepage: https://github.com/harrybournis/org-fancy-priorities
+*** TODO org context
+**** package option: org-context
 https://github.com/thisirs/org-context
+**** package option: org-category-capture
+https://github.com/IvanMalison/org-projectile
+This package provides an interface that can be used to capture TODOs with a
+category that is selected depending on a some piece of Emacs context.
+*** TODO org doing
+org-doing
+Summary: Keep track of what you're doing
+Homepage: https://github.com/omouse/org-doing
+*** TODO org redmine
+Summary: Redmine tools using Emacs OrgMode
+Homepage: https://github.com/gongo/org-redmine
 ** TODO Kinesis-specific keyboard issues
 - My hands were hurting after long typing sessions. As a computer
   science student, I forsaw this as being a potentially-huge problem
