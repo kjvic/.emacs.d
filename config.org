@@ -1044,7 +1044,7 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 
 (setq org-agenda-sorting-strategy
       '((agenda habit-down time-up priority-down deadline-up scheduled-up category-up tag-up)
-        (todo priority-down category-up)
+        (todo category-up priority-down)
         (tags priority-down category-keep)
         (search category-keep)))
 
@@ -1071,6 +1071,10 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 
 ;; Don't smush todo/agenda sections together when displaying both
 (setq org-agenda-compact-blocks nil)
+
+;; Add a separator between days of the week. This variable specifies
+;; the separator character(s) to use as fill
+(setq org-agenda-block-separator "---")
 #+END_SRC
 *** Super-agenda
 https://github.com/alphapapa/org-super-agenda
