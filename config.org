@@ -101,6 +101,9 @@ Get emacs off the ground!
   (setq krista/orgzly-dir "~/Dropbox/orgzly/")
   (setq krista/todo-file (concat krista/orgzly-dir "todo.org"))
   (setq krista/at-a-glance-file (concat krista/orgzly-dir "at-a-glance.org"))
+  (setq krista/refile-file (concat krista/orgzly-dir "refile.org"))
+  (setq krista/media-file (concat krista/orgzly-dir "media.org"))
+
   (setq krista/schedule-file "~/core/school/umich/F17/schedule.png")
   (setq default-initial-buffer-choice krista/todo-file)
   (defun my-after-init-hook ()
@@ -402,27 +405,38 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
 - However, some OS-agnostic settings can still live here to reduce code duplication
 #+BEGIN_SRC emacs-lisp
 (bind-key "H-d" #'delete-file)
-(bind-key "H-r" #'rename-file)
+(bind-key "H-R" #'rename-file)
 
 ;; I don't want a prompt, but I /do/ want some verification when a revert happens
 (defun krista/revert-buffer-no-prompt-yes-message ()
   "Revert buffer without a yes/no prompt, and then show a message"
   (revert-buffer-no-prompt)
   (message "Buffer reverted"))
-(bind-key "H-R" #'krista/revert-buffer-no-prompt-yes-message)
+(bind-key "H-C-r" #'krista/revert-buffer-no-prompt-yes-message)
 #+END_SRC
 *** Quick find-file
 #+BEGIN_SRC emacs-lisp
-(defun krista/speedy-open-todo ()
-  "Quickly open my todo file"
-  (interactive)
-  (find-file krista/todo-file))
-(defun krista/speedy-open-at-a-glance ()
+(defun krista/speedy-open-at-a-glance-file ()
   "Quickly open my at-a-glance file"
   (interactive)
   (find-file krista/at-a-glance-file))
-(bind-key "H-a" #'krista/speedy-open-at-a-glance)
-(bind-key "H-t" #'krista/speedy-open-todo)
+(defun krista/speedy-open-todo-file ()
+  "Quickly open my todo file"
+  (interactive)
+  (find-file krista/todo-file))
+(defun krista/speedy-open-refile-file ()
+  "Quickly open my at-a-glance file"
+  (interactive)
+  (find-file krista/refile-file))
+(defun krista/speedy-open-media-file ()
+  "Quickly open my at-a-glance file"
+  (interactive)
+  (find-file krista/media-file))
+
+(bind-key "H-a" #'krista/speedy-open-at-a-glance-file)
+(bind-key "H-t" #'krista/speedy-open-todo-file)
+(bind-key "H-r" #'krista/speedy-open-refile-file)
+(bind-key "H-m" #'krista/speedy-open-media-file)
 #+END_SRC
 *** Copy file path to clipboard
 #+BEGIN_SRC emacs-lisp
@@ -992,7 +1006,8 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
 ;; Places to sniff when compiling a list of TODO items
 (setq org-agenda-files (list krista/todo-file
-                             krista/at-a-glance-file))
+                             krista/at-a-glance-file
+                             krista/refile-file))
 
 ;; If non-nil: mousing over TODO items in org agenda => show TODO item in other buffer
 (setq org-agenda-start-with-follow-mode nil)
