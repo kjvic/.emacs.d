@@ -93,6 +93,11 @@ Get emacs off the ground!
 (krista/new-config-file bde "bde")
 (org-babel-load-file krista/bde-config-file)
 #+END_SRC
+**** Gcal
+#+BEGIN_SRC emacs-lisp
+(krista/new-config-file gcal "gcal")
+(org-babel-load-file krista/gcal-config-file)
+#+END_SRC
 ** Initial buffer to show at startup
 - When I start up emacs, I don't want to see the ugly default startup
   screen. However, I also want to be able to run =emacs somefile.txt=
@@ -965,9 +970,8 @@ out how to set it immediately, but this should suffice as startup config.
       '(("a" "annoy" entry
          (file+olp krista/todo-file "annoy" "refile")
          "* %?\n %i\n")
-        ;; ("h" "hw-style-guide" entry
-        ;;  (file+olp "~/core/school/powerpoint_shaming/tacky_hw_things.org" "tacky!")
-        ;;  "* %?\n %i\n")
+        ("c" "calendar" entry (file  "~/Dropbox/orgzly/gcal.org")
+ 	 "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
         ("m" "movies" entry
          (file+olp "~/core/lists/movies.org" "refile")
          "* %?\n %i\n")
@@ -980,12 +984,6 @@ out how to set it immediately, but this should suffice as startup config.
         ("t" "todo" entry
          (file+olp krista/todo-file "todo-queue")
          "* TODO %?\n %i\n")
-        ;; ("v" "advice" entry
-        ;;  (file+olp "~/core/lists/advice.org" "refile")
-        ;;  "* %?\n %i\n")
-        ;; ("w" "workflow advice" entry
-        ;;  (file+olp "~/core/lists/advice.org" "workflow advice")
-        ;;  "* %?\n %i\n")
         ))
 <<org-refile-targets>>
 #+END_SRC
@@ -1012,7 +1010,8 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;; Places to sniff when compiling a list of TODO items
 (setq org-agenda-files (list krista/todo-file
                              krista/at-a-glance-file
-                             krista/refile-file))
+                             krista/refile-file
+                             krista/gcal-file))
 
 ;; If non-nil: mousing over TODO items in org agenda => show TODO item in other buffer
 (setq org-agenda-start-with-follow-mode nil)
@@ -1328,8 +1327,7 @@ CAL-endar F-rameW-ork
   (use-package calfw-org
     :config
     (setq cfw:org-overwrite-default-keybinding t)
-    (bind-key "H-c" #'cfw:open-org-calendar)
-    )
+    (bind-key "H-c" #'cfw:open-org-calendar))
 
   ;; Unicode characters
   ;; (setq cfw:fchar-junction ?╋
@@ -1349,8 +1347,7 @@ CAL-endar F-rameW-ork
         cfw:fchar-top-left-corner ?╔
         cfw:fchar-top-right-corner ?╗)
 
-  (setq cfw:render-line-breaker 'cfw:render-line-breaker-none)
-  )
+  (setq cfw:render-line-breaker 'cfw:render-line-breaker-none))
 
 #+END_SRC
 ** Ivy/Swiper/Counsel
