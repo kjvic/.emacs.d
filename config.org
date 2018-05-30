@@ -113,6 +113,7 @@ Get emacs off the ground!
   (setq krista/at-a-glance-file (concat krista/orgzly-dir "at-a-glance.org"))
   (setq krista/refile-file (concat krista/orgzly-dir "refile.org"))
   (setq krista/media-file (concat krista/orgzly-dir "media.org"))
+  (setq krista/workflow-file (concat krista/orgzly-dir "workflow.org"))
   (setq krista/gcal-file (concat krista/orgzly-dir "gcal.org"))
 
   (setq krista/schedule-file "~/core/school/umich/F17/schedule.png")
@@ -436,13 +437,14 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
   (interactive)
   (find-file krista/todo-file))
 (defun krista/speedy-open-refile-file ()
-  "Quickly open my at-a-glance file"
   (interactive)
   (find-file krista/refile-file))
 (defun krista/speedy-open-media-file ()
-  "Quickly open my at-a-glance file"
   (interactive)
   (find-file krista/media-file))
+(defun krista/speedy-open-workflow-file ()
+  (interactive)
+  (find-file krista/workflow-file))
 (defun krista/speedy-open-gcal-file ()
   (interactive)
   (find-file krista/gcal-file))
@@ -451,6 +453,7 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
 (bind-key "H-t" #'krista/speedy-open-todo-file)
 (bind-key "H-r" #'krista/speedy-open-refile-file)
 (bind-key "H-m" #'krista/speedy-open-media-file)
+(bind-key "H-w" #'krista/speedy-open-workflow-file)
 (bind-key "H-g" #'krista/speedy-open-gcal-file)
 #+END_SRC
 *** Copy file path to clipboard
