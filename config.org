@@ -95,8 +95,8 @@ Get emacs off the ground!
 #+END_SRC
 **** Gcal
 #+BEGIN_SRC emacs-lisp
-(krista/new-config-file gcal "gcal")
-(org-babel-load-file krista/gcal-config-file)
+(krista/new-config-file gcal-secrets "gcal-secrets")
+(org-babel-load-file krista/gcal-secrets-config-file)
 #+END_SRC
 ** Initial buffer to show at startup
 - When I start up emacs, I don't want to see the ugly default startup
@@ -113,6 +113,7 @@ Get emacs off the ground!
   (setq krista/at-a-glance-file (concat krista/orgzly-dir "at-a-glance.org"))
   (setq krista/refile-file (concat krista/orgzly-dir "refile.org"))
   (setq krista/media-file (concat krista/orgzly-dir "media.org"))
+  (setq krista/gcal-file (concat krista/orgzly-dir "gcal.org"))
 
   (setq krista/schedule-file "~/core/school/umich/F17/schedule.png")
   (setq default-initial-buffer-choice krista/todo-file)
@@ -442,11 +443,15 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
   "Quickly open my at-a-glance file"
   (interactive)
   (find-file krista/media-file))
+(defun krista/speedy-open-gcal-file ()
+  (interactive)
+  (find-file krista/gcal-file))
 
 (bind-key "H-a" #'krista/speedy-open-at-a-glance-file)
 (bind-key "H-t" #'krista/speedy-open-todo-file)
 (bind-key "H-r" #'krista/speedy-open-refile-file)
 (bind-key "H-m" #'krista/speedy-open-media-file)
+(bind-key "H-g" #'krista/speedy-open-gcal-file)
 #+END_SRC
 *** Copy file path to clipboard
 #+BEGIN_SRC emacs-lisp
@@ -1349,6 +1354,26 @@ CAL-endar F-rameW-ork
 
   (setq cfw:render-line-breaker 'cfw:render-line-breaker-none))
 
+#+END_SRC
+** org-gcal
+https://github.com/myuhe/org-gcal.el
+http://cestlaz.github.io/posts/using-emacs-26-gcal/
+#+BEGIN_SRC emacs-lisp
+(use-package org-gcal
+  :ensure t
+  :config
+  (setq org-gcal-file-alist (list (cons "victorsenkrista@gmail.com" krista/gcal-file)))
+  (defun org-gcal-pull ()
+    "Do both a `gcal-fetch' and a `gcal-sync' (akin to git `merge')."
+    (interactive)
+    (org-gcal-fetch)
+    (org-gcal-sync)))
+
+;; Sync org-gcal when loading agenda mode
+(add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
+;; Sync org-gcal after capturing. This is handy for recording events
+;; in org mode via capture, although I'm not using it at this time
+;; (add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
 #+END_SRC
 ** Ivy/Swiper/Counsel
 - Comparison with helm
