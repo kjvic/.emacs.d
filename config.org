@@ -2142,6 +2142,10 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 (add-hook 'cc-mode-hook 'hs-minor-mode)
 (add-hook 'csharp-mode-hook 'hs-minor-mode)
 #+END_SRC
+** Rainbow-parens
+#+BEGIN_SRC emacs-lisp
+(use-package rainbow-delimiters)
+#+END_SRC
 * Programming
 ** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
@@ -2266,9 +2270,15 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 #+END_SRC
 *** Slime (lisp)
 #+BEGIN_SRC emacs-lisp
-;; (load (expand-file-name "~/core/dev/builds_from_source/quicklisp/slime-helper.el"))
 ;; The SBCL binary and command-line arguments
 ;; (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
+
+;; Quicklisp install and this config from https://gist.github.com/jteneycke/7947353
+(load (expand-file-name "~/quicklisp/slime-helper.el"))
+;; Replace "sbcl" with the path to your implementation
+(setq inferior-lisp-program "/usr/local/bin/sbcl")
+(add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode)
+(add-hook 'slime-mode-hook #'rainbow-delimiters-mode)
 #+END_SRC
 *** haskell
 #+BEGIN_SRC emacs-lisp
