@@ -111,12 +111,12 @@ Get emacs off the ground!
   (setq krista/orgzly-dir "~/Dropbox/orgzly/")
   (setq krista/todo-file (concat krista/orgzly-dir "todo.org"))
   (setq krista/at-a-glance-file (concat krista/orgzly-dir "at-a-glance.org"))
-  (setq krista/refile-file (concat krista/orgzly-dir "refile.org"))
+  (setq krista/tickler-file (concat krista/orgzly-dir "[gtd] tickler.org"))
+  (setq krista/inbox-file (concat krista/orgzly-dir "inbox.org"))
   (setq krista/media-file (concat krista/orgzly-dir "media.org"))
   (setq krista/workflow-file (concat krista/orgzly-dir "workflow.org"))
   (setq krista/gcal-file (concat krista/orgzly-dir "gcal.org"))
 
-  (setq krista/schedule-file "~/core/school/umich/F17/schedule.png")
   (setq default-initial-buffer-choice krista/todo-file)
   (defun my-after-init-hook ()
     "Set initial buffer ONLY if no file is specified in command line args"
@@ -432,13 +432,17 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
   "Quickly open my at-a-glance file"
   (interactive)
   (find-file krista/at-a-glance-file))
+(defun krista/speedy-open-tickler-file ()
+  "Quickly open my tickler file"
+  (interactive)
+  (find-file krista/tickler-file))
 (defun krista/speedy-open-todo-file ()
   "Quickly open my todo file"
   (interactive)
   (find-file krista/todo-file))
-(defun krista/speedy-open-refile-file ()
+(defun krista/speedy-open-inbox-file ()
   (interactive)
-  (find-file krista/refile-file))
+  (find-file krista/inbox-file))
 (defun krista/speedy-open-media-file ()
   (interactive)
   (find-file krista/media-file))
@@ -451,7 +455,8 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
 
 (bind-key "H-a" #'krista/speedy-open-at-a-glance-file)
 (bind-key "H-t" #'krista/speedy-open-todo-file)
-(bind-key "H-r" #'krista/speedy-open-refile-file)
+(bind-key "H-k" #'krista/speedy-open-tickler-file)
+(bind-key "H-r" #'krista/speedy-open-inbox-file)
 (bind-key "H-m" #'krista/speedy-open-media-file)
 (bind-key "H-w" #'krista/speedy-open-workflow-file)
 (bind-key "H-g" #'krista/speedy-open-gcal-file)
@@ -647,7 +652,7 @@ out how to set it immediately, but this should suffice as startup config.
   (setq TeX-auto-untabify t)
   ;; TODO: unsure what this does
   ;; (setq-default TeX-master 'dwim)
-  (setq TeX-PDF-mode t)
+  (TeX-PDF-mode 1)
   (defun spruce/TeX-open-output-buffer ()
     (interactive)
     (let ((output-file (with-current-buffer TeX-command-buffer
@@ -917,34 +922,32 @@ out how to set it immediately, but this should suffice as startup config.
 
 ;; Add custom Org keywords/"tags"/previews/metadata for text to follow
 ;; For example, I like "thm" and "def" when taking math notes
-(font-lock-add-keywords 'org-mode
-                        '(("NOTE" . font-lock-comment-face)
-                          ("THM" . font-lock-comment-face)
-                          ("DATA" . font-lock-comment-face)
-                          ("EXAMPLE" . font-lock-comment-face)
-                          ("DEF" . font-lock-comment-face)
-                          ("LEMMA" . font-lock-comment-face)
-                          ("IDEA" . font-lock-comment-face)
-                          ("RMK" . font-lock-comment-face)))
+;(font-lock-add-keywords 'org-mode
+;                        '(("NOTE" . font-lock-comment-face)
+                         ; ("THM" . font-lock-comment-face)
+                         ; ("DATA" . font-lock-comment-face)
+                         ; ("EXAMPLE" . font-lock-comment-face)
+                         ; ("DEF" . font-lock-comment-face)
+                         ; ("LEMMA" . font-lock-comment-face)
+                         ; ("IDEA" . font-lock-comment-face)
+                         ; ("RMK" . font-lock-comment-face)))
 
 ;; Multiple workflows: in-built TODO system, packing/moving
 (setq krista/packing-mode nil)
 (if krista/packing-mode
     (setq org-todo-keywords
-          '((sequence "TODO(t)" "|" "DONE(d)" "CANCELLED(c)")
+          '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")
             (sequence "GATHER(g)" "PACK(p)" "|" "LOAD(l)" "UNPACK(u)")))
   (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "INPROGRESS(p)" "ACTIVE(a)" "BLOCKED(b@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")
-                ;; (sequence "WAITING(w@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")
+        (quote ((sequence "TODO(t)" "FIGUREOUT(f)" "BLOCKED(b@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")
 		))))
 
 ;; Org todo keyword faces
 ;; NOTE: see also: doom-themes-common.el, where org-todo, org-done are defined
 (setq org-todo-keyword-faces
       '(("TODO" :foreground "#58615a")
-        ("INPROGRESS" :foreground "#888a85")
-        ("ACTIVE" :foreground "#804532")
-        ("BLOCKED" :foreground "#58615a")
+;;        ("FIGUREOUT" :foreground "#888a85")
+        ("WAITING" :foreground "#804532")
         ("DONE" :foreground "#075f5f")
         ("CANCELLED" :foreground "#075f5f")))
 
@@ -981,10 +984,10 @@ out how to set it immediately, but this should suffice as startup config.
         ("c" "calendar" entry (file  "~/Dropbox/orgzly/gcal.org")
  	 "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
         ("m" "movies" entry
-         (file+olp "~/core/lists/movies.org" "refile")
+         (file+olp "~/lists/movies.org" "refile")
          "* %?\n %i\n")
         ("q" "quotes" entry
-         (file+olp "~/core/lists/quotes.org" "quotes")
+         (file+olp "~/lists/quotes.org" "quotes")
          "* %?\n %i\n")
         ("s" "shopping" entry
          (file+olp krista/todo-file "shopping")
@@ -993,7 +996,7 @@ out how to set it immediately, but this should suffice as startup config.
          (file+olp krista/todo-file "todo-queue")
          "* TODO %?\n %i\n")
         ))
-<<org-refile-targets>>
+<<org-inbox-targets>>
 #+END_SRC
 **** Org refile targets
 #+BEGIN_SRC emacs-lisp :noweb-ref org-refile-targets :tangle no
@@ -1018,7 +1021,8 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;; Places to sniff when compiling a list of TODO items
 (setq org-agenda-files (list krista/todo-file
                              krista/at-a-glance-file
-                             krista/refile-file
+                             krista/tickler-file
+                             krista/inbox-file
                              krista/gcal-file))
 
 ;; If non-nil: mousing over TODO items in org agenda => show TODO item in other buffer
@@ -1039,7 +1043,11 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 
 ;; Don't display items that are done
 (setq org-agenda-skip-scheduled-if-done t)
-(setq org-agenda-skip-deadline-if-done t)
+(setq org-agenda-skip-deadline-if-done nil)
+
+;; If a task is due soon, but I have it scheduled, skip the "DANGER, WILL ROBINSON! DEADLINE APPROACHING" reminder.
+;; https://orgmode.org/manual/Deadlines-and-scheduling.html#Deadlines-and-scheduling
+(setq org-agenda-skip-deadline-prewarning-if-scheduled t)
 
 ;; Don't display *all* future repetitions of an event when I'm in agenda view
 ;; Source: https://emacs.stackexchange.com/a/12618
@@ -1079,7 +1087,7 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 (setq org-agenda-use-tag-inheritance t)
 
 ;; Put my archives in a different folder
-(setq org-archive-location "~/core/lists/archives/%s-archive::")
+(setq org-archive-location "~/lists/archives/%s-archive::")
 
 ;; Don't smush todo/agenda sections together when displaying both
 (setq org-agenda-compact-blocks nil)
@@ -1366,7 +1374,7 @@ http://cestlaz.github.io/posts/using-emacs-26-gcal/
   :ensure t
   :config
   (setq org-gcal-file-alist (list (cons "victorsenkrista@gmail.com" krista/gcal-file)))
-  (defun org-gcal-pull ()
+  (defun krista/org-gcal-pull ()
     "Do both a `gcal-fetch' and a `gcal-sync' (akin to git `merge')."
     (interactive)
     (org-gcal-fetch)
