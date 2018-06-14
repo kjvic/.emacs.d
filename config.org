@@ -2146,6 +2146,15 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 #+BEGIN_SRC emacs-lisp
 (use-package rainbow-delimiters)
 #+END_SRC
+** title-capitalization
+- Source: https://github.com/novoid/title-capitalization.el
+- Usage: M-x title-capitalization
+- Note: I need to add title-capitalization as a submodule and/or
+  install it via marmalade or another package manager. Currently,
+  title-capitalization.el lives in =~/.emacs.d/elisp/=
+#+BEGIN_SRC emacs-lisp
+(require 'title-capitalization)
+#+END_SRC
 * Programming
 ** Whitespace preferences
 #+BEGIN_SRC emacs-lisp
@@ -2352,6 +2361,8 @@ issue, then CHECK CONFIG.EL
 - http://ergoemacs.org/emacs/emacs.html
 - https://emacsdojo.github.io/
 * Further plans
+** Add submodules for repos that are not on MELPA
+*** https://github.com/novoid/title-capitalization.el
 ** TODO Gtd goals
 https://github.com/jethrokuan/.emacs.d/blob/master/config.org#org-mode-for-gtd
 ** Improvements to org mode
