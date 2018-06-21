@@ -109,13 +109,14 @@ Get emacs off the ground!
 - Config (via [[https://emacs.stackexchange.com/a/21106][stackexchange]])
   #+BEGIN_SRC emacs-lisp
   (setq krista/orgzly-dir "~/Dropbox/orgzly/")
-  (setq krista/todo-file (concat krista/orgzly-dir "todo.org"))
-  (setq krista/at-a-glance-file (concat krista/orgzly-dir "at-a-glance.org"))
-  (setq krista/tickler-file (concat krista/orgzly-dir "[gtd] tickler.org"))
-  (setq krista/inbox-file (concat krista/orgzly-dir "inbox.org"))
-  (setq krista/media-file (concat krista/orgzly-dir "media.org"))
-  (setq krista/workflow-file (concat krista/orgzly-dir "workflow.org"))
   (setq krista/gcal-file (concat krista/orgzly-dir "gcal.org"))
+  (setq krista/inbox-file (concat krista/orgzly-dir "inbox.org"))
+  (setq krista/todo-file (concat krista/orgzly-dir "todo.org"))
+  (setq krista/waiting-file (concat krista/orgzly-dir "waiting.org"))
+  (setq krista/annoy-file (concat krista/orgzly-dir "annoy.org"))
+  (setq krista/tickler-file (concat krista/orgzly-dir "tickler.org"))
+  (setq krista/someday-maybe-file (concat krista/orgzly-dir "someday-maybe.org"))
+  (setq krista/media-file (concat krista/orgzly-dir "media.org"))
 
   (setq default-initial-buffer-choice krista/todo-file)
   (defun my-after-init-hook ()
@@ -139,7 +140,11 @@ This is where I put things that help me modify my emacs install more efficiently
 (defun krista/speedy-eval-config ()
   "Quickly evaluate my config file"
   (interactive)
-  (load-file user-init-file))
+  (load-file user-init-file)
+  ;; Restart org mode
+  (org-mode-restart)
+  ;; Update modeline
+  (force-mode-line-update t))
 (bind-key "C-c C-h" #'krista/speedy-eval-config)
 #+END_SRC
 ** Evaluate a region, or the buffer (whatever's appropriate)
@@ -428,37 +433,30 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
 #+END_SRC
 *** Quick find-file
 #+BEGIN_SRC emacs-lisp
-(defun krista/speedy-open-at-a-glance-file ()
-  "Quickly open my at-a-glance file"
-  (interactive)
-  (find-file krista/at-a-glance-file))
 (defun krista/speedy-open-tickler-file ()
-  "Quickly open my tickler file"
-  (interactive)
-  (find-file krista/tickler-file))
+  (interactive) (find-file krista/tickler-file))
 (defun krista/speedy-open-todo-file ()
-  "Quickly open my todo file"
-  (interactive)
-  (find-file krista/todo-file))
+ (interactive) (find-file krista/todo-file))
 (defun krista/speedy-open-inbox-file ()
-  (interactive)
-  (find-file krista/inbox-file))
+  (interactive) (find-file krista/inbox-file))
 (defun krista/speedy-open-media-file ()
-  (interactive)
-  (find-file krista/media-file))
-(defun krista/speedy-open-workflow-file ()
-  (interactive)
-  (find-file krista/workflow-file))
+  (interactive) (find-file krista/media-file))
+(defun krista/speedy-open-waiting-file ()
+  (interactive) (find-file krista/waiting-file))
+(defun krista/speedy-open-annoy-file ()
+  (interactive) (find-file krista/annoy-file))
+(defun krista/speedy-open-someday-maybe-file ()
+  (interactive) (find-file krista/someday-maybe-file))
 (defun krista/speedy-open-gcal-file ()
-  (interactive)
-  (find-file krista/gcal-file))
+  (interactive) (find-file krista/gcal-file))
 
-(bind-key "H-a" #'krista/speedy-open-at-a-glance-file)
 (bind-key "H-t" #'krista/speedy-open-todo-file)
-(bind-key "H-k" #'krista/speedy-open-tickler-file)
-(bind-key "H-r" #'krista/speedy-open-inbox-file)
+(bind-key "H-T" #'krista/speedy-open-tickler-file)
+(bind-key "H-i" #'krista/speedy-open-inbox-file)
 (bind-key "H-m" #'krista/speedy-open-media-file)
-(bind-key "H-w" #'krista/speedy-open-workflow-file)
+(bind-key "H-a" #'krista/speedy-open-annoy-file)
+(bind-key "H-w" #'krista/speedy-open-waiting-file)
+(bind-key "H-S" #'krista/speedy-open-someday-maybe-file)
 (bind-key "H-g" #'krista/speedy-open-gcal-file)
 #+END_SRC
 *** Copy file path to clipboard
@@ -628,12 +626,6 @@ out how to set it immediately, but this should suffice as startup config.
 
 ;; Enable flashing mode-line on errors
 ;; (doom-themes-visual-bell-config)
-
-;; Set different faces for TODO items with different priority levels
-;; Source: https://emacs.stackexchange.com/a/17405
-(setq org-priority-faces '((?A . (:foreground "#cf7a00" :weight extrabold))
-                          (?B . (:foreground "#00a890" :weight bold))
-                          (?C . (:foreground "#075f5f"))))
 #+END_SRC
 * Major packages
 ** LaTeX
@@ -778,23 +770,37 @@ out how to set it immediately, but this should suffice as startup config.
   :config
   (message "[krista] Loading org-aesthetics...")
   <<org-aesthetics>>
+
+  (message "[krista] Loading org-ordered-tasks...")
+  <<org-ordered-tasks>>
+
   (message "[krista] Loading org-capture...")
   <<org-capture>>
+
+  (message "[krista] Loading org-refile...")
+  <<org-refile>>
+
   (message "[krista] Loading org-agenda...")
   <<org-agenda>>
   <<org-super-agenda>>
+
   (message "[krista] Loading org-inline-images...")
   <<org-inline-images>>
+  
   (message "[krista] Loading org-tree-behavior...")
   <<org-tree-behavior>>
+
   (message "[krista] Loading org-code-snippets...")
   ;; <<org-code-snippets>>
   <<org-quick-source-blocks>>
   <<org-babel-config>>
+
   (message "[krista] Loading org-links...")
   <<org-links>>
+
   (message "[krista] Loading org-tables...")
   <<org-tables>>
+
   (message "[krista] Loading markdown-as-org...")
   <<markdown-as-org>>
   :bind (
@@ -866,8 +872,13 @@ out how to set it immediately, but this should suffice as startup config.
 ;; Use my theme as the color scheme for source blocks
 (setq org-src-fontify-natively t)
 
-;; If a heading has a priority set, then fontify the whole
-(setq org-agenda-fontify-priorities t)
+;; Set different faces for TODO items with different priority levels
+;; Source: https://emacs.stackexchange.com/a/17405
+(setq org-priority-faces '((?A . (:foreground "#cf7a00"))
+                          (?B . (:foreground "#00a890"))
+                          (?C . (:foreground "#075f5f"))))
+                          ;; If t: apply the priority-face to all headline text for agenda view
+;; (setq org-agenda-fontify-priorities nil)
 
 ;; Use a non-monospaced font for org-mode buffers
 ;; Source: https://emacs.stackexchange.com/a/3044
@@ -893,9 +904,9 @@ out how to set it immediately, but this should suffice as startup config.
 
 ;; Org mode clean view
 ;; <http://orgmode.org/manual/Clean-view.html>
+(setq org-hide-leading-stars t)
 (setq org-startup-indented t)
 (setq org-indent-indentation-per-level 4)
-(setq org-hide-leading-stars t)
 (setq org-startup-indented t)
 (setq org-adapt-indentation t)
 
@@ -920,18 +931,6 @@ out how to set it immediately, but this should suffice as startup config.
                     :foreground "AntiqueWhite4"
                     :family "Andale Mono")
 
-;; Add custom Org keywords/"tags"/previews/metadata for text to follow
-;; For example, I like "thm" and "def" when taking math notes
-;(font-lock-add-keywords 'org-mode
-;                        '(("NOTE" . font-lock-comment-face)
-                         ; ("THM" . font-lock-comment-face)
-                         ; ("DATA" . font-lock-comment-face)
-                         ; ("EXAMPLE" . font-lock-comment-face)
-                         ; ("DEF" . font-lock-comment-face)
-                         ; ("LEMMA" . font-lock-comment-face)
-                         ; ("IDEA" . font-lock-comment-face)
-                         ; ("RMK" . font-lock-comment-face)))
-
 ;; Multiple workflows: in-built TODO system, packing/moving
 (setq krista/packing-mode nil)
 (if krista/packing-mode
@@ -939,17 +938,19 @@ out how to set it immediately, but this should suffice as startup config.
           '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")
             (sequence "GATHER(g)" "PACK(p)" "|" "LOAD(l)" "UNPACK(u)")))
   (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "FIGUREOUT(f)" "BLOCKED(b@/!)" "|" "CANCELLED(c@/!)" "DONE(d)")
+        (quote ((sequence "TODO(t)" "PROJECT(p)" "NEXT(n)" "BLOCKED(b)" "WAITING(w)" "|" "CANCELLED(c)" "DONE(d)")
 		))))
 
 ;; Org todo keyword faces
 ;; NOTE: see also: doom-themes-common.el, where org-todo, org-done are defined
 (setq org-todo-keyword-faces
-      '(("TODO" :foreground "#58615a")
-;;        ("FIGUREOUT" :foreground "#888a85")
-        ("WAITING" :foreground "#804532")
-        ("DONE" :foreground "#075f5f")
-        ("CANCELLED" :foreground "#075f5f")))
+      '(("TODO" :foreground "#77A4DE")
+        ("NEXT" :foreground "#87BADE")
+        ("PROJECT" :foreground "#8A84B6")
+        ("BLOCKED" :foreground "#888a85")
+        ("WAITING" :foreground "#888a85")
+        ("DONE" :foreground "#075f5f" :strike-through "#075f5f")
+        ("CANCELLED" :foreground "#58615a" :strike-through "#58615a")))
 
 ;; Org "there's more under this headline/bullet!" ellipsis
 ;; ‣ ⁕ ↷ ↝ → ⇀ ⇢ ⇾ ⋱ 〉 ► ▻ ➝ ➛ ⟝ ⟶ ⫎ ⬎ ✳
@@ -959,6 +960,28 @@ out how to set it immediately, but this should suffice as startup config.
 
 ;; Source: https://www.reddit.com/r/orgmode/comments/3c4xdk/spacing_between_items_when_trees_are_folded/
 (setq org-cycle-separator-lines 1)
+
+
+;; Prettier time tracking
+;; Config from https://www.youtube.com/watch?v=uVv49htxuS8
+(setq org-clock-into-drawer "CLOCKING")
+#+END_SRC
+*** Org ordered tasks
+- Source: https://www.youtube.com/watch?v=9hxEEbUWJYA
+- Note: Toggle :ORDERED: property with C-c C-x o
+#+BEGIN_SRC emacs-lisp :noweb-ref org-ordered-tasks :tangle no
+;; Automatically make a tag when you mark something as ordered
+(setq track-ordered-property-with-tag t)
+
+;; if t: Dim out blocked tasks when in the agenda view
+(setq org-agenda-dim-blocked-tasks t)
+
+
+;; If t: Don't let me mark dependent TODO items done until pre-reqs
+;; are done
+(setq org-enforce-todo-dependencies t)
+(setq org-enforce-todo-checkbox-dependencies t) ; Same for todo checkboxes
+
 #+END_SRC
 *** Exporting to LaTeX
 #+BEGIN_SRC emacs-lisp
@@ -971,58 +994,97 @@ out how to set it immediately, but this should suffice as startup config.
                (funcall orig link info)
                "\\end{center}")))
 #+END_SRC
-*** Org-capture
-#+BEGIN_SRC emacs-lisp :noweb yes :noweb-ref org-capture :tangle yes
-;; Org capture
-(setq org-default-notes-file (concat org-directory "/notes.org"))
-;; To see what goes into an org-capture template, see
+*** Org Capture
+#+BEGIN_SRC emacs-lisp :noweb yes :noweb-ref org-capture :tangle no
+;; Default file if a capture template doesn't specify otherwise
+(setq org-default-notes-file (concat org-directory "/inbox.org"))
+
+;; The capture templates!
+;;
+;; Overview - Components of a capture template:
+;; https://orgmode.org/manual/Template-elements.html#Template-elements
+;;
+;; A quick starter example:
+;; https://orgmode.org/manual/Capture-templates.html#Capture-templates
+;;
+;; The gory details of what goes into an org-capture template:
 ;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
 (setq org-capture-templates
-      '(("a" "annoy" entry
-         (file+olp krista/todo-file "annoy" "refile")
-         "* %?\n %i\n")
-        ("c" "calendar" entry (file  "~/Dropbox/orgzly/gcal.org")
- 	 "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
-        ("m" "movies" entry
-         (file+olp "~/lists/movies.org" "refile")
-         "* %?\n %i\n")
-        ("q" "quotes" entry
-         (file+olp "~/lists/quotes.org" "quotes")
-         "* %?\n %i\n")
-        ("s" "shopping" entry
-         (file+olp krista/todo-file "shopping")
-         "* %?\n %i\n")
-        ("t" "todo" entry
-         (file+olp krista/todo-file "todo-queue")
-         "* TODO %?\n %i\n")
-        ))
-<<org-inbox-targets>>
+      '(
+	
+	;; Shortcut key for the capture menu:
+	("a" 				
+	 ;; Description for the capture menu:
+	 "(A)nnoy"			
+	 ;; Type -- Is it a headline ("entry"), checkbox, etc?
+	 entry
+	 ;; Target destination -- file + heading(s):
+	 (file+olp krista/annoy-file "annoy" "refile")
+	 ;; Pre-formatting:
+	 ;; (Example: you can have the template automatically add the
+	 ;; date, or you can specify certain properties,etc.)
+	 "* %?\n%i\n")
+
+	;; Note: this entry is coupled to my config for org-gcal.
+        ("c" "(c)alendar" entry
+	 (file  "~/Dropbox/orgzly/gcal.org")
+ 	 "* %i%?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
+	
+        ("m" "(m)edia" entry
+         (file krista/media-file)
+         "* %i%?\n")
+
+        ("q" "(q)uotes" entry
+         (file+olp "~/core/lists/quotes.org" "quotes")
+         "* %i%?\n")
+
+        ("s" "(s)hopping" entry
+         (file+olp krista/todo-file "Shopping")
+         "* %i%?\n")
+
+	;; The "%^g" = a prompt for tags
+	;; Source: https://stackoverflow.com/a/31688974
+        ("t" "(t)ODO item" entry
+         (file+olp krista/todo-file "NON-PROJECT TASKS")
+         "* TODO %i%? %^g\n")
+
+	("p" "(p)roject" entry
+         (file krista/todo-file)
+         "* PROJECT %i%?\n")
+
+	("w" "(w)aiting list" entry
+         (file krista/waiting-file)
+         "* WAITING %i%?\n Date created: %U. Follow up on %^t\n")
+
+	("i" "(i)nbox" entry
+         (file krista/inbox-file)
+         "* %(org-todo) %i%?\n")
+
+	("S" "(S)omeday-maybe" entry
+         (file krista/someday-maybe-file)
+         "* %i%?\n")
+
+	("T" "(T)ickler" entry
+         (file krista/tickler-file)
+         "* %i%?\n  Prompt on: %^t\n")
+
+	))
 #+END_SRC
-**** Org refile targets
-#+BEGIN_SRC emacs-lisp :noweb-ref org-refile-targets :tangle no
+*** Org Refile
+#+BEGIN_SRC emacs-lisp :noweb-ref org-refile :tangle no
 (setq org-refile-use-outline-path t) ; Show full paths for refiling 
 (setq org-refile-allow-creating-parent-nodes (quote confirm)) ; allow refile to create parent tasks with confirmation
 
-;; Source:
-;; https://emacs.stackexchange.com/questions/22128/how-to-org-refile-to-a-target-within-the-current-file?rq=1
-;; Hmm. This only lets you pick from the buffer that you're currently visiting,
-;; but I want the file specified by the org capture template
-;; (defun my-org-files-list ()
-;;  (delq nil
-;;    (mapcar (lambda (buffer)
-;;      (buffer-file-name buffer))
-;;      (org-buffer-list 'files t))))
-
-(setq org-refile-targets '((org-agenda-files :maxlevel . 2)))
+;; Options for org-refile. limiting level to 3 for performance reasons.
+(setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
 #+END_SRC
 *** Agenda
 For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw-data-for-an-org-mode-agenda-without-an-agenda-view/12563#12563
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
 ;; Places to sniff when compiling a list of TODO items
 (setq org-agenda-files (list krista/todo-file
-                             krista/at-a-glance-file
                              krista/tickler-file
-                             krista/inbox-file
+                             krista/waiting-file
                              krista/gcal-file))
 
 ;; If non-nil: mousing over TODO items in org agenda => show TODO item in other buffer
@@ -1062,19 +1124,50 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;; (setq org-deadline-warning-days 0)
 
 
+;; Documentation for this variable: https://orgmode.org/worg/doc.html
 (setq org-agenda-sorting-strategy
-      '((agenda habit-down time-up priority-down deadline-up scheduled-up category-up tag-up)
-        (todo category-up priority-down)
-        (tags priority-down category-keep)
-        (search category-keep)))
+      '((agenda tag-up effort-down category-up priority-down time-up deadline-up scheduled-up)
+        (todo tag-up category-up priority-down)))
+
+;; Default effort estimates
+(setq org-global-properties
+      '(("Effort_ALL" . "0:05 0:15 0:30 1:00 1:30 2:00 4:00 6:00 8:00 0:00")))
+
+;; Org Tags
+;; --------
+(setq org-agenda-use-tag-inheritance t)
+
+;; Docs for org-tag-alist and quick-selection: https://orgmode.org/manual/Setting-tags.html
+(setq org-tag-alist
+      '(("home" . ?h)
+	("laptop" . ?l)
+	("anywhere" . ?a)
+	("phone" . ?p)
+	("reading" . ?r)
+	("errand" . ?e)
+	("call" . ?c)
+	("email" . ?m)
+	("text" . ?t)))
+;; Turn on quick-selection for tags
+(setq org-fast-tag-selection-single-key t)
+
+;; Align tags close to the right-hand side of the window
+;; Source: https://lists.gnu.org/archive/html/emacs-orgmode/2010-12/msg00410.html
+(add-hook 'org-finalize-agenda-hook 'place-agenda-tags)
+(defun place-agenda-tags ()
+  "Put the agenda tags by the right border of the agenda window."
+  (setq org-agenda-tags-column (- 6 (window-width)))
+  (org-agenda-align-tags))
+
 
 ;; Aesthetics 
 ;; ------------
-;; (setq org-agenda-tags-column -100) ; take advantage of the screen width
 
 ;; Don't use a time grid in the agenda view
 (setq org-agenda-use-time-grid nil)
-;; Don't use a time grid anywhere else, either! (Required to make agenda work :P)
+;; Don't use a time grid anywhere else, either! (Time grid doesn't
+;; disappear from agenda view unless timegrid is disabled everywhere.
+;; Hrm.)
 (setq org-agenda-time-grid
       '((daily today require-timed)
 	(800 1000 1200 1400 1600 1800 2000)
@@ -1083,10 +1176,12 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;; Make 'q' kill the org agenda buffer
 (setq org-agenda-sticky nil)
 
+;; If t: Don't necessarily build the agenda just because I'm opening
+;; the Agenda Commands dispatch. (Note: this improves performance)
 (setq org-agenda-inhibit-startup t)
-(setq org-agenda-use-tag-inheritance t)
 
-;; Put my archives in a different folder
+;; Put archived todo items in a separate folder, rather than littering
+;; the current directory with hidden files
 (setq org-archive-location "~/lists/archives/%s-archive::")
 
 ;; Don't smush todo/agenda sections together when displaying both
@@ -1097,8 +1192,13 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 (setq org-agenda-block-separator "---")
 #+END_SRC
 *** Super-agenda
-https://github.com/alphapapa/org-super-agenda
+- https://github.com/alphapapa/org-super-agenda 
+- Note: I love this package / it makes it wayyyy easier to define
+  custom agenda commands that actually look good. However, I want to
+  get the rest of my GTD workflow a bit more stable before I re-enable
+  super-agenda
 **** config itself
+#+BEGIN_EXAMPLE 
 #+BEGIN_SRC emacs-lisp :noweb-ref org-super-agenda :tangle no
 (use-package org-super-agenda 
   :config
@@ -1106,8 +1206,7 @@ https://github.com/alphapapa/org-super-agenda
   (setq org-super-agenda-fontify-whole-header-line t)
 
   (setq org-super-agenda-groups
-	'(
-	  (:name "Scheduled today"
+  '((:name "Scheduled today"
 		 :time-grid t
 		 :scheduled today)
 	  (:name "Due today"
@@ -1124,51 +1223,14 @@ https://github.com/alphapapa/org-super-agenda
 		 :order 98)
 	  (:name "Back-burner"
 		 :todo ("SOMEDAY" "MAYBE" "CHECK" "TO-READ" "TO-WATCH")
-		 :order 100)
-	  ))
+		 :order 100)))
 
   ;; Source: https://stackoverflow.com/a/35905794
-  (setq org-agenda-prefix-format '((todo . "  %-7t%-32b")
-                   ;; Commented-out version has brackets around the top-level breadcrumb
-				   ;; (agenda . " %-7t %-12:c %-20(concat \"[\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") ")
-;; (agenda . " %7t %-11s%12c %-20(concat \"[]\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") ")
-(agenda . " %7t %12c %-15(concat \"[\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") ")
-				   ))
-  )
-
-  ;; REMARK: The following config is incorrect, because it only sets
-  ;; the variable org-super-agenda-groups for the first time you open
-  ;; the agenda after startup!!!
-  ;; 
-  ;; This was very hard to debug -- hopefully it helps someone
-  ;;
-  ;; (let ((org-super-agenda-groups
-  ;; 	 '(
-  ;; 	   (:name "Schedule"
-  ;; 		  :time-grid t)
-  ;; 	   (:name "Today"
-  ;; 		  :scheduled today)
-  ;; 	   (:name "Due today"
-  ;; 		  :deadline today)
-  ;; 	   (:name "Due soon"
-  ;; 		  :deadline future)
-  ;; 	   (:name "Overdue"
-  ;; 		  :deadline past)
-  ;; 	   (:name "Unimportant"
-  ;; 		  :todo ("SOMEDAY" "MAYBE" "CHECK" "TO-READ" "TO-WATCH")
-  ;; 		  :order 100)
-  ;; 	   (:name "Waiting..."
-  ;; 		  :todo "WAITING"
-  ;; 		  :order 98)
-  ;; 	   (:name "Scheduled earlier"
-  ;; 		  :scheduled past)
-  ;; 	   )))
-  ;;   (org-agenda nil "a"))
+  (setq org-agenda-prefix-format 
+	'((todo . "  %-7t%-32b")
+	  (agenda . " %7t %12c %-15(concat \"[\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") "))))
 #+END_SRC
-**** troubleshooting
-Error during redisplay: (eval (propertize mode-name (quote face) (quote font-lock-builtin-face))) signaled (wrong-type-argument stringp ("Org-Agenda" "" " " (:eval (org-agenda-span-name org-agenda-current-span)) "" "" "" " Ddl" "" "" "" "" "" "" "" "" "")) [3 times]
-user-error: Don’t know which date to use for the calendar commandError during redisplay: (eval (propertize mode-name (quote face) (quote font-lock-builtin-face))) signaled (wrong-type-argument stringp ("Org-Agenda" "" " " (:eval (org-agenda-span-name org-agenda-current-span)) "" "" "" " Ddl" "" "" "" "" "" "" "" "" ""))
-Error during redisplay: (eval (propertize mode-name (quote face) (quote font-lock-builtin-face))) signaled (wrong-type-argument stringp ("Org-Agenda" "" " " (:eval (org-agenda-span-name org-agenda-current-span)) "" "" "" " Ddl" "" "" "" "" "" "" "" "" "")) [6 times]
+#+END_EXAMPLE
 *** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
 ;; Let me resize them plz!
@@ -1197,10 +1259,8 @@ Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to
 #+END_SRC
 *** TODO FIXME Code snippets in org
 # #+BEGIN_SRC emacs-lisp :noweb-ref org-code-snippets :noweb tangle :tangle yes
-;; Tmp
-;; <<org-quick-source-blocks>>
-;; Tmp2
-;; <<org-babel-config>>
+<<org-quick-source-blocks>>
+<<org-babel-config>>
 # #+END_SRC
 **** Quickly add source blocks
 Example: Start a new elisp block in org mode by typing <el and then pressing TAB
@@ -1367,8 +1427,18 @@ CAL-endar F-rameW-ork
 
 #+END_SRC
 ** org-gcal
-https://github.com/myuhe/org-gcal.el
-http://cestlaz.github.io/posts/using-emacs-26-gcal/
+- https://github.com/myuhe/org-gcal.el
+- http://cestlaz.github.io/posts/using-emacs-26-gcal/
+- note regarding synchronization issues:
+  - https://github.com/myuhe/org-gcal.el/issues/82
+  - tl;dr
+    #+BEGIN_EXAMPLE 
+    # In the shell
+    rm -rf ~/.emacs.d/org-gcal/.org-gcal-token
+
+    # In emacs, eval this:
+    (org-gcal-request-token)
+    #+END_EXAMPLE
 #+BEGIN_SRC emacs-lisp
 (use-package org-gcal
   :ensure t
@@ -1381,7 +1451,7 @@ http://cestlaz.github.io/posts/using-emacs-26-gcal/
     (org-gcal-sync)))
 
 ;; Sync org-gcal when loading agenda mode
-(add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
+;; (add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
 ;; Sync org-gcal after capturing. This is handy for recording events
 ;; in org mode via capture, although I'm not using it at this time
 ;; (add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
@@ -1587,9 +1657,7 @@ DEADLINE: <2018-02-07 Wed>
  '(company-tooltip-common-selection
    ((((type x)) (:inherit company-tooltip-selection :weight bold))
     (t (:inherit company-tooltip-selection))))
-
- ;; TODO: move this
- '(org-tag ((t (:foreground "#075f5f" :slant oblique)))))
+)
 #+END_SRC
 ** Projectile
 #+BEGIN_SRC emacs-lisp :noweb tangle
@@ -2023,9 +2091,16 @@ https://github.com/wasamasa/shackle
 (use-package shackle 
   :config
   (setq shackle-default-alignment 'below)
-  (setq shackle-default-size 0.33)
-  (setq shackle-default-rule '(:select t :popup t :same nil))
-  ;; <<org-src-shackle-config>>
+  (setq shackle-default-size 0.4)
+  (setq shackle-default-rule
+	'(:select t ; Select the popped-up window
+		  :popup t ; Pop up a new window instead of displaying the buffer in the current one.
+		  :same nil ; Display buffer in a NEW window.
+   ))
+  ;; (setq shackle-rules
+  ;; 	'((".*\\*Org tags.*" :align below :select t :popup t :same nil :regexp t)
+  ;; 	  ("*Org todo*"      :align below :select t :popup t :same nil)
+  ;; 	  (".*\\*Org Src.*"  :align below :select t :popup t :same nil :regexp t)))
   (shackle-mode 1))
 #+END_SRC
 ** Undo tree
@@ -2161,7 +2236,17 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
   install it via marmalade or another package manager. Currently,
   title-capitalization.el lives in =~/.emacs.d/elisp/=
 #+BEGIN_SRC emacs-lisp
-(require 'title-capitalization)
+;; (require 'title-capitalization)
+#+END_SRC
+** Which-key
+#+BEGIN_SRC emacs-lisp
+(message "[krista] loading which-key...")
+(use-package which-key              ;;; Display available keybindings in popup
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 1.5))
+(with-eval-after-load 'which-key
+  (which-key-mode))
 #+END_SRC
 * Programming
 ** Whitespace preferences
@@ -2446,6 +2531,8 @@ Homepage: https://github.com/gongo/org-redmine
 ** TODO Install the alert package
 - provides Growl-like notifications
 - would be useful for org-calendar
+** TODO Install winner, windmove
+See https://github.com/angrybacon/dotemacs/blob/master/dotemacs.org
 * heap
 #+BEGIN_SRC emacs-lisp
 (defun revert-buffer-no-prompt ()
