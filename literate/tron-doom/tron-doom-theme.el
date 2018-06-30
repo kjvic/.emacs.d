@@ -51,8 +51,9 @@ determine the exact padding."
    (grey       base4)
    (teal       '("#888a85" "#888a85" "brightgreen"  ))
    (dark-blue  '("#58615a" "#58615a" "blue"         ))
+   (dark-metal '("#2B574F" "#2B574F" "silver"       ))
    (metal      '("#306158" "#306158" "silver"       ))
-   (green      '("#075f5f" "#075f5f" "green"        ))
+   (blue-gunmetal  '("#075f5f" "#075f5f" "green"        ))
    (cold-olive '("#134031" "#134031" "olive"        ))
    (dark-green '("#043d18" "#043d18" "darkgreen"    ))
    (yellow     '("#f0ffff" "#f0ffff" "yellow"       ))
@@ -62,23 +63,26 @@ determine the exact padding."
    (violet     '("#75dbb7" "#75dbb7" "brightmagenta"))
    (salad      '("#00a890" "#00a890" "yellow"       ))
    (rust       '("#804532" "#804532" "darkred"      ))
+   (fire       '("#BD3122" "#BD3122" "brick"        ))
    (red        '("#cc4700" "#cc4700" "red"          ))
-   (magenta    '("#cf7a00" "#cf7a00" "magenta"      ))
+   (orange     '("#cf7a00" "#cf7a00"  "orange"      ))
    (butter     '("#c4a000" "#c4a000" "goldenrod"    ))
    (purple     '("#8A84B6" "#8A84B6" "purple"       ))
-   (periwinkle '("#77A4DE" "#77A4DE" "lightblue"  ))
-   (orange     '("#dd9aa7" "#dd9aa7" "brightred"    ))
+   (periwinkle '("#77A4DE" "#77A4DE" "lightblue"    ))
+   (pink       '("#dd9aa7" "#dd9aa7" "brightred"    ))
+   (green        '("#20A11C" "#20A11C" "green"      ))
+   (greyed-green '("#197D16" "#197D16" "darkgreen"  ))
 
    ;; face categories -- required for all themes
    (highlight      blue)
    (vertical-bar   blue)
    (selection      dark-blue)
-   (builtin        magenta)
+   (builtin        orange)
    (comments       base5)
    (doc-comments (doom-lighten (if tron-doom-brighter-comments dark-cyan base5) 0.4))
    ;; (constants      (doom-lighten magenta 0.4))
-   (constants      (doom-lighten green 0.7))
-   (functions      magenta)
+   (constants      (doom-lighten blue-gunmetal 0.7))
+   (functions      orange)
    (keywords       purple)
    (methods        cyan)
    (operators      cyan)
@@ -90,9 +94,9 @@ determine the exact padding."
                      ,@(doom-lighten (cdr base0) 0.3)))
    (error          red)
    (warning        yellow)
-   (success        green)
+   (success        blue-gunmetal)
    (vc-modified    orange)
-   (vc-added       green)
+   (vc-added       blue-gunmetal)
    (vc-deleted     red)
 
    ;; custom categories
@@ -104,7 +108,7 @@ determine the exact padding."
    (modeline-fg cyan)
    (modeline-fg-alt base3)
 
-   (modeline-bg (doom-darken green 0.5))
+   (modeline-bg (doom-darken blue-gunmetal 0.5))
    (modeline-bg-l
     (if -modeline-bright
         (doom-darken blue 0.45)
@@ -158,7 +162,7 @@ determine the exact padding."
    ;; --- major-mode faces -------------------
    ;; css-mode / scss-mode
    (css-proprietary-property :foreground orange)
-   (css-property             :foreground green)
+   (css-property             :foreground blue-gunmetal)
    (css-selector             :foreground blue)
 
    ;; markdown-mode
