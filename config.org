@@ -98,6 +98,33 @@ Get emacs off the ground!
 (krista/new-config-file gcal-secrets "gcal-secrets")
 (org-babel-load-file krista/gcal-secrets-config-file)
 #+END_SRC
+** Set special files
+#+BEGIN_SRC emacs-lisp
+(setq krista/orgzly-dir "~/Dropbox/orgzly/")
+(setq krista/gcal-file (concat krista/orgzly-dir "gcal.org"))
+(setq krista/inbox-file (concat krista/orgzly-dir "inbox.org"))
+(setq krista/todo-file (concat krista/orgzly-dir "todo.org"))
+(setq krista/waiting-file (concat krista/orgzly-dir "waiting.org"))
+(setq krista/annoy-file (concat krista/orgzly-dir "annoy.org"))
+(setq krista/tickler-file (concat krista/orgzly-dir "tickler.org"))
+(setq krista/someday-maybe-file (concat krista/orgzly-dir "someday-maybe.org"))
+(setq krista/habits-file (concat krista/orgzly-dir "habits.org"))
+
+(setq krista/books-file (concat krista/orgzly-dir "[media]-books.org"))
+(setq krista/movies-file (concat krista/orgzly-dir "[media]-movies.org"))
+(setq krista/music-file (concat krista/orgzly-dir "[media]-music.org"))
+(setq krista/papers-file (concat krista/orgzly-dir "[media]-papers.org"))
+(setq krista/tv-file (concat krista/orgzly-dir "[media]-tv.org"))
+(setq krista/video-games-file (concat krista/orgzly-dir "[media]-video-games.org"))
+(setq krista/media-files
+      `(,krista/books-file 
+	,krista/movies-file
+	,krista/music-file
+	,krista/papers-file
+	,krista/tv-file
+	,krista/video-games-file))
+
+#+END_SRC
 ** Initial buffer to show at startup
 - When I start up emacs, I don't want to see the ugly default startup
   screen. However, I also want to be able to run =emacs somefile.txt=
@@ -108,16 +135,6 @@ Get emacs off the ground!
   - [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Command_002dLine-Arguments.html][More on command line arguments]]
 - Config (via [[https://emacs.stackexchange.com/a/21106][stackexchange]])
   #+BEGIN_SRC emacs-lisp
-  (setq krista/orgzly-dir "~/Dropbox/orgzly/")
-  (setq krista/gcal-file (concat krista/orgzly-dir "gcal.org"))
-  (setq krista/inbox-file (concat krista/orgzly-dir "inbox.org"))
-  (setq krista/todo-file (concat krista/orgzly-dir "todo.org"))
-  (setq krista/waiting-file (concat krista/orgzly-dir "waiting.org"))
-  (setq krista/annoy-file (concat krista/orgzly-dir "annoy.org"))
-  (setq krista/tickler-file (concat krista/orgzly-dir "tickler.org"))
-  (setq krista/someday-maybe-file (concat krista/orgzly-dir "someday-maybe.org"))
-  (setq krista/media-file (concat krista/orgzly-dir "media.org"))
-
   (setq default-initial-buffer-choice krista/todo-file)
   (defun my-after-init-hook ()
     "Set initial buffer ONLY if no file is specified in command line args"
@@ -439,8 +456,6 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
  (interactive) (find-file krista/todo-file))
 (defun krista/speedy-open-inbox-file ()
   (interactive) (find-file krista/inbox-file))
-(defun krista/speedy-open-media-file ()
-  (interactive) (find-file krista/media-file))
 (defun krista/speedy-open-waiting-file ()
   (interactive) (find-file krista/waiting-file))
 (defun krista/speedy-open-annoy-file ()
@@ -449,15 +464,17 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
   (interactive) (find-file krista/someday-maybe-file))
 (defun krista/speedy-open-gcal-file ()
   (interactive) (find-file krista/gcal-file))
+(defun krista/speedy-open-habits-file ()
+  (interactive) (find-file krista/habits-file))
 
 (bind-key "H-t" #'krista/speedy-open-todo-file)
 (bind-key "H-T" #'krista/speedy-open-tickler-file)
 (bind-key "H-i" #'krista/speedy-open-inbox-file)
-(bind-key "H-m" #'krista/speedy-open-media-file)
 (bind-key "H-a" #'krista/speedy-open-annoy-file)
 (bind-key "H-w" #'krista/speedy-open-waiting-file)
 (bind-key "H-S" #'krista/speedy-open-someday-maybe-file)
 (bind-key "H-g" #'krista/speedy-open-gcal-file)
+(bind-key "H-h" #'krista/speedy-open-habits-file)
 #+END_SRC
 *** Copy file path to clipboard
 #+BEGIN_SRC emacs-lisp
@@ -765,11 +782,32 @@ out how to set it immediately, but this should suffice as startup config.
 *** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
 (message "[krista] Loading org-mode settings...")
+(setq org-modules '(org-bbdb org-bibtex org-docview org-gnus
+			     org-habit org-info org-irc org-mhe
+			     org-rmail org-w3m))
+
 (use-package org
   :diminish org-indent-mode
   :config
+
+  ;; Places to sniff when compiling a list of TODO items
+  ;;
+  ;; NOTE: putting this piece of config here because a lot of
+  ;; org-agenda stuff relies on the variable org-agenda-files
+  (setq org-agenda-files (list krista/todo-file
+			       krista/tickler-file
+			       krista/waiting-file
+			       krista/gcal-file
+			       krista/habits-file))
+
+
+
+  (message "[krista] Setting org-modules...")
   (message "[krista] Loading org-aesthetics...")
   <<org-aesthetics>>
+
+  (message "[krista] Loading org-habits...")
+  <<org-habits>>
 
   (message "[krista] Loading org-ordered-tasks...")
   <<org-ordered-tasks>>
@@ -806,7 +844,6 @@ out how to set it immediately, but this should suffice as startup config.
   :bind (
          ("C-c c" . org-capture)
          ("C-c a" . org-agenda)
-         ("H-A" . org-archive-subtree)
          ;; Links!
          ;; - C-c C-l will insert link,
          ;; - C-c C-o will open the link at the point
@@ -879,6 +916,7 @@ out how to set it immediately, but this should suffice as startup config.
                           (?C . (:foreground "#075f5f"))))
                           ;; If t: apply the priority-face to all headline text for agenda view
 ;; (setq org-agenda-fontify-priorities nil)
+(setq org-use-property-inheritance '("PRIORITY"))
 
 ;; Use a non-monospaced font for org-mode buffers
 ;; Source: https://emacs.stackexchange.com/a/3044
@@ -966,6 +1004,42 @@ out how to set it immediately, but this should suffice as startup config.
 ;; Config from https://www.youtube.com/watch?v=uVv49htxuS8
 (setq org-clock-into-drawer "CLOCKING")
 #+END_SRC
+*** Habits
+#+BEGIN_SRC emacs-lisp :noweb-ref org-habits :tangle no
+;; If non-nil: Don't pollute the agenda with repetitions of the habit
+;; (I only want to see the habit printout on today's agenda entry!)
+;; (setq org-habit-show-habits-only-for-today t)
+
+;; NOTE: If using unicode/non-fixed-width glyphs for
+;; org-habit-today-glyph and org-habit-completed-glyph, then the
+;; "today" glyphs won't necessarily line up :(
+(setq org-habit-today-glyph ?!)
+(setq org-habit-completed-glyph ?x)
+
+;; Use character "white star" to mark today
+;; (setq org-habit-today-glyph ?\u2606)
+;; Use character "checkmark" to show completed days on
+;; which a task was done.
+;; (setq org-habit-completed-glyph ?\u2713)
+
+;; If non-nil: show all habits in the agenda, even if you're not
+;; scheduled to do them today
+(setq org-habit-show-all-today t)
+
+;; If non-nil: if you do something late, show it as green (EVEN if you
+;; did it later than you were supposed to)
+(setq org-habit-show-done-always-green nil)
+
+;; Move the org habits graphs over to the rhs of the screen 
+;; NOTE: This is as far as I can move it without overflowing the
+;; buffer when I have the agenda in half of the frame
+;;
+;; => If I make changes to org-habit-following/preceding-days, then I
+;; should also change org-habit-graph-column
+(setq org-habit-following-days 3)
+(setq org-habit-preceding-days 21)
+(setq org-habit-graph-column 63)
+#+END_SRC
 *** Org ordered tasks
 - Source: https://www.youtube.com/watch?v=9hxEEbUWJYA
 - Note: Toggle :ORDERED: property with C-c C-x o
@@ -1011,37 +1085,6 @@ out how to set it immediately, but this should suffice as startup config.
 ;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
 (setq org-capture-templates
       '(
-	
-	;; Shortcut key for the capture menu:
-	("a" 				
-	 ;; Description for the capture menu:
-	 "(A)nnoy"			
-	 ;; Type -- Is it a headline ("entry"), checkbox, etc?
-	 entry
-	 ;; Target destination -- file + heading(s):
-	 (file+olp krista/annoy-file "annoy" "refile")
-	 ;; Pre-formatting:
-	 ;; (Example: you can have the template automatically add the
-	 ;; date, or you can specify certain properties,etc.)
-	 "* %?\n%i\n")
-
-	;; Note: this entry is coupled to my config for org-gcal.
-        ("c" "(c)alendar" entry
-	 (file  "~/Dropbox/orgzly/gcal.org")
- 	 "* %i%?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
-	
-        ("m" "(m)edia" entry
-         (file krista/media-file)
-         "* %i%?\n")
-
-        ("q" "(q)uotes" entry
-         (file+olp "~/core/lists/quotes.org" "quotes")
-         "* %i%?\n")
-
-        ("s" "(s)hopping" entry
-         (file+olp krista/todo-file "Shopping")
-         "* %i%?\n")
-
 	;; The "%^g" = a prompt for tags
 	;; Source: https://stackoverflow.com/a/31688974
         ("t" "(t)ODO item" entry
@@ -1058,7 +1101,7 @@ out how to set it immediately, but this should suffice as startup config.
 
 	("i" "(i)nbox" entry
          (file krista/inbox-file)
-         "* %(org-todo) %i%?\n")
+         "* %i%?\n")
 
 	("S" "(S)omeday-maybe" entry
          (file krista/someday-maybe-file)
@@ -1067,26 +1110,54 @@ out how to set it immediately, but this should suffice as startup config.
 	("T" "(T)ickler" entry
          (file krista/tickler-file)
          "* %i%?\n  Prompt on: %^t\n")
+	
+	;; Note: this entry is coupled to my config for org-gcal.
+        ("c" "(c)alendar" entry
+	 (file  "~/Dropbox/orgzly/gcal.org")
+ 	 "* %i%?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
+	
+        ("q" "(q)uotes" entry
+         (file+olp "~/core/lists/quotes.org" "quotes")
+         "* %i%?\n")
+
+        ("s" "(s)hopping" entry
+         (file+olp krista/todo-file "Shopping")
+         "* %i%?\n")
+
+        ("m" "(m)media" entry
+         (file krista/inbox-file)
+         "* %i%?\n")
+
+	;; Shortcut key for the capture menu:
+	("a" 				
+	 ;; Description for the capture menu:
+	 "(A)nnoy"			
+	 ;; Type -- Is it a headline ("entry"), checkbox, etc?
+	 entry
+	 ;; Target destination -- file + heading(s):
+	 (file+olp krista/annoy-file "annoy" "refile")
+	 ;; Pre-formatting:
+	 ;; (Example: you can have the template automatically add the
+	 ;; date, or you can specify certain properties,etc.)
+	 "* %?\n%i\n")
 
 	))
 #+END_SRC
 *** Org Refile
 #+BEGIN_SRC emacs-lisp :noweb-ref org-refile :tangle no
-(setq org-refile-use-outline-path t) ; Show full paths for refiling 
+(setq org-refile-use-outline-path 'file)
 (setq org-refile-allow-creating-parent-nodes (quote confirm)) ; allow refile to create parent tasks with confirmation
 
-;; Options for org-refile. limiting level to 3 for performance reasons.
-(setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
+;; Options for org-refile. limiting level to 2 for performance reasons.
+(setq org-refile-targets `((,(append org-agenda-files
+				     krista/media-files
+				     (list krista/someday-maybe-file
+					   krista/annoy-file))
+			    :maxlevel . 2)))
 #+END_SRC
 *** Agenda
 For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw-data-for-an-org-mode-agenda-without-an-agenda-view/12563#12563
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
-;; Places to sniff when compiling a list of TODO items
-(setq org-agenda-files (list krista/todo-file
-                             krista/tickler-file
-                             krista/waiting-file
-                             krista/gcal-file))
-
 ;; If non-nil: mousing over TODO items in org agenda => show TODO item in other buffer
 (setq org-agenda-start-with-follow-mode nil)
 
@@ -1116,18 +1187,10 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;; In the future (Org 9.1), use this: (setq org-agenda-show-future-repeats nil)
 (setq org-agenda-repeating-timestamp-show-all nil)
 
-;; t => skip scheduled delay when entry also has a deadline
-;;(setq org-agenda-skip-scheduled-delay-if-deadline t)
-;; Don't display upcoming deadlines under each day
-;; (setq org-agenda-only-exact-dates t)
-;; How many days in advance to warn about upcoming deadlines?
-;; (setq org-deadline-warning-days 0)
-
-
 ;; Documentation for this variable: https://orgmode.org/worg/doc.html
 (setq org-agenda-sorting-strategy
-      '((agenda tag-up effort-down category-up priority-down time-up deadline-up scheduled-up)
-        (todo tag-up category-up priority-down)))
+      '((agenda habit-down priority-down tag-up effort-down category-up time-up deadline-up scheduled-up)
+        (todo habit-down priority-down tag-up effort-down category-up time-up deadline-up scheduled-up)))
 
 ;; Default effort estimates
 (setq org-global-properties
@@ -1160,29 +1223,18 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
   (org-agenda-align-tags))
 
 
-;; Aesthetics 
-;; ------------
-
 ;; Don't use a time grid in the agenda view
 (setq org-agenda-use-time-grid nil)
 ;; Don't use a time grid anywhere else, either! (Time grid doesn't
 ;; disappear from agenda view unless timegrid is disabled everywhere.
 ;; Hrm.)
 (setq org-agenda-time-grid
-      '((daily today require-timed)
+     '((daily today require-timed)
 	(800 1000 1200 1400 1600 1800 2000)
 	"" ""))
 
 ;; Make 'q' kill the org agenda buffer
 (setq org-agenda-sticky nil)
-
-;; If t: Don't necessarily build the agenda just because I'm opening
-;; the Agenda Commands dispatch. (Note: this improves performance)
-(setq org-agenda-inhibit-startup t)
-
-;; Put archived todo items in a separate folder, rather than littering
-;; the current directory with hidden files
-(setq org-archive-location "~/lists/archives/%s-archive::")
 
 ;; Don't smush todo/agenda sections together when displaying both
 (setq org-agenda-compact-blocks nil)
@@ -1190,6 +1242,33 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;; Add a separator between days of the week. This variable specifies
 ;; the separator character(s) to use as fill
 (setq org-agenda-block-separator "---")
+
+;; If t: Don't necessarily build the agenda just because I'm opening
+;; the Agenda Commands dispatch. (Note: this improves performance)
+(setq org-agenda-inhibit-startup t)
+
+
+;; Archiving TODO items
+;; ---------------------
+
+;; Put archived todo items in a separate folder, rather than littering
+;; the current directory with hidden files
+(setq org-archive-location "~/lists/archives/%s-archive::")
+
+;; Modified from: https://stackoverflow.com/a/27043756
+;; I added an interactive option to specify the scope interactively
+(defun org-archive-done-tasks ()
+  (interactive)
+  (let ((scopes '(("file" . 'file) ("tree" . 'tree) ("agenda" . 'agenda))))
+  (org-map-entries (lambda ()
+		     (org-archive-subtree)
+		     (setq org-map-continue-from (outline-previous-heading)))
+		   "/DONE"
+		   (cdr (assq (completing-read
+			       "Scope: " '(("file" 1) ("tree" 2) ("agenda" 3))
+			       nil t "")
+			      scopes)))))
+
 #+END_SRC
 *** Super-agenda
 - https://github.com/alphapapa/org-super-agenda 
@@ -1274,6 +1353,8 @@ Example: Start a new elisp block in org mode by typing <el and then pressing TAB
              '("cs" "#+BEGIN_SRC csharp\n?\n#+END_SRC" ""))
 (add-to-list 'org-structure-template-alist
              '("txt" "#+BEGIN_SRC txt\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("css" "#+BEGIN_SRC css\n?\n#+END_SRC" ""))
 (add-to-list 'org-structure-template-alist
              '("cpp" "#+BEGIN_SRC C++\n?\n#+END_SRC" ""))
 (add-to-list 'org-structure-template-alist
@@ -2078,7 +2159,10 @@ the display until you restart Emacs.
 ** Ace Window
 #+BEGIN_SRC emacs-lisp
 (use-package ace-window
-  :bind (("M-P" . ace-window)))
+  :bind
+  ("M-P" . ace-window)
+  :config
+  (setq aw-dispatch-always t))
 #+END_SRC
 ** Ace Jump
 #+BEGIN_SRC emacs-lisp

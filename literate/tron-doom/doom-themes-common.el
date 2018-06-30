@@ -831,6 +831,15 @@
     (org-checkbox-statistics-todo :inherit 'org-todo)
     (org-checkbox-statistics-done :inherit 'org-done)
     (message-header-name :foreground blue-gunmetal) ; FIXME move this
+    ;; Org habits
+    (org-habit-alert-face	   :background butter       :foreground bg)
+    (org-habit-alert-future-face   :background orange       :foreground bg)
+    (org-habit-clear-face	   :background cold-olive   :foreground bg)
+    (org-habit-clear-future-face   :background blue-gunmetal)
+    (org-habit-overdue-face	   :background rust         :foreground bg)
+    (org-habit-overdue-future-face :background red          :foreground bg)
+    (org-habit-ready-face	   :background green        :foreground bg)
+    (org-habit-ready-future-face   :background greyed-green :foreground bg)
     
     ;; rpm-spec-mode
     (rpm-spec-macro-face        :foreground yellow)
