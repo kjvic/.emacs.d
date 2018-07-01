@@ -1517,10 +1517,17 @@ Org link workflow:
 ;; the org doc. Not what I want!
 ;; 
 (defun insert-email-url (x)
+(defun insert-email-url ()
   "Ask for message id, insert a macOS email url"
-  (interactive "sMessage ID? (e.g. <2018070...118F41@gmail.com>⁩): ")
-  (message "Email link: message://%s" x)
-  (save-excursion (insert  (format "message://%s" x))))
+  (interactive)
+  (save-excursion
+    (insert
+     (concat "[[shell:open\%20-a\%20Mail\%20\"message://"
+	     (read-string "Message ID (e.g. <2018070...118F41@gmail.com>⁩):")
+	     "%E2%81%A9\""
+	     "]["
+	     (read-string "Description:")
+	     "]]"))))
 #+END_SRC
 *** Org tables
 Source: https://emacs.stackexchange.com/a/30871
