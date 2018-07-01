@@ -1501,6 +1501,21 @@ Org link workflow:
 ;; Make it so you can follow links with RET
 ;; Source: https://orgmode.org/manual/Handling-links.html#Handling-links
 (setq org-return-follows-link t)
+
+
+;; Note: I like to be able to link to specific emails. This is
+;; possible on macOS by copying the unique ID in an email (e.g.
+;; <20180701182008.1.72CDCB49D189BF41@japan-rail-pass.com>⁩) and then
+;; creating a link string like
+;; message://<20180701182008.1.72CDCB49D189BF41@japan-rail-pass.com>⁩
+;; See also: https://hints.macworld.com/article.php?story=20071118154803739
+;;
+;; I have set up my web browser to respect these links (i.e.
+;; automatically open such links using the macOS Mail app). However,
+;; emacs does not do such a good job of interpreting these links -- it
+;; attempts to treat the link text as a reference to some headline in
+;; the org doc. Not what I want!
+;; 
 (defun insert-email-url (x)
   "Ask for message id, insert a macOS email url"
   (interactive "sMessage ID? (e.g. <2018070...118F41@gmail.com>⁩): ")
