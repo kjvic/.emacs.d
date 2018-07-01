@@ -1501,6 +1501,11 @@ Org link workflow:
 ;; Make it so you can follow links with RET
 ;; Source: https://orgmode.org/manual/Handling-links.html#Handling-links
 (setq org-return-follows-link t)
+(defun insert-email-url (x)
+  "Ask for message id, insert a macOS email url"
+  (interactive "sMessage ID? (e.g. <2018070...118F41@gmail.com>⁩): ")
+  (message "Email link: message://%s" x)
+  (save-excursion (insert  (format "message://%s" x))))
 #+END_SRC
 *** Org tables
 Source: https://emacs.stackexchange.com/a/30871
