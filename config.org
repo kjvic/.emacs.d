@@ -109,6 +109,7 @@ Get emacs off the ground!
 (setq krista/tickler-file (concat krista/orgzly-dir "tickler.org"))
 (setq krista/someday-maybe-file (concat krista/orgzly-dir "someday-maybe.org"))
 (setq krista/habits-file (concat krista/orgzly-dir "habits.org"))
+(setq krista/random-ideas-file (concat krista/orgzly-dir "random-ideas.org"))
 
 (setq krista/books-file (concat krista/orgzly-dir "[media]-books.org"))
 (setq krista/movies-file (concat krista/orgzly-dir "[media]-movies.org"))
@@ -472,7 +473,7 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
 (bind-key "H-i" #'krista/speedy-open-inbox-file)
 (bind-key "H-a" #'krista/speedy-open-annoy-file)
 (bind-key "H-w" #'krista/speedy-open-waiting-file)
-(bind-key "H-S" #'krista/speedy-open-someday-maybe-file)
+(bind-key "H-?" #'krista/speedy-open-someday-maybe-file)
 (bind-key "H-g" #'krista/speedy-open-gcal-file)
 (bind-key "H-h" #'krista/speedy-open-habits-file)
 #+END_SRC
@@ -969,16 +970,19 @@ out how to set it immediately, but this should suffice as startup config.
                     :foreground "AntiqueWhite4"
                     :family "Andale Mono")
 
-;; Multiple workflows: in-built TODO system, packing/moving
-(setq krista/packing-mode nil)
-(if krista/packing-mode
-    (setq org-todo-keywords
-          '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")
-            (sequence "GATHER(g)" "PACK(p)" "|" "LOAD(l)" "UNPACK(u)")))
-  (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "PROJECT(p)" "NEXT(n)" "BLOCKED(b)" "WAITING(w)" "|" "CANCELLED(c)" "DONE(d)")
-		))))
-
+;; SOURCE: Adapted from
+;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#org-todo-keywords
+;;
+;; Semantics of each TODO keyword:
+;; 
+;; TODO:	An action that will have to be completed eventually, but maybe not yet
+;; NEXT:	An action that can be completed at this very moment, in the correct context
+;; DONE:	An item that is completed, and ready to be archived
+;; WAITING:	An item that awaits input from an external party
+;; BLOCKED:	An item which cannot be completed due to some circumstances
+;; CANCELLED:	An item that was once considered,
+(setq org-todo-keywords
+      '((sequence "NEXT(n)" "TODO(t)" "PROJECT(p)" "BLOCKED(b)" "WAITING(w)" "|" "CANCELLED(c)" "DONE(d)")))
 ;; Org todo keyword faces
 ;; NOTE: see also: doom-themes-common.el, where org-todo, org-done are defined
 (setq org-todo-keyword-faces
@@ -987,6 +991,7 @@ out how to set it immediately, but this should suffice as startup config.
         ("PROJECT" :foreground "#8A84B6")
         ("BLOCKED" :foreground "#888a85")
         ("WAITING" :foreground "#888a85")
+        ;; ("SOMEDAY" :foreground "#58615a")
         ("DONE" :foreground "#075f5f" :strike-through "#075f5f")
         ("CANCELLED" :foreground "#58615a" :strike-through "#58615a")))
 
@@ -1053,7 +1058,7 @@ out how to set it immediately, but this should suffice as startup config.
 
 ;; If t: Don't let me mark dependent TODO items done until pre-reqs
 ;; are done
-(setq org-enforce-todo-dependencies t)
+(setq org-enforce-todo-dependencies nil)
 (setq org-enforce-todo-checkbox-dependencies t) ; Same for todo checkboxes
 
 #+END_SRC
@@ -1103,7 +1108,7 @@ out how to set it immediately, but this should suffice as startup config.
          (file krista/inbox-file)
          "* %i%?\n")
 
-	("S" "(S)omeday-maybe" entry
+	("?" "Someday-maybe(?)" entry
          (file krista/someday-maybe-file)
          "* %i%?\n")
 
@@ -1152,7 +1157,8 @@ out how to set it immediately, but this should suffice as startup config.
 (setq org-refile-targets `((,(append org-agenda-files
 				     krista/media-files
 				     (list krista/someday-maybe-file
-					   krista/annoy-file))
+					   krista/annoy-file
+                                         krista/random-ideas-file))
 			    :maxlevel . 2)))
 #+END_SRC
 *** Agenda
@@ -1189,8 +1195,8 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 
 ;; Documentation for this variable: https://orgmode.org/worg/doc.html
 (setq org-agenda-sorting-strategy
-      '((agenda habit-down priority-down tag-up effort-down category-up time-up deadline-up scheduled-up)
-        (todo habit-down priority-down tag-up effort-down category-up time-up deadline-up scheduled-up)))
+      '((agenda habit-down priority-down tag-up effort-down todo-state-up time-up deadline-up scheduled-up)
+        (todo   habit-down priority-down tag-up effort-down todo-state-up time-up deadline-up scheduled-up)))
 
 ;; Default effort estimates
 (setq org-global-properties
@@ -1199,18 +1205,19 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;; Org Tags
 ;; --------
 (setq org-agenda-use-tag-inheritance t)
+(setq org-use-tag-inheritance t)
 
 ;; Docs for org-tag-alist and quick-selection: https://orgmode.org/manual/Setting-tags.html
 (setq org-tag-alist
       '(("home" . ?h)
-	("laptop" . ?l)
-	("anywhere" . ?a)
-	("phone" . ?p)
-	("reading" . ?r)
-	("errand" . ?e)
-	("call" . ?c)
-	("email" . ?m)
-	("text" . ?t)))
+        ("laptop" . ?l)
+        ("anywhere" . ?a)
+        ("phone" . ?p)
+        ("reading" . ?r)
+        ("errand" . ?e)
+        ("call" . ?c)
+        ("email" . ?m)
+        ("text" . ?t)))
 ;; Turn on quick-selection for tags
 (setq org-fast-tag-selection-single-key t)
 
@@ -1229,9 +1236,9 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;; disappear from agenda view unless timegrid is disabled everywhere.
 ;; Hrm.)
 (setq org-agenda-time-grid
-     '((daily today require-timed)
-	(800 1000 1200 1400 1600 1800 2000)
-	"" ""))
+      '((daily today require-timed)
+        (800 1000 1200 1400 1600 1800 2000)
+        "" ""))
 
 ;; Make 'q' kill the org agenda buffer
 (setq org-agenda-sticky nil)
@@ -1241,7 +1248,7 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 
 ;; Add a separator between days of the week. This variable specifies
 ;; the separator character(s) to use as fill
-(setq org-agenda-block-separator "---")
+(setq org-agenda-block-separator ?-)
 
 ;; If t: Don't necessarily build the agenda just because I'm opening
 ;; the Agenda Commands dispatch. (Note: this improves performance)
@@ -1260,15 +1267,117 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 (defun org-archive-done-tasks ()
   (interactive)
   (let ((scopes '(("file" . 'file) ("tree" . 'tree) ("agenda" . 'agenda))))
-  (org-map-entries (lambda ()
-		     (org-archive-subtree)
-		     (setq org-map-continue-from (outline-previous-heading)))
-		   "/DONE"
-		   (cdr (assq (completing-read
-			       "Scope: " '(("file" 1) ("tree" 2) ("agenda" 3))
-			       nil t "")
-			      scopes)))))
+    (org-map-entries (lambda ()
+                       (org-archive-subtree)
+                       (setq org-map-continue-from (outline-previous-heading)))
+                     "/DONE"
+                     (cdr (assq (completing-read
+                                 "Scope: " '(("file" 1) ("tree" 2) ("agenda" 3))
+                                 nil t "")
+                                scopes)))))
 
+;; Source: https://github.com/aaronbieber/dotfiles/blob/master/configs/emacs.d/lisp/init-org.el
+(defun air-org-skip-if-habit (&optional subtree)
+  "Skip an agenda entry if it has a STYLE property equal to \"habit\".
+Skip the current entry unless SUBTREE is not nil, in which case skip
+the entire subtree."
+  (let ((end (if subtree (save-excursion (org-end-of-subtree t))
+                (save-excursion (progn (outline-next-heading) (1- (point)))))))
+    (if (string= (org-entry-get nil "STYLE") "habit")
+        end
+nil)))
+
+(setq org-stuck-projects
+      ;; Tag/todo keyword/property(s) identifying GTD Projects
+      '("+PROJECT/-CANCELLED-DONE" 
+
+	;; todo keyword(s) identifying GTD Next Actions
+	("NEXT")
+
+	;; tags identifying non-stuck projects.
+	("shopping")
+
+	;; An arbitrary regular expression matching non-stuck projects.
+        ""))
+
+
+(setq org-agenda-custom-commands
+      '(
+        ("g" "(g)roup items by context"
+         ((agenda ""
+                  ((org-agenda-overriding-header "Agenda")
+                   (org-agenda-span 'day)
+                   (org-deadline-warning-days 31)))
+	  (tags-todo "home"
+		     ((org-agenda-overriding-header "Home")
+		      (org-agenda-sorting-strategy
+		       '((agenda habit-down priority-down tag-up effort-down todo-state-up time-up deadline-up scheduled-up)
+			 (todo   habit-down priority-down tag-up effort-down todo-state-up time-up deadline-up scheduled-up)))
+                     ))
+          (tags-todo "laptop"
+		     ((org-agenda-overriding-header "Laptop")))
+          (tags-todo "anywhere"
+		     ((org-agenda-overriding-header "Anywhere")))
+          (tags-todo "phone"
+		     ((org-agenda-overriding-header "Phone")))
+          (tags-todo "reading"
+		     ((org-agenda-overriding-header "Reading")))
+          (tags-todo "errand"
+		     ((org-agenda-overriding-header "Errand")))
+          (tags-todo "call"
+		     ((org-agenda-overriding-header "Call")))
+          (tags-todo "text" 
+		     ((org-agenda-overriding-header "Text"))))
+         )
+
+        ;; Commands to only display one GTD context
+        ("c" . "Select GTD (c)ontext...")
+        ("ch" tags-todo "Context = (h)ome" nil)
+        ("cl" tags-todo "Context = (l)aptop" nil)
+        ("ca" tags-todo "Context = (a)nywhere" nil)
+        ("cp" tags-todo "Context = (p)hone" nil)
+        ("cr" tags-todo "Context = (r)eading" nil)
+        ("ce" tags-todo "Context = (e)rrand" nil)
+        ("cc" tags-todo "Context = (c)all" nil)
+        ("ct" tags-todo "Context = (t)ext" nil)
+
+        ;; Source: modified from
+        ;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#stage-3-reviewing
+        ("r" "GTD Weekly (r)eview"
+         ((agenda ""
+                  ((org-agenda-overriding-header "Agenda, looking forward")
+                   (org-agenda-span 'day)
+                   (org-deadline-warning-days 31)))
+          (todo ""
+                ((org-agenda-overriding-header "To Refile")
+                 (org-agenda-files '("~/Dropbox/orgzly/inbox.org"))))
+          (todo "PROJECT"
+                ((org-agenda-overriding-header "List of Projects")))
+          (todo "NEXT" 
+                ((org-agenda-overriding-header "Next (Ready to do)")))
+          (todo "TODO"
+                ((org-agenda-overriding-header "Todo queue (i.e. not ready to do yet)")
+                 (org-agenda-files '("~/Dropbox/orgzly/todo.org"))
+                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'deadline 'scheduled))))
+          (todo "BLOCKED"
+                ((org-agenda-overriding-header "Blocked")))
+          (todo "WAITING"
+                ((org-agenda-overriding-header "Waiting for input")))
+          (todo "PROJECT"
+                ((org-agenda-overriding-header "Someday-maybe")
+                 (org-agenda-files '("~/Dropbox/orgzly/someday-maybe.org"))))
+          ))
+
+         ;; NOTE: I only want to see the names of projects, and then
+         ;; use follow mode to review the nitty-gritty details.
+        ("?" "Someday-maybe(?)" todo "PROJECT"
+         ((org-agenda-files `(,krista/someday-maybe-file))
+          (org-agenda-start-with-follow-mode t)))
+
+        ("i" "(i)nbox" todo ""
+         ((org-agenda-files `(,krista/inbox-file))))
+
+        ))
 #+END_SRC
 *** Super-agenda
 - https://github.com/alphapapa/org-super-agenda 
@@ -1301,7 +1410,7 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 		 :todo "WAITING"
 		 :order 98)
 	  (:name "Back-burner"
-		 :todo ("SOMEDAY" "MAYBE" "CHECK" "TO-READ" "TO-WATCH")
+		 :todo ("MAYBE")
 		 :order 100)))
 
   ;; Source: https://stackoverflow.com/a/35905794
