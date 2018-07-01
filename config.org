@@ -1486,7 +1486,7 @@ Example: Start a new elisp block in org mode by typing <el and then pressing TAB
 Org link workflow:
 1. save link to current location with C-c l
 2. move to spot where I'd like to insert the link
-3. C-c C-l to insert link
+3. C-c C-o to insert link
 4. (TODO! Fix this annoyance:) delete the default string, because I
    basically never use the file path as the link description
 5. type in my own description
