@@ -1497,6 +1497,10 @@ Org link workflow:
       desc
     (read-string "Description: " nil)))
 (setf org-make-link-description-function #'org-link-describe)
+
+;; Make it so you can follow links with RET
+;; Source: https://orgmode.org/manual/Handling-links.html#Handling-links
+(setq org-return-follows-link t)
 #+END_SRC
 *** Org tables
 Source: https://emacs.stackexchange.com/a/30871
