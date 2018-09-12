@@ -599,8 +599,8 @@
     (reb-match-3 :foreground yellow  :inverse-video t)
 
     ;; show-paren
-    (show-paren-match    :foreground red   :background bg    :bold bold)
-    (show-paren-mismatch :foreground base0 :background red   :bold bold)
+    (show-paren-match    :foreground yellow   :background bg    :bold bold)
+    (show-paren-mismatch :foreground base0    :background red   :bold bold)
 
     ;; smartparens
     (sp-pair-overlay-face :background bg)
