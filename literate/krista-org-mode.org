@@ -1,3 +1,4 @@
+#+PROPERTY: header-args :tangle yes
 * Org-mode proper
 #+BEGIN_SRC emacs-lisp :noweb tangle
 (message "[krista] Loading org-mode settings...")
@@ -942,7 +943,13 @@ Credit: the fabulous Spruce Bondera
   ;; Don't penalize me for accidentally typing too much!
   ;; Source: https://emacs.stackexchange.com/a/2591
   (defvar parse-time-weekdays-longer
-    '(("sund" . 0) ("tues" . 2) ("thurs" . 4)))
+    '(("sunday" . 0)
+      ("monday" . 1)
+      ("tuesday" . 2)
+      ("wednesday" . 3)
+      ("thursday" . 4)
+      ("friday" . 5)
+      ("saturday" . 6)))
   (defvar parse-time-months-longer
     '(("janu" . 1) ("dece" . 12)))
   (eval-after-load 'parse-time
@@ -1015,4 +1022,11 @@ CAL-endar F-rameW-ork
 ;; Sync org-gcal after capturing. This is handy for recording events
 ;; in org mode via capture, although I'm not using it at this time
 ;; (add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
+#+END_SRC
+* toc-org
+#+BEGIN_SRC emacs-lisp
+(use-package toc-org)
+(if (require 'toc-org nil t)
+    (add-hook 'org-mode-hook 'toc-org-enable)
+  (warn "toc-org not found"))
 #+END_SRC
