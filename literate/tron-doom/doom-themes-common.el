@@ -1,5 +1,5 @@
-;;; doom-themes-common.el -*- lexical-binding: t; -*-
 
+;;; doom-themes-common.el -*- lexical-binding: t; -*-
 (defconst doom-themes-common-faces
   '(;; --- custom faces -----------------------
     (doom-modeline-error
@@ -14,20 +14,22 @@
 
     (default :background bg :foreground fg)
     (fringe :inherit 'default :foreground base5)
-    (region               :background region     :foreground nil   :distant-foreground (doom-darken fg 0.2)
+    (region               :background region     :foreground nil
+			  :distant-foreground (doom-darken fg 0.2)
 			  ;;:box `(:line-width 3 :color ,orange)
 			  )
     (highlight            :background highlight  :foreground base0 :distant-foreground base8)
     (cursor               :background highlight)
     (shadow               :foreground base5)
     (minibuffer-prompt    :foreground highlight)
-    (tooltip              :background bg :foreground fg)
+    (tooltip              :background base2 :foreground violet
+			  :box `(:line-width 2 :color ,base2))
     (secondary-selection  :background grey)
     (lazy-highlight       :background dark-blue  :foreground base8 :distant-foreground base0 :bold bold)
     (match                :foreground blue-gunmetal      :background base0 :bold bold)
     (trailing-whitespace  :background red)
     (vertical-border      :background vertical-bar :foreground vertical-bar)
-    (link                 :foreground highlight :underline t :bold 'inherit)
+    (link                 :foreground (doom-darken periwinkle 0.3) :underline t :bold nil)
     ;; Emacs 26.1 line numbers
     (line-number :inherit 'default :foreground base5 :distant-foreground base5 :bold nil)
     (line-number-current-line :inherit 'hl-line :foreground fg :distant-foreground fg :bold nil)
@@ -138,7 +140,6 @@
     (term-color-green   :background blue-gunmetal   :foreground blue-gunmetal)
     (term-color-yellow  :background yellow  :foreground yellow)
     (term-color-blue    :background blue    :foreground blue)
-;;    (term-color-magenta :background pink :foreground pink)
     (term-color-cyan    :background cyan    :foreground cyan)
     (term-color-white   :background base8   :foreground base8)
 
@@ -161,8 +162,9 @@
     (bmkp-D-mark :foreground bg :background red)
     (bmkp-X-mark :foreground red)
     (bmkp-a-mark :background red)
-    (bmkp-bad-bookmark :foreground bg :background yellow)
-    (bmkp-bookmark-file :foreground violet :background bg-alt)
+    (bmkp-t-mark :foreground violet)
+    (bmkp-bad-bookmark :inherit 'font-lock-warning-face)
+    (bmkp-bookmark-file :inherit 'font-lock-comment-face)
     (bmkp-bookmark-list :background bg-alt)
     (bmkp-buffer :foreground blue)
     (bmkp-desktop :foreground bg :background violet)
@@ -182,8 +184,8 @@
     (bmkp-light-non-autonamed :foreground bg :background violet)
     (bmkp-light-non-autonamed-region :foreground bg :background red)
     (bmkp-local-directory :foreground orange :background bg)
-    (bmkp-local-file-with-region :foreground yellow)
-    (bmkp-local-file-without-region :foreground violet)
+    (bmkp-local-file-with-region :background selection)
+    ;; (bmkp-local-file-without-region :inherit default)
     (bmkp-man :foreground violet)
     (bmkp-no-jump :foreground comments)
     (bmkp-no-local :foreground "#804532" :strike-through "#804532")
@@ -191,21 +193,29 @@
     (bmkp-remote-file :foreground pink)
     (bmkp-sequence :foreground blue)
     (bmkp-su-or-sudo :foreground red)
-    (bmkp-t-mark :foreground violet)
     (bmkp-url :foreground blue :underline t)
     (bmkp-variable-list :foreground blue-gunmetal)
 
     ;; company
-    (company-tooltip            :inherit 'tooltip)
-    (company-tooltip-common                           :foreground highlight)
-    (company-tooltip-search     :background highlight :foreground bg :distant-foreground fg)
-    (company-tooltip-selection  :background selection)
-    (company-tooltip-mouse      :background orange   :foreground bg :distant-foreground fg)
-    (company-tooltip-annotation                       :foreground violet)
-    (company-scrollbar-bg       :inherit 'tooltip)
-    (company-scrollbar-fg       :background highlight)
-    (company-preview                                  :foreground highlight)
-    (company-preview-common     :background base3 :foreground orange)
+    (company-tooltip            :inherit 'tooltip :foreground orange)
+    (company-tooltip-common     :inherit 'company-tooltip
+				:foreground blue :weight 'bold)
+    (company-tooltip-selection  :background orange :foreground fg-alt
+    				:weight 'normal)
+    (company-tooltip-common-selection  :inherit 'company-tooltip-selection
+				       :foreground cyan :weight 'bold)
+    (company-tooltip-search     :background highlight :foreground bg
+				:distant-foreground fg)
+    (company-tooltip-mouse      :inherit 'company-tooltip-selection
+				:background orange   :foreground bg
+				:distant-foreground fg
+				:box `(:line-width 2 :color ,fg-alt))
+    (company-tooltip-annotation :foreground violet)
+    (company-scrollbar-bg       :background base2)
+    (company-scrollbar-fg       :background rust)
+
+    (company-preview            :foreground orange :background base4)
+    (company-preview-common     :inherit 'company-preview :underline t)
     (company-preview-search     :inherit 'company-tooltip-search)
     (company-template-field     :inherit 'match)
 

@@ -18,6 +18,7 @@ This stuff is required for flycheck to work
 #+BEGIN_SRC emacs-lisp
 (with-eval-after-load 'ivy
       (setq counsel-locate-cmd 'counsel-locate-cmd-mdfind))
+(setq locate-command "mdfind")
 #+END_SRC
 * Use macOS open command to choose an application
 #+BEGIN_SRC emacs-lisp

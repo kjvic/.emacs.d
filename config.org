@@ -11,6 +11,14 @@ Get emacs off the ground!
 (add-to-list 'load-path "~/.emacs.d/elisp/")
 (add-to-list 'load-path (concat user-emacs-directory "literate/tron-doom/"))
 #+END_SRC
+** Profiling? Set `:tangle yes` below
+To profile accurately, I need to reload all of my packages. I don't
+normallly want to waste time like that, so I set :tangle no
+https://sriramkswamy.github.io/dotemacs/
+#+BEGIN_SRC emacs-lisp :tangle no
+(require 'package)
+(package-initialize)
+#+END_SRC
 ** use-package: package management management
 [[https://github.com/jwiegley/use-package][use-package github]]
 #+BEGIN_SRC emacs-lisp
@@ -24,22 +32,6 @@ Get emacs off the ground!
 ;; All packages in a use-package macro should be automagically installed
 (setq use-package-always-ensure t)
 #+END_SRC
-** Byte-compile external files (if necessary)
-- How to byte-compile your entire .emacs.d from the command line:
-  #+BEGIN_EXAMPLE 
-  emacs -batch -f batch-byte-compile ~/.emacs.d/**/*.el
-  #+END_EXAMPLE
-  - [[http://emacsredux.com/blog/2013/06/25/boost-performance-by-leveraging-byte-compilation/][Source]]
-- auto-compile mode
-  #+BEGIN_SRC emacs-lisp
-  ;;; init.el --- user init file      -*- no-byte-compile: t -*-
-  (message "[krista] use-package setup")
-  (use-package auto-compile
-    ;; NOTE: This will only re-compile existing .elc files, so you must
-    ;; run the shell command above for one-time install on new machines
-    :config (auto-compile-on-load-mode))
-  (setq load-prefer-newer t)
-  #+END_SRC
 ** Literate programming support
 - NOTE: you /must/ have each tangle block on a new line in order for it
   to be tangled correctly!!!!
@@ -88,62 +80,99 @@ Get emacs off the ground!
 (krista/new-config-file modeline "modeline")
 (org-babel-load-file krista/modeline-config-file)
 #+END_SRC
-**** BDE - Bloomberg style guide
-#+BEGIN_SRC emacs-lisp
-(krista/new-config-file bde "bde")
-(org-babel-load-file krista/bde-config-file)
-#+END_SRC
 **** Gcal
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file gcal-secrets "gcal-secrets")
 (org-babel-load-file krista/gcal-secrets-config-file)
 #+END_SRC
-** Set special files
+**** LaTeX
+#+BEGIN_SRC emacs-lisp
+(krista/new-config-file latex-config "latex-config")
+;; (org-babel-load-file krista/latex-config-file)
+#+END_SRC
+** Special Files: GTD, media, orgzly, etc.
 #+BEGIN_SRC emacs-lisp
 (setq krista/orgzly-dir "~/Dropbox/orgzly/")
+
 (setq krista/gcal-file (concat krista/orgzly-dir "gcal.org"))
-(setq krista/inbox-file (concat krista/orgzly-dir "inbox.org"))
-(setq krista/todo-file (concat krista/orgzly-dir "todo.org"))
-(setq krista/waiting-file (concat krista/orgzly-dir "waiting.org"))
+
+;; GTD files
+(setq krista/inbox-file (concat krista/orgzly-dir "[gtd]-inbox.org"))
+(setq krista/todo-file  (concat krista/orgzly-dir "[gtd]-todo.org"))
+(setq krista/projects-file (concat krista/orgzly-dir "[gtd]-projects.org"))
+(setq krista/inactive-projects-file (concat krista/orgzly-dir "[gtd]-inactive-projects.org"))
+(setq krista/waiting-file (concat krista/orgzly-dir "[gtd]-waiting.org"))
+(setq krista/tickler-file (concat krista/orgzly-dir "[gtd]-tickler.org"))
+(setq krista/someday-maybe-file (concat krista/orgzly-dir "[gtd]-someday-maybe.org"))
+
+(setq krista/habits-file "~/core/lists/habits.org")
 (setq krista/annoy-file (concat krista/orgzly-dir "annoy.org"))
-(setq krista/tickler-file (concat krista/orgzly-dir "tickler.org"))
-(setq krista/someday-maybe-file (concat krista/orgzly-dir "someday-maybe.org"))
-(setq krista/habits-file (concat krista/orgzly-dir "habits.org"))
 (setq krista/random-ideas-file (concat krista/orgzly-dir "random-ideas.org"))
 
+;; Media files
 (setq krista/books-file (concat krista/orgzly-dir "[media]-books.org"))
 (setq krista/movies-file (concat krista/orgzly-dir "[media]-movies.org"))
 (setq krista/music-file (concat krista/orgzly-dir "[media]-music.org"))
-(setq krista/papers-file (concat krista/orgzly-dir "[media]-papers.org"))
+(setq krista/reading-file (concat krista/orgzly-dir "[media]-reading.org"))
 (setq krista/tv-file (concat krista/orgzly-dir "[media]-tv.org"))
 (setq krista/video-games-file (concat krista/orgzly-dir "[media]-video-games.org"))
 (setq krista/media-files
       `(,krista/books-file 
-	,krista/movies-file
-	,krista/music-file
-	,krista/papers-file
-	,krista/tv-file
-	,krista/video-games-file))
+        ,krista/movies-file
+        ,krista/music-file
+        ,krista/reading-file
+        ,krista/tv-file
+        ,krista/video-games-file))
+(setq krista/shopping-file (concat krista/orgzly-dir "shopping.org"))
 
+(bind-key "H-t" '(lambda () (interactive) (find-file krista/todo-file)))
+(bind-key "H-p" '(lambda () (interactive) (find-file krista/projects-file)))
+(bind-key "H-P" '(lambda () (interactive) (find-file krista/inactive-projects-file)))
+(bind-key "H-T" '(lambda () (interactive) (find-file krista/tickler-file)))
+(bind-key "H-i" '(lambda () (interactive) (find-file krista/inbox-file)))
+(bind-key "H-a" '(lambda () (interactive) (find-file krista/annoy-file)))
+(bind-key "H-w" '(lambda () (interactive) (find-file krista/waiting-file)))
+(bind-key "H-?" '(lambda () (interactive) (find-file krista/someday-maybe-file)))
+(bind-key "H-g" '(lambda () (interactive) (find-file krista/gcal-file)))
+(bind-key "H-h" '(lambda () (interactive) (find-file krista/habits-file)))
 #+END_SRC
-** Initial buffer to show at startup
-- When I start up emacs, I don't want to see the ugly default startup
-  screen. However, I also want to be able to run =emacs somefile.txt=
-  and start editing =somefile.txt= right away. As a compromise, I check
-  if there were arguments passed in to emacs at startup. If not, set
-  the initial-buffer-choice to my core directory.
-  - [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Entering-Emacs.html#Entering-Emacs][More on initial buffers]]
-  - [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Command_002dLine-Arguments.html][More on command line arguments]]
-- Config (via [[https://emacs.stackexchange.com/a/21106][stackexchange]])
+** Show org agenda at startup
   #+BEGIN_SRC emacs-lisp
-  (setq default-initial-buffer-choice krista/todo-file)
-  (defun my-after-init-hook ()
-    "Set initial buffer ONLY if no file is specified in command line args"
-    (when (eq 1 (length command-line-args))
-      (message "[krista] Setting initial buffer to default value")
-      (setq initial-buffer-choice default-initial-buffer-choice)))
-  (add-hook 'after-init-hook 'my-after-init-hook)
+  (setq inhibit-startup-screen t
+        inhibit-startup-message t
+        initial-major-mode 'fundamental-mode
+        inhibit-splash-screen t)
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              ;; GTD review
+              (org-agenda nil "r")
+              (delete-other-windows)))
   #+END_SRC
+** +Byte-compile+
+   #+BEGIN_SRC emacs-lisp
+   ;; (defun diego/async-tangle-init ()
+   ;;   (async-start
+   ;;    (lambda ()
+   ;;      ;; make async emacs aware of packages (for byte-compilation)
+   ;;      (package-initialize)
+   ;;      (setq package-enable-at-startup nil)
+   ;;      (require 'org)
+
+   ;;      ;; tangle
+   ;;      (org-babel-tangle-file
+   ;;       (expand-file-name (concat user-emacs-directory "config.org"))
+   ;;       (expand-file-name (concat user-emacs-directory "config.el")) 
+   ;;       "emacs-lisp")
+
+   ;;      ;; these guys were producing errors at byte-compilation, requiring them fixed this
+   ;;      ;; (require 'crux)
+   ;;      ;; (require 'fringe-helper)
+
+   ;;      ;; byte-compile
+   ;;      (byte-compile-file
+   ;;       (expand-file-name  (concat user-emacs-directory "config.el"))))
+   ;;    'ignore))
+   #+END_SRC
 * Tools for configuring emacs
 This is where I put things that help me modify my emacs install more efficiently
 ** Quickly open, evaluate my config file
@@ -234,9 +263,7 @@ This is where I put things that help me modify my emacs install more efficiently
 ** Better defaults
 *** Remove default startup message, text at the top of scratch buffers
 #+BEGIN_SRC emacs-lisp
-(setq inhibit-startup-message t)
 (setq initial-scratch-message "")
-(setq inhibit-startup-screen t)
 #+END_SRC
 *** Don't warn me before opening large files
 #+BEGIN_SRC emacs-lisp
@@ -303,14 +330,6 @@ Source: http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
 #+BEGIN_SRC emacs-lisp
 (setq sentence-end-double-space nil)
 #+END_SRC
-*** Use 12-hour time with AM/PM instead of 24-hour time
-#+BEGIN_SRC emacs-lisp
-(setq display-time-24hr-format nil)
-
-;; Source: https://emacs.stackexchange.com/a/20819
-(setq display-time-string-forms
-      '(12-hours ":" minutes am-pm))
-#+END_SRC
 ** Buffer management
 See also: [[*Ace-window]]
 *** Don't scroll a full screenful at a time
@@ -340,6 +359,28 @@ Not quite what I want, but helpful
 (bind-key "H-n" #'make-frame)
 (bind-key "H-w" #'delete-frame)
 (bind-key "H-o" #'reveal-in-osx-finder)
+#+END_SRC
+*** Recentf (Recent (F)iles)
+
+#+BEGIN_SRC emacs-lisp
+(recentf-mode 1)
+
+;; Number of items to save/suggest
+(setq recentf-max-menu-items 75)
+
+;; Save recentf every n seconds (n=300)
+;; Source: https://emacs.stackexchange.com/a/15115
+;; (run-at-time (current-time) 300 'recentf-save-list)
+
+;; Exclude some files from the recentf list
+;; Source: https://stackoverflow.com/a/8025312
+;; 
+;; Note: you can call recentf-cleanup to update your recentf list with
+;; your updated exclude preferences
+(add-to-list 'recentf-exclude "recentf")
+(add-to-list 'recentf-exclude "bookmarks")
+(add-to-list 'recentf-exclude "autoloads")
+(add-to-list 'recentf-exclude "org-archive")
 #+END_SRC
 ** Editing
 - This section contains variable settings and functions.
@@ -435,7 +476,7 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
   (setq tramp-ssh-controlmaster-options
         "-o ControlMaster=auto -o ControlPersist=yes"))
 #+END_SRC
-*** Interacting with the operating system
+*** File interactions (delete, rename, etc.)
 - Note: OS-specific settings should be in their own literate/OS.org file.
 - However, some OS-agnostic settings can still live here to reduce code duplication
 #+BEGIN_SRC emacs-lisp
@@ -448,34 +489,6 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
   (revert-buffer-no-prompt)
   (message "Buffer reverted"))
 (bind-key "H-C-r" #'krista/revert-buffer-no-prompt-yes-message)
-#+END_SRC
-*** Quick find-file
-#+BEGIN_SRC emacs-lisp
-(defun krista/speedy-open-tickler-file ()
-  (interactive) (find-file krista/tickler-file))
-(defun krista/speedy-open-todo-file ()
- (interactive) (find-file krista/todo-file))
-(defun krista/speedy-open-inbox-file ()
-  (interactive) (find-file krista/inbox-file))
-(defun krista/speedy-open-waiting-file ()
-  (interactive) (find-file krista/waiting-file))
-(defun krista/speedy-open-annoy-file ()
-  (interactive) (find-file krista/annoy-file))
-(defun krista/speedy-open-someday-maybe-file ()
-  (interactive) (find-file krista/someday-maybe-file))
-(defun krista/speedy-open-gcal-file ()
-  (interactive) (find-file krista/gcal-file))
-(defun krista/speedy-open-habits-file ()
-  (interactive) (find-file krista/habits-file))
-
-(bind-key "H-t" #'krista/speedy-open-todo-file)
-(bind-key "H-T" #'krista/speedy-open-tickler-file)
-(bind-key "H-i" #'krista/speedy-open-inbox-file)
-(bind-key "H-a" #'krista/speedy-open-annoy-file)
-(bind-key "H-w" #'krista/speedy-open-waiting-file)
-(bind-key "H-?" #'krista/speedy-open-someday-maybe-file)
-(bind-key "H-g" #'krista/speedy-open-gcal-file)
-(bind-key "H-h" #'krista/speedy-open-habits-file)
 #+END_SRC
 *** Copy file path to clipboard
 #+BEGIN_SRC emacs-lisp
@@ -493,21 +506,35 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
       (message filename))))
 (bind-key "H-f" #'copy-file-name-to-clipboard)
 #+END_SRC
+*** "Immediate todo" buffer
+When I'm tired or overwhelmed, it often helps me to write a
+super-granular todo list. I usually don't want to save these, but I
+would like to be able to quickly open a new org-mode buffer to gather
+my thoughts.
+
+This function lets me do just that!
+#+BEGIN_SRC emacs-lisp
+;; Sources: 
+;; https://stackoverflow.com/questions/25791605/emacs-how-do-i-create-a-new-empty-buffer-whenever-creating-a-new-frame
+;; https://stackoverflow.com/questions/26419164/programmatically-setting-major-mode-of-buffer-with-emacs-lisp
+(defun krista/immediate-todo ()
+  "Create a new temp buffer in org mode."
+  (interactive)
+  (let ((buffer (generate-new-buffer "*Krista* Immediate Todo")))
+    (switch-to-buffer buffer)
+    (with-current-buffer buffer (org-mode))))
+(bind-key "C-c i" #'krista/immediate-todo)
+#+END_SRC
+*** Revert buffer without prompting
+#+BEGIN_SRC emacs-lisp
+(defun revert-buffer-no-prompt ()
+  "Revert buffer without confirm prompt"
+  (interactive)
+  (revert-buffer t t))
+(bind-key "H-R" #'revert-buffer-no-prompt)
+#+END_SRC
 ** Timestamps
 #+BEGIN_SRC emacs-lisp
-;; Show the time
-(display-time-mode 1)
-;; Do show the date
-(setq display-time-day-and-date t)
-;; %l == hour, in 12-hour time
-;; %M == minute
-;; %p == AM/PM; %#p == am/pm
-;; %a == abbreviated name of the day of week (e.g. Sat for Saturday)
-;; %b == abbreviated name of the month (e.g. Aug for August)
-;; %e == day of month (1-31)
-;; %Z == name of time zone
-(setq display-time-format "%l:%M%#p %a, %b.%e (%Z)")
-
 ;; Customize dates
 ;; ----------------
 
@@ -539,8 +566,8 @@ Source: http://www.opensubscriber.com/message/emacs-devel@gnu.org/10971693.html
            s)
       (when (and (< hour 12)
                  (not (string-match "am" ans))
-                 (>= minutes (org-hh:mm-string-to-minutes (car time-range-with-pm-suffix)))
-                 (<= minutes (org-hh:mm-string-to-minutes (cdr time-range-with-pm-suffix))))
+                 (>= minutes (org-duration-to-minutes (car time-range-with-pm-suffix)))
+                 (<= minutes (org-duration-to-minutes (cdr time-range-with-pm-suffix))))
         (setf (nth 2 time) (+ hour 12))
         (when (boundp 'org-end-time-was-given)
           (setq s org-end-time-was-given)
@@ -645,8 +672,14 @@ out how to set it immediately, but this should suffice as startup config.
 ;; Enable flashing mode-line on errors
 ;; (doom-themes-visual-bell-config)
 #+END_SRC
+** Hide battery load, native battery percentage in modeline
+#+BEGIN_SRC emacs-lisp
+(setq display-battery-mode nil)
+(setq display-time-default-load-average nil)
+#+END_SRC
 * Major packages
 ** LaTeX
+#+BEGIN_EXAMPLE 
 #+BEGIN_SRC emacs-lisp
 (use-package tex
   :ensure auctex
@@ -779,6 +812,7 @@ out how to set it immediately, but this should suffice as startup config.
 ;;                                      (mapcar #'file-name-base files))))
 ;;     (insert-file-contents (concat latex-templates-directory selection ".tex"))))
 #+END_SRC
+#+END_EXAMPLE
 ** Org-mode
 *** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
@@ -795,13 +829,15 @@ out how to set it immediately, but this should suffice as startup config.
   ;;
   ;; NOTE: putting this piece of config here because a lot of
   ;; org-agenda stuff relies on the variable org-agenda-files
-  (setq org-agenda-files (list krista/todo-file
-			       krista/tickler-file
-			       krista/waiting-file
-			       krista/gcal-file
-			       krista/habits-file))
-
-
+  (setq org-agenda-files
+	(list
+	 ;; GTD files
+	 krista/todo-file
+	 krista/projects-file
+	 krista/waiting-file
+	 krista/tickler-file
+         ;; Other files w/daily info
+	 krista/gcal-file))
 
   (message "[krista] Setting org-modules...")
   (message "[krista] Loading org-aesthetics...")
@@ -830,7 +866,6 @@ out how to set it immediately, but this should suffice as startup config.
   <<org-tree-behavior>>
 
   (message "[krista] Loading org-code-snippets...")
-  ;; <<org-code-snippets>>
   <<org-quick-source-blocks>>
   <<org-babel-config>>
 
@@ -850,13 +885,16 @@ out how to set it immediately, but this should suffice as startup config.
          ;; - C-c C-o will open the link at the point
          ("C-c l" . org-store-link)
 
-         ;; Keybindings that insert inline / display math
-         ;; into org docs, s.t. everything will export to
-         ;; LaTeX nicely:
-         ;; NOTE: These shortcuts match up with my shortcuts
-         ;;       for inserting inline / display math into
-         ;;       regular LaTeX docs. This is to provide as
-         ;;       seamless an experience as I can muster.
+         ;; (:map org-mode-map
+	 ;;       ("M-N" . org-shiftmetadown)
+	 ;;       ("M-B" . org-shiftmetaleft)
+	 ;;       ("M-F" . org-shiftmetaright)
+	 ;;       ("M-P" . org-shiftmetaup)
+	 ;;       ;;
+	 ;;       ("M-n" . org-metadown)
+	 ;;       ("M-b" . org-metaleft)
+	 ;;       ("M-f" . org-metaright)
+	 ;;       ("M-p" . org-metaup))
          ))
 
 #+END_SRC
@@ -897,11 +935,44 @@ out how to set it immediately, but this should suffice as startup config.
 ;; I have it turned off, but it's here
 (setq org-use-sub-superscripts "{}")
 
+
 ;; Hide org markup elements
 ;; See http://stackoverflow.com/questions/10969617/hiding-markup-elements-in-org-mode
 ;; Note: This change may not take effect until you restart emacs:
 ;; See http://orgmode.org/manual/Emphasis-and-monospace.html
 (setq org-hide-emphasis-markers t)
+
+;; Only annotate/mark up /part/ of a word
+;;
+;; Background/problem: in org mode, you can't do something like
+;; *G*nu's *N*ot *U*nix
+;; i.e. you can't mark up a portion of the word. It's all or nothing
+;;
+;; Solution: insert a zero-width space to break up the word into portions
+;; Example: *G*\x200Bnu's *N*\x200Bot *U*\x200Bnix
+;;
+;; Source: https://emacs.stackexchange.com/a/18511
+(defun insert-zero-width-space ()
+  (interactive)
+  (insert-char #x200b))
+(define-key org-mode-map (kbd "C-*") 'insert-zero-width-space)
+(setq org-emphasis-regexp-components
+      '("   ('\"{\x200B" "-     .,:!?;'\")}\\[\x200B" "     
+,\"'" "." 1))
+(setq-default org-emphasis-regexp-components
+      '("   ('\"{\x200B" "-     .,:!?;'\")}\\[\x200B" "     
+,\"'" "." 1))
+
+;; One thing about inserting these spaces is that it might look
+;; strange when exported to other formats. So this export filter
+;; removes the spaces on export
+;;
+;; Source: https://emacs.stackexchange.com/a/18511 (same post)
+;; (defun my-filter-remove-u200b (text backend info)
+;;   "Remove zero width space character (U+200B) from TEXT."
+;;   (replace-regexp-in-string "\x200B" "" text))
+;; (add-to-list 'org-export-filter-plain-text-functions
+;; 	 'my-filter-remove-u200b)
 
 ;; Make top-level headings larger, and lower-level headings progressively smaller
 ;; (set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.2)
@@ -913,29 +984,19 @@ out how to set it immediately, but this should suffice as startup config.
 ;; Set different faces for TODO items with different priority levels
 ;; Source: https://emacs.stackexchange.com/a/17405
 (setq org-priority-faces '((?A . (:foreground "#cf7a00"))
-                          (?B . (:foreground "#00a890"))
-                          (?C . (:foreground "#075f5f"))))
-                          ;; If t: apply the priority-face to all headline text for agenda view
-;; (setq org-agenda-fontify-priorities nil)
-(setq org-use-property-inheritance '("PRIORITY"))
+			  (?B . (:foreground "#00a890"))
+			  (?C . (:foreground "#075f5f"))))
 
-;; Use a non-monospaced font for org-mode buffers
-;; Source: https://emacs.stackexchange.com/a/3044
-;; Helper function: Use variable width font faces in current buffer
-(defun my-buffer-face-mode-variable-width ()
-  "Set font to a variable width (proportional) fonts in current buffer"
-  (interactive)
-  (setq buffer-face-mode-face '(:family "System Font"))
-  (buffer-face-mode))
-;; Helper function: Use monospaced font faces in current buffer
-(defun my-buffer-face-mode-fixed-width ()
-  "Sets a fixed width (monospace) font in current buffer"
-  (interactive)
-  (setq buffer-face-mode-face '(:family "Fira Code"))
-  (buffer-face-mode))
-;; Set default font faces for org-mode
-;; (add-hook 'org-mode-hook 'my-buffer-face-mode-variable-width)
-;; (add-hook 'org-agenda-mode-hook 'my-buffer-face-mode-variable-width)
+;; If t: apply the priority-face to all headline text for agenda view
+;; (setq org-agenda-fontify-priorities nil)
+
+;; WIP: Trying to get org subheadings to inherit priority from parent
+;;
+;; Source: https://emacs.stackexchange.com/questions/37800/how-to-inherit-priority-in-org-mode?rq=1
+;; (setq org-use-property-inheritance '("PRIORITY"))
+;;
+;; Source: https://emacs.stackexchange.com/questions/7335/properties-inheriting-in-org-doesnt-work
+(setq org-use-property-inheritance (quote ("owner")))
 
 ;; Don't add a weird indent to source blocks
 (setq org-src-preserve-indentation nil
@@ -946,7 +1007,6 @@ out how to set it immediately, but this should suffice as startup config.
 (setq org-hide-leading-stars t)
 (setq org-startup-indented t)
 (setq org-indent-indentation-per-level 4)
-(setq org-startup-indented t)
 (setq org-adapt-indentation t)
 
 ;; When you visit an agenda for the first time, still honor my startup preferences
@@ -960,15 +1020,15 @@ out how to set it immediately, but this should suffice as startup config.
 (setq org-table-default-size "2x3")
 
 (set-face-attribute 'org-code nil
-                    :inherit 'shadow
-                    :foreground "dark sea green"
-                    :family "Courier")
+		    :inherit 'shadow
+		    :foreground "dark sea green"
+		    :family "Courier")
 
 (set-face-attribute 'org-verbatim nil
-                    :inherit 'shadow
-                    :stipple nil
-                    :foreground "AntiqueWhite4"
-                    :family "Andale Mono")
+		    :inherit 'shadow
+		    :stipple nil
+		    :foreground "AntiqueWhite4"
+		    :family "Andale Mono")
 
 ;; SOURCE: Adapted from
 ;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#org-todo-keywords
@@ -987,18 +1047,18 @@ out how to set it immediately, but this should suffice as startup config.
 ;; NOTE: see also: doom-themes-common.el, where org-todo, org-done are defined
 (setq org-todo-keyword-faces
       '(("TODO" :foreground "#77A4DE")
-        ("NEXT" :foreground "#87BADE")
-        ("PROJECT" :foreground "#8A84B6")
-        ("BLOCKED" :foreground "#888a85")
-        ("WAITING" :foreground "#888a85")
-        ;; ("SOMEDAY" :foreground "#58615a")
-        ("DONE" :foreground "#075f5f" :strike-through "#075f5f")
-        ("CANCELLED" :foreground "#58615a" :strike-through "#58615a")))
+	("NEXT" :foreground "#87BADE")
+	("PROJECT" :foreground "#8A84B6")
+	("BLOCKED" :foreground "#888a85")
+	("WAITING" :foreground "#888a85")
+	;; ("SOMEDAY" :foreground "#58615a")
+	("DONE" :foreground "#075f5f" :strike-through "#075f5f")
+	("CANCELLED" :foreground "#58615a" :strike-through "#58615a")))
 
 ;; Org "there's more under this headline/bullet!" ellipsis
 ;; ‣ ⁕ ↷ ↝ → ⇀ ⇢ ⇾ ⋱ 〉 ► ▻ ➝ ➛ ⟝ ⟶ ⫎ ⬎ ✳
 (set-display-table-slot standard-display-table
-                        'selective-display (string-to-vector " ⬎"))
+			'selective-display (string-to-vector " ⬎"))
 
 
 ;; Source: https://www.reddit.com/r/orgmode/comments/3c4xdk/spacing_between_items_when_trees_are_folded/
@@ -1013,19 +1073,13 @@ out how to set it immediately, but this should suffice as startup config.
 #+BEGIN_SRC emacs-lisp :noweb-ref org-habits :tangle no
 ;; If non-nil: Don't pollute the agenda with repetitions of the habit
 ;; (I only want to see the habit printout on today's agenda entry!)
-;; (setq org-habit-show-habits-only-for-today t)
+(setq org-habit-show-habits-only-for-today t)
 
 ;; NOTE: If using unicode/non-fixed-width glyphs for
 ;; org-habit-today-glyph and org-habit-completed-glyph, then the
 ;; "today" glyphs won't necessarily line up :(
 (setq org-habit-today-glyph ?!)
 (setq org-habit-completed-glyph ?x)
-
-;; Use character "white star" to mark today
-;; (setq org-habit-today-glyph ?\u2606)
-;; Use character "checkmark" to show completed days on
-;; which a task was done.
-;; (setq org-habit-completed-glyph ?\u2713)
 
 ;; If non-nil: show all habits in the agenda, even if you're not
 ;; scheduled to do them today
@@ -1076,7 +1130,7 @@ out how to set it immediately, but this should suffice as startup config.
 *** Org Capture
 #+BEGIN_SRC emacs-lisp :noweb yes :noweb-ref org-capture :tangle no
 ;; Default file if a capture template doesn't specify otherwise
-(setq org-default-notes-file (concat org-directory "/inbox.org"))
+(setq org-default-notes-file krista/inbox-file)
 
 ;; The capture templates!
 ;;
@@ -1090,63 +1144,86 @@ out how to set it immediately, but this should suffice as startup config.
 ;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
 (setq org-capture-templates
       '(
-	;; The "%^g" = a prompt for tags
-	;; Source: https://stackoverflow.com/a/31688974
-        ("t" "(t)ODO item" entry
-         (file+olp krista/todo-file "NON-PROJECT TASKS")
-         "* TODO %i%? %^g\n")
 
-	("p" "(p)roject" entry
+        ;; Prefix key. See https://lists.gnu.org/archive/html/emacs-orgmode/2015-10/msg00124.html
+        ;; ("g" "(G)TD...")
+        
+        ;; The "%^g" = a prompt for tags
+        ;; Source: https://stackoverflow.com/a/31688974
+        ("t" "(t)ODO item" entry
          (file krista/todo-file)
+         "* NEXT %i%? %^g\n")
+
+        ("P" "Inactive (P)roject" entry
+         (file krista/inactive-projects-file)
          "* PROJECT %i%?\n")
 
-	("w" "(w)aiting list" entry
+        ("p" "Active (p)roject" entry
+         (file krista/projects-file)
+         "* PROJECT %i%?\n")
+
+        ("w" "(w)aiting list" entry
          (file krista/waiting-file)
          "* WAITING %i%?\n Date created: %U. Follow up on %^t\n")
 
-	("i" "(i)nbox" entry
+        ("i" "(i)nbox" entry
          (file krista/inbox-file)
          "* %i%?\n")
 
-	("?" "Someday-maybe(?)" entry
+        ("?" "Someday-maybe(?)" entry
          (file krista/someday-maybe-file)
          "* %i%?\n")
 
-	("T" "(T)ickler" entry
+        ("T" "(T)ickler" entry
          (file krista/tickler-file)
          "* %i%?\n  Prompt on: %^t\n")
-	
-	;; Note: this entry is coupled to my config for org-gcal.
+
+        ;; m prefix key
+        ("m" "(m)edia...")
+
+        ("mb" "(b)ooks" entry
+         (file krista/books-file) "* %i%?\n")
+        ("mm" "(m)usic" entry
+         (file krista/music-file) "* %i%?\n")
+        ("mM" "(M)ovies" entry
+         (file krista/movies-file) "* %i%?\n")
+        ("mr" "(r)eading" entry
+         (file krista/reading-file) "* %i%?\n")
+        ("mt" "(t)elevision" entry
+         (file krista/tv-file) "* %i%?\n")
+        ("mv" "(v)ideo games" entry
+         (file krista/video-games-file) "* %i%?\n")
+
+        ;; Note: this entry is coupled to my config for org-gcal.
         ("c" "(c)alendar" entry
-	 (file  "~/Dropbox/orgzly/gcal.org")
- 	 "* %i%?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
-	
-        ("q" "(q)uotes" entry
+         (file  "~/Dropbox/orgzly/gcal.org")
+         "* %i%?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
+        
+        ("Q" "(Q)uotes" entry
          (file+olp "~/core/lists/quotes.org" "quotes")
          "* %i%?\n")
 
         ("s" "(s)hopping" entry
-         (file+olp krista/todo-file "Shopping")
+         (file+olp krista/shopping-file "Shopping")
          "* %i%?\n")
 
-        ("m" "(m)media" entry
-         (file krista/inbox-file)
-         "* %i%?\n")
+        ;; Shortcut key for the capture menu:
+        ("a"                            
+         ;; Description for the capture menu:
+         "(A)nnoy"                      
+         ;; Type -- Is it a headline ("entry"), checkbox, etc?
+         entry
+         ;; Target destination -- file + heading(s):
+         (file+olp krista/annoy-file "annoy" "refile")
+         ;; Pre-formatting:
+         ;; (Example: you can have the template automatically add the
+         ;; date, or you can specify certain properties,etc.)
+         "* %?\n%i\n")
 
-	;; Shortcut key for the capture menu:
-	("a" 				
-	 ;; Description for the capture menu:
-	 "(A)nnoy"			
-	 ;; Type -- Is it a headline ("entry"), checkbox, etc?
-	 entry
-	 ;; Target destination -- file + heading(s):
-	 (file+olp krista/annoy-file "annoy" "refile")
-	 ;; Pre-formatting:
-	 ;; (Example: you can have the template automatically add the
-	 ;; date, or you can specify certain properties,etc.)
-	 "* %?\n%i\n")
+        ))
 
-	))
+;; If t: add a bookmark pointing to the last thing I captured
+;; (setq org-capture-bookmark nil)
 #+END_SRC
 *** Org Refile
 #+BEGIN_SRC emacs-lisp :noweb-ref org-refile :tangle no
@@ -1158,7 +1235,8 @@ out how to set it immediately, but this should suffice as startup config.
 				     krista/media-files
 				     (list krista/someday-maybe-file
 					   krista/annoy-file
-                                         krista/random-ideas-file))
+                                         krista/random-ideas-file
+                                         krista/shopping-file))
 			    :maxlevel . 2)))
 #+END_SRC
 *** Agenda
@@ -1226,7 +1304,7 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 (add-hook 'org-finalize-agenda-hook 'place-agenda-tags)
 (defun place-agenda-tags ()
   "Put the agenda tags by the right border of the agenda window."
-  (setq org-agenda-tags-column (- 6 (window-width)))
+  (setq org-agenda-tags-column (- 15 (window-width)))
   (org-agenda-align-tags))
 
 
@@ -1260,7 +1338,7 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 
 ;; Put archived todo items in a separate folder, rather than littering
 ;; the current directory with hidden files
-(setq org-archive-location "~/lists/archives/%s-archive::")
+(setq org-archive-location "~/core/emacs-archives/%s-archive::")
 
 ;; Modified from: https://stackoverflow.com/a/27043756
 ;; I added an interactive option to specify the scope interactively
@@ -1270,7 +1348,7 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
     (org-map-entries (lambda ()
                        (org-archive-subtree)
                        (setq org-map-continue-from (outline-previous-heading)))
-                     "/DONE"
+                     "/DONE|CANCELLED"
                      (cdr (assq (completing-read
                                  "Scope: " '(("file" 1) ("tree" 2) ("agenda" 3))
                                  nil t "")
@@ -1282,10 +1360,10 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 Skip the current entry unless SUBTREE is not nil, in which case skip
 the entire subtree."
   (let ((end (if subtree (save-excursion (org-end-of-subtree t))
-                (save-excursion (progn (outline-next-heading) (1- (point)))))))
+               (save-excursion (progn (outline-next-heading) (1- (point)))))))
     (if (string= (org-entry-get nil "STYLE") "habit")
         end
-nil)))
+      nil)))
 
 (setq org-stuck-projects
       ;; Tag/todo keyword/property(s) identifying GTD Projects
@@ -1300,76 +1378,89 @@ nil)))
 	;; An arbitrary regular expression matching non-stuck projects.
         ""))
 
-
+;; Custom agenda commands
 (setq org-agenda-custom-commands
       '(
-        ("g" "(g)roup items by context"
-         ((agenda ""
-                  ((org-agenda-overriding-header "Agenda")
-                   (org-agenda-span 'day)
-                   (org-deadline-warning-days 31)))
-	  (tags-todo "home"
-		     ((org-agenda-overriding-header "Home")
-		      (org-agenda-sorting-strategy
-		       '((agenda habit-down priority-down tag-up effort-down todo-state-up time-up deadline-up scheduled-up)
-			 (todo   habit-down priority-down tag-up effort-down todo-state-up time-up deadline-up scheduled-up)))
-                     ))
-          (tags-todo "laptop"
+
+	("a" "Show (a)genda & high priority todo items"
+	 ((agenda ""
+                  ((org-agenda-overriding-header "Agenda")))
+	  (tags-todo "+PRIORITY=\"A\""
+                     ((org-agenda-overriding-header "High priority todo items")))
+	  ))
+
+	("n" "Show both agenda & todo items"
+	 ((agenda ""
+                  ((org-agenda-overriding-header "Agenda")))
+	  (todo ""
+                ((org-agenda-overriding-header "Global todo list")))
+	  ))
+
+        ("g" "(g)roup actionable items by context"
+	 ((tags-todo "home/NEXT"
+		     ((org-agenda-overriding-header "Home")))
+          (tags-todo "laptop/NEXT"
 		     ((org-agenda-overriding-header "Laptop")))
-          (tags-todo "anywhere"
+          (tags-todo "anywhere/NEXT"
 		     ((org-agenda-overriding-header "Anywhere")))
-          (tags-todo "phone"
+          (tags-todo "phone/NEXT"
 		     ((org-agenda-overriding-header "Phone")))
-          (tags-todo "reading"
+          (tags-todo "reading/NEXT"
 		     ((org-agenda-overriding-header "Reading")))
-          (tags-todo "errand"
+          (tags-todo "errand/NEXT"
 		     ((org-agenda-overriding-header "Errand")))
-          (tags-todo "call"
+          (tags-todo "call/NEXT"
 		     ((org-agenda-overriding-header "Call")))
-          (tags-todo "text" 
-		     ((org-agenda-overriding-header "Text"))))
-         )
+          (tags-todo "text/NEXT" 
+		     ((org-agenda-overriding-header "Text")))
+          (tags-todo "1password/NEXT" 
+		     ((org-agenda-overriding-header "1Password")))
+	  ))
 
         ;; Commands to only display one GTD context
         ("c" . "Select GTD (c)ontext...")
-        ("ch" tags-todo "Context = (h)ome" nil)
-        ("cl" tags-todo "Context = (l)aptop" nil)
-        ("ca" tags-todo "Context = (a)nywhere" nil)
-        ("cp" tags-todo "Context = (p)hone" nil)
-        ("cr" tags-todo "Context = (r)eading" nil)
-        ("ce" tags-todo "Context = (e)rrand" nil)
-        ("cc" tags-todo "Context = (c)all" nil)
-        ("ct" tags-todo "Context = (t)ext" nil)
+        ("ch" "(h)ome" tags-todo "home/NEXT" nil)
+        ("cl" "(l)aptop" tags-todo "laptop/NEXT" nil)
+        ("ca" "(a)nywhere" tags-todo "anywhere/NEXT" nil)
+        ("cp" "(p)hone" tags-todo "phone/NEXT" nil)
+        ("cr" "(r)eading" tags-todo "reading/NEXT" nil)
+        ("ce" "(e)rrand" tags-todo "errand/NEXT" nil)
+        ("cc" "(c)all" tags-todo "call/NEXT" nil)
+        ("ct" "(t)ext" tags-todo "text/NEXT" nil)
+        ("c1" "(1)Password" tags-todo "1password/NEXT" nil)
 
         ;; Source: modified from
         ;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#stage-3-reviewing
         ("r" "GTD Weekly (r)eview"
-         ((agenda ""
-                  ((org-agenda-overriding-header "Agenda, looking forward")
-                   (org-agenda-span 'day)
-                   (org-deadline-warning-days 31)))
+         (
+	  (agenda ""
+                  ((org-agenda-overriding-header "Agenda")))
+	  (tags-todo "+PRIORITY=\"A\""
+		     ((org-agenda-overriding-header "High priority todo items")))
           (todo ""
                 ((org-agenda-overriding-header "To Refile")
-                 (org-agenda-files '("~/Dropbox/orgzly/inbox.org"))))
+                 (org-agenda-files (list krista/inbox-file))))
           (todo "PROJECT"
-                ((org-agenda-overriding-header "List of Projects")))
+                ((org-agenda-overriding-header "List of Projects")
+		 (org-agenda-files (list krista/projects-file))))
           (todo "NEXT" 
                 ((org-agenda-overriding-header "Next (Ready to do)")))
           (todo "TODO"
                 ((org-agenda-overriding-header "Todo queue (i.e. not ready to do yet)")
-                 (org-agenda-files '("~/Dropbox/orgzly/todo.org"))
-                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'deadline 'scheduled))))
+                 (org-agenda-files (list krista/todo-file krista/projects-file))
+                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'deadline
+                                                                      'scheduled))))
           (todo "BLOCKED"
                 ((org-agenda-overriding-header "Blocked")))
           (todo "WAITING"
                 ((org-agenda-overriding-header "Waiting for input")))
           (todo "PROJECT"
                 ((org-agenda-overriding-header "Someday-maybe")
-                 (org-agenda-files '("~/Dropbox/orgzly/someday-maybe.org"))))
+                 (org-agenda-files (list krista/someday-maybe-file))))
           ))
 
-         ;; NOTE: I only want to see the names of projects, and then
-         ;; use follow mode to review the nitty-gritty details.
+        ;; NOTE: I only want to see the names of projects, and then
+        ;; use follow mode to review the nitty-gritty details.
         ("?" "Someday-maybe(?)" todo "PROJECT"
          ((org-agenda-files `(,krista/someday-maybe-file))
           (org-agenda-start-with-follow-mode t)))
@@ -1415,8 +1506,8 @@ nil)))
 
   ;; Source: https://stackoverflow.com/a/35905794
   (setq org-agenda-prefix-format 
-	'((todo . "  %-7t%-32b")
-	  (agenda . " %7t %12c %-15(concat \"[\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") "))))
+	'((todo . "  %-14t%-32b")
+	  (agenda . " %14t %12c %-15(concat \"[\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") "))))
 #+END_SRC
 #+END_EXAMPLE
 *** inline images
@@ -1445,14 +1536,8 @@ Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to
     (setq org-cycle-emulate-tab old-tab-style)))
 (bind-key "C-<tab>" #'krista/org-cycle-current-subtree)
 #+END_SRC
-*** TODO FIXME Code snippets in org
-# #+BEGIN_SRC emacs-lisp :noweb-ref org-code-snippets :noweb tangle :tangle yes
-<<org-quick-source-blocks>>
-<<org-babel-config>>
-# #+END_SRC
-**** Quickly add source blocks
+*** Quickly add source blocks
 Example: Start a new elisp block in org mode by typing <el and then pressing TAB
-***** Config
 #+BEGIN_SRC emacs-lisp :noweb-ref org-quick-source-blocks :tangle no
 (add-to-list 'org-structure-template-alist
              '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
@@ -1472,7 +1557,7 @@ Example: Start a new elisp block in org mode by typing <el and then pressing TAB
 (add-to-list 'org-structure-template-alist
              '("ex" "#+BEGIN_EXAMPLE \n?\n#+END_EXAMPLE" ""))
 #+END_SRC
-**** Babel / Languages
+*** Babel / Languages
 #+BEGIN_SRC emacs-lisp :noweb-ref org-babel-config :tangle no
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -1516,7 +1601,15 @@ Org link workflow:
 ;; attempts to treat the link text as a reference to some headline in
 ;; the org doc. Not what I want!
 ;; 
-(defun insert-email-url (x)
+;; This config tells emacs to open `message://` links in the macOS mail app
+;;(setq org-file-apps
+;;      '((auto-mode . emacs)
+;;        ("message://" . "open -a Mail %s")))
+
+;; Config: open `mailto` links in macOS Mail
+;; (add-to-list 'org-link-abbrev-alist 
+;;     '("email" . "message://%s"))
+
 (defun insert-email-url ()
   "Ask for message id, insert a macOS email url"
   (interactive)
@@ -1619,6 +1712,7 @@ Credit: the fabulous Spruce Bondera
 CAL-endar F-rameW-ork
 #+BEGIN_SRC emacs-lisp
 (use-package calfw
+  :defer t
   :config 
 
   (use-package calfw-org
@@ -1662,6 +1756,7 @@ CAL-endar F-rameW-ork
     #+END_EXAMPLE
 #+BEGIN_SRC emacs-lisp
 (use-package org-gcal
+  :defer t
   :ensure t
   :config
   (setq org-gcal-file-alist (list (cons "victorsenkrista@gmail.com" krista/gcal-file)))
@@ -1691,22 +1786,22 @@ CAL-endar F-rameW-ork
 #+BEGIN_SRC emacs-lisp
 (use-package ivy :ensure t
   :diminish (ivy-mode . "")
-  :bind
+  ;; :bind
   ;; (:map ivy-mode-map
   ;;  ("C-'" . ivy-avy))
   :config
   (ivy-mode 1)
 
-  ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+  ;; if t: add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
   (setq ivy-use-virtual-buffers t)
 
   ;; number of result lines to display
-  ;; (setq ivy-height 15)
+  (setq ivy-height 20)
 
   ;; does not count candidates
   ;; (setq ivy-count-format "")
 
-  ;; no regexp by default / remove initial ^ input.
+  ;; if nil: no regexp by default / remove initial ^ input.
   (setq ivy-initial-inputs-alist nil)
 
   ;; configure regexp engine.
@@ -1737,6 +1832,8 @@ CAL-endar F-rameW-ork
   (global-set-key (kbd "C-c k") 'counsel-ag)
   (global-set-key (kbd "C-x l") 'counsel-locate)
   (global-set-key (kbd "C-S") 'counsel-grep-or-swiper)
+  (global-set-key (kbd "C-x C-r") 'counsel-recentf)
+  (global-set-key (kbd "C-c C-j") 'counsel-org-goto)
   (setq counsel-grep-base-command "grep -Ei -n -e %s %s")
   (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
   (global-set-key [remap switch-to-buffer] 'ivy-switch-buffer)
@@ -1806,7 +1903,7 @@ On error (read-only), call `ivy-on-del-error-function'."
 ;;     ))
 ;; (bind-key "C-x r l" #'ivy-bookmark-goto)
 
-;; Make ivy play nice with "C-c w" (org-refile)
+;; Make ivy play nice with "C-c C-w" (org-refile)
 ;; Source: https://github.com/abo-abo/swiper/issues/986#issuecomment-300482804
 (setq org-goto-interface 'outline-path-completion)
 (setq org-outline-path-complete-in-steps nil)
@@ -1814,11 +1911,6 @@ On error (read-only), call `ivy-on-del-error-function'."
 (eval-after-load 'ivy
   '(progn
      (define-key ivy-minibuffer-map (kbd "C-l") 'ivy-backward-directory)))
-
-
-(use-package helm
-  :config
-  (global-set-key (kbd "C-x C-r") 'helm-recentf))
 #+END_SRC
 ** Company
 *** company (COM-plete ANY-thing)
@@ -1826,6 +1918,7 @@ DEADLINE: <2018-02-07 Wed>
 #+BEGIN_SRC emacs-lisp
 (message "[krista] Loading company...")
 (use-package company 
+  :defer t
   :diminish
   :config
   (global-company-mode)
@@ -1835,8 +1928,8 @@ DEADLINE: <2018-02-07 Wed>
 
 
 ;; Backends
-(use-package company-irony)
-(use-package company-c-headers)
+(use-package company-irony   :defer t)
+(use-package company-c-headers   :defer t)
 (with-eval-after-load 'company
   (add-to-list 'company-backends 'company-irony)
   (add-to-list 'company-backends 'company-c-headers)
@@ -1847,53 +1940,23 @@ DEADLINE: <2018-02-07 Wed>
   (define-key company-active-map (kbd "M-p") nil)
   (define-key company-active-map (kbd "C-n") #'company-select-next)
   (define-key company-active-map (kbd "C-p") #'company-select-previous))
-
-;; Theme
-(custom-set-faces
- ;; Auto-completion preview (for the case where there's a unique suggestion)
- ;; ------------------------------------------------------------------------
- '(company-preview
-   ((t (:foreground "darkgray" :underline t :family "Fira Code"))))
- '(company-preview-common
-   ((t (:inherit company-preview :foreground "#cf7a00"))))
- 
- ;; Scrollbar
- ;; ----------
- '(company-scrollbar-fg
-   ((t (:background "#804532"))))
- '(company-scrollbar-bg
-   ((t (:background "#19343D"))))
-
- ;; Tooltips
- ;; -----------
- ;; In case you're wondering, this is what a "tooltip" looks like
- ;; http://www.goldsborough.me/images/emacs-java/correcting.png
- '(company-tooltip
-   ((t (:background "#19343D" :foreground "#306158"))))
- '(company-tooltip-selection
-   ((t (:background "#cf7a00" :foreground "#a0ffff" :weight bold))))
- '(company-tooltip-common
-   ((((type x)) (:inherit company-tooltip :weight bold))
-    (t (:inherit company-tooltip))))
- '(company-tooltip-common-selection
-   ((((type x)) (:inherit company-tooltip-selection :weight bold))
-    (t (:inherit company-tooltip-selection))))
-)
 #+END_SRC
 ** Projectile
 #+BEGIN_SRC emacs-lisp :noweb tangle
 (message "[krista] Loading projectile...")
 (use-package projectile
+  :defer t
   :diminish
   :config
   (setq projectile-completion-system 'ivy)
-  (projectile-global-mode)
+  (projectile-mode)
   <<counsel-projectile>>
   )
 #+END_SRC
 *** counsel projectile
 #+BEGIN_SRC emacs-lisp :noweb-ref counsel-projectile :tangle yes
 (use-package counsel-projectile
+  :defer t
   :diminish
   :config
   (counsel-projectile-mode))
@@ -1939,362 +2002,39 @@ Note: "vc" stands for *V*-ersion *C*-ontrol
 #+END_SRC
 * Minor packages
 ** bookmark+ (bmkp)
+Note: use "P-F" to filter by file name
 #+BEGIN_SRC emacs-lisp
-(use-package bookmark+)
+(use-package bookmark+
+  :defer t
+  :config
+  (setq bmkp-incremental-filter-delay 0.05))
 #+END_SRC
 ** paradox
 Paradox is better package management
 #+BEGIN_SRC emacs-lisp
 ;; Speedy-open melpa
 (use-package paradox
-  :bind (("H-p" . paradox-list-packages)))
+  :defer 10
+  ;; :bind (("H-P" . paradox-list-packages))
+  )
 ;; Set to t => Don't ask me to integrate with github every time I want to look
 ;; at melpa!
 (with-eval-after-load 'paradox (setq paradox-github-token t))
 #+END_SRC
-** Cheatsheet
-*** What is cheatsheet?
-Cheatsheet gives quick access to read-only buffers.
-Use case: peeking at cheat sheets!
-Github page: https://github.com/darksmile/cheatsheet/
-*** How to use cheatsheet
-**** Pull up your cheatsheet :: cheatsheet-show
-- Show buffer with your cheatsheet!
-- Use H-c to show the cheatsheet
-- Use C-q to exit the cheatsheet
-**** Add a new cheat to your cheatsheet :: cheatsheet-add
-Here's an example cheat. Follow this format in your config
-#+BEGIN_SRC example
-(cheatsheet-add :group 'Common
-                :key "C-x C-c"
-                :description "leave Emacs.")
-#+END_SRC
-*** Krista's cheatsheet entries
-#+BEGIN_SRC emacs-lisp :noweb tangle
-(message "[krista] Loading cheatsheet...")
-(use-package cheatsheet
-  :config
-  <<common-cheats>>
-  <<LaTeX-cheats>>
-  <<org-cheats>>
-  <<magit-cheats>>
-  <<projectile-cheats>>
-  <<builtin-cheats>>
-  <<agenda-cheats>>
-  :bind (("H-C" . cheatsheet-show)))
-#+END_SRC
-**** Common cheats for use throughout Emacs
-#+BEGIN_SRC emacs-lisp :noweb-ref common-cheats :tangle yes
-(cheatsheet-add :group 'Getting_around
-                :key "C-d"
-                :description "Kill --> one character")
-(cheatsheet-add :group 'Getting_around
-                :key "M-d"
-                :description "Kill --> to end of word")
-(cheatsheet-add :group 'Getting_around
-                :key "C-DEL -or- M-DEL"
-                :description "Kill <-- to beginning of word")
-(cheatsheet-add :group 'Getting_around
-                :key "M-@"
-                :description "Mark --> to end of word")
-(cheatsheet-add :group 'Getting_around
-                :key "C-t"
-                :description "Swap the character at the mark w/the character before it")
-(cheatsheet-add :group 'Getting_around
-                :key "M-t"
-                :description "Swap the word at the mark w/the word before it")
-#+END_SRC
-**** LaTeX cheats
-Much thanks goes to the AUCTeX Reference Card for version 11.89
-#+BEGIN_SRC emacs-lisp :noweb-ref LaTeX-cheats :tangle no
-(cheatsheet-add :group 'LaTeX:document_structure ; see "Command Insertion" in the AUCTeX sheet
-                :key "C-c C-s"
-                :description "Insert section")
-(cheatsheet-add :group 'LaTeX:document_structure
-                :key "M-RET"
-                :description "Insert item")
-(cheatsheet-add :group 'LaTeX:document_structure
-                :key "C-c ]"
-                :description "Close LaTeX environment")
-
-                                        ; Typeface commands: C-c C-f C-[whatever]
-(cheatsheet-add :group 'LaTeX:typeface
-                :key "C-c C-f C-b"
-                :description "Bold")
-(cheatsheet-add :group 'LaTeX:typeface
-                :key "C-c C-f C-i"
-                :description "Italics")
-(cheatsheet-add :group 'LaTeX:typeface
-                :key "C-c C-f C-r"
-                :description "\\text{} in math mode")
-(cheatsheet-add :group 'LaTeX:typeface
-                :key "C-c C-f C-e"
-                :description "\\emph{}")
-(cheatsheet-add :group 'LaTeX:typeface
-                :key "C-c C-f C-t"
-                :description "typewriter-style text")
-(cheatsheet-add :group 'LaTeX:typeface
-                :key "C-c C-f C-s"
-                :description "(forward-) slanted text")
-(cheatsheet-add :group 'LaTeX:typeface
-                :key "C-c C-f C-c"
-                :description "smallcaps")
-
-                                        ; Source formatting commands: C-c C-q C-[whatever]
-(cheatsheet-add :group 'LaTeX:source_formatting
-                :key "C-c C-q C-s"
-                :description "Align section")
-(cheatsheet-add :group 'LaTeX:source_formatting
-                :key "C-c C-q C-s"
-                :description "Align environment")
-(cheatsheet-add :group 'LaTeX:source_formatting
-                :key "M-q"
-                :description "Align paragraph")
-(cheatsheet-add :group 'LaTeX:source_formatting
-                :key "C-c *"
-                :description "Mark section")
-(cheatsheet-add :group 'LaTeX:source_formatting
-                :key "C-c ."
-                :description "Mark environment")
-
-                                        ; Math abbreviations: `[whatever]
-(cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
-                :key "` c"
-                :description "\\mathcal{}")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
-                :key "` ~"
-                :description "\\tilde{}")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:fancy_letters
-                :key "` ^"
-                :description "\\hat{}")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                :key "` C-f"
-                :description "\\rightarrow")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                :key "` C-b"
-                :description "\\leftarrow")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                :key "` C-p"
-                :description "\\uparrow")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:arrows
-                :key "` C-n]"
-                :description "\\downarrow")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                :key "` I"
-                :description "\\infty")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                :key "` A"
-                :description "\\forall")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                :key "` E"
-                :description "\\exists")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                :key "` i"
-                :description "\\in")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                :key "` |"
-                :description "\\vee")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:logic
-                :key "` &"
-                :description "\\wedge")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                :key "` 0"
-                :description "\\emptyset")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                :key "` \\"
-                :description "\\setminus")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                :key "` +"
-                :description "\\cup")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                :key "` -"
-                :description "\\cap")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                :key "` {"
-                :description "\\subset")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                :key "` }"
-                :description "\\supset")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                :key "` ["
-                :description "\\subseteq")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:sets
-                :key "` ]"
-                :description "\\supseteq")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                :key "` <"
-                :description "\\leq")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                :key "` >"
-                :description "\\geq")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                :key "` *"
-                :description "\\times")
-(cheatsheet-add :group 'LaTeX:math_abbrevs:arithmetic
-                :key "` ."
-                :description "\\cdot")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-                :key"` C-e"
-                :description "\\exp")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-                :key"` C-s"
-                :description "\\sin")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-                :key"` C-c"
-                :description "\\cos")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:trig
-                :key"` C-t"
-                :description "\\tan")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-                :key"` C-^"
-                :description "\\sup")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-                :key"` C-_"
-                :description "\\inf")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-                :key"` C-l"
-                :description "\\lim")
-
-(cheatsheet-add :group 'LaTeX:math_abbrevs:analysis
-                :key"` C-d"
-                :description "\\det")
-#+END_SRC
-**** Org-mode cheats
-#+BEGIN_SRC emacs-lisp :noweb-ref org-cheats :tangle no
-(cheatsheet-add :group 'org
-                :key "
-,#+attr_org: :width 300 
-,#+attr_latex :width 3in :placement [H] 
-[[file:./my_image.png]]"
-                    :description "Add image inline")
-#+END_SRC
-**** Magit cheats
-***** [[*Magit][Magit use-package entry]]
-***** Config
-#+BEGIN_SRC emacs-lisp :noweb-ref magit-cheats :tangle no
-(cheatsheet-add :group 'magit
-                :key "C-c g"
-                :description "Enter magit menu")
-(cheatsheet-add :group 'magit
-                :key "(from status menu) h"
-                :description "HALP")
-(cheatsheet-add :group 'magit
-                :key "c c; [type message]; C-c C-c"
-                :description "Commit staged changes; add commit msg; save commit msg and finish")
-#+END_SRC
-**** Projectile cheats
-#+BEGIN_SRC emacs-lisp :noweb-ref projectile-cheats :tangle no
-(cheatsheet-add :group 'projectile
-                :key "C-c p s s"
-                :description "search")
-(cheatsheet-add :group 'projectile
-                :key "C-c p r"
-                :description "find-replace")
-(cheatsheet-add :group 'projectile
-                :key "C-c p f"
-                :description "file-find")
-(cheatsheet-add :group 'projectile
-                :key "C-c p a"
-                :description "switch to related file (e.g. header)")
-(cheatsheet-add :group 'projectile
-                :key "C-c p k"
-                :description "kill all buffers for current project")
-(cheatsheet-add :group 'projectile
-                :key "C-c p <Shift>+s"
-                :description "save all buffers for current project")
-#+END_SRC
-**** Built-in emacs help
-[[http://stackoverflow.com/questions/965263/given-an-emacs-command-name-how-would-you-find-key-bindings-and-vice-versa][Source]]
-#+BEGIN_SRC emacs-lisp :noweb-ref builtin-cheats :tangle yes
-(cheatsheet-add :group 'builtin_help
-                :key "C-h c [command-name]"
-                :description "Look up the keybinding for a given command")
-(cheatsheet-add :group 'builtin_help
-                :key "C-h k [key-sequence]"
-                :description "Look up the command for a given keybinding")
-(cheatsheet-add :group 'builtin_help
-                :key "C-h f [function-name]"
-                :description "Look up the docs for a command")
-(cheatsheet-add :group 'builtin_help
-                :key "C-h ?"
-                :description "Help for getting more help")
-#+END_SRC
-**** org-agenda cheats
-Help: https://orgmode.org/manual/Agenda-commands.html
-#+BEGIN_SRC emacs-lisp
-(cheatsheet-add :group 'org-agenda
-                :key "F"
-                :description "Toggle follow mode")
-(cheatsheet-add :group 'org-agenda
-                :key "v [d|w|t|m|y|SPC]"
-                :description "Toggle view: [(d)ay|(w)eek|for(t)night|(m)onth|(y)ear|reset]")
-(cheatsheet-add :group 'org-agenda
-                :key "[.|j]"
-                :description "Goto [(.) today|(j) date]")
-(cheatsheet-add :group 'org-agenda
-                :key "C-c C-x C-c     (org-agenda-columns)"
-                :description "Show column view")
-(cheatsheet-add :group 'org-agenda
-                :key "[/ | < | ^ | = | _ | (literal |)]"
-                :description "Filter by [(/)tag|(<)category|(^)top headline|(=)regex|(_)effort|(literal |)none]")
-(cheatsheet-add :group 'org-agenda
-                :key "[C-_ | r]"
-                :description "Undo/redo")
-(cheatsheet-add :group 'org-agenda
-                :key "C-c C-w"
-                :description "refile entry at point")
-(cheatsheet-add :group 'org-agenda
-                :key "[T|:]"
-                :description "[Show|set] tags for entry at point")
-(cheatsheet-add :group 'org-agenda
-                :key "[P|,]"
-                :description "[Show|set] priority for entry at point")
-(cheatsheet-add :group 'org-agenda
-                :key "[+|-]"
-                :description "[Increase|Decrease] priority for entry at point")
-(cheatsheet-add :group 'org-agenda
-                :key "[m|u]"
-                :description "[mark|unmark] item for bulk action")
-(cheatsheet-add :group 'org-agenda
-                :key "B [$|A|t|+|-|s|d|r]"
-                :description "Bulk [($)archive|(A)rchive w/sibling|change (t)odo state|(+/-) add/rm tag|re(s)chedule|change (d)eadline|(r)efile]")
-#+END_SRC 
-*** TODO use popwin to make it so that
-**** the cheatsheet pops up in a sensible place, i.e. the cheatsheet does not occupy the adjacent buffer
-**** closing the cheatsheet does not run "delete-window" (C-x 0) on the buffer that it occupied
-*** TODO make this entire section less hideous. (Seriously, the [[*LaTeX%20cheats][LaTeX cheats]] section is p fugly)
-*** NOTE: funky load behavior
-It appears that the cheatsheet loads at startup time. Adding another
-cheatsheet entry makes the entry pop up in the cheatsheet after
-eval'ing my config, but deleting a cheatsheet entry does not update
-the display until you restart Emacs.
-*** TODO add the following cheats to cheatsheet
-**** Copy-paste from helm / minibuffer!!! https://groups.google.com/forum/#!topic/emacs-helm/AYrrKO7E53I
 ** Yasnippet
 *** [[https://github.com/joaotavora/yasnippet/blob/master/README.mdown][Github]]
 *** [[http://cupfullofcode.com/blog/2013/02/26/snippet-expansion-with-yasnippet/index.html][Cup Full of Code tutorial (example starter snippets)]]
 *** [[https://joaotavora.github.io/yasnippet/snippet-organization.html#sec-1][Joatoavora tutorial (better)]]
 *** Configuration
 #+BEGIN_SRC emacs-lisp
-(message "[krista] Loading yasnippet...")
-(use-package yasnippet
-  :diminish yas-minor-mode
-  :config
-  (yas-global-mode 1)
-  :bind
-  ("H-y" . yas-insert-snippet))
+;; (message "[krista] Loading yasnippet...")
+;; (use-package yasnippet
+;;   :defer t
+;;   :diminish yas-minor-mode
+;;   :config
+;;   (yas-global-mode 1)
+;;   :bind
+;;   ("H-y" . yas-insert-snippet))
 #+END_SRC
 ** Ace Window
 #+BEGIN_SRC emacs-lisp
@@ -2304,27 +2044,70 @@ the display until you restart Emacs.
   :config
   (setq aw-dispatch-always t))
 #+END_SRC
-** Ace Jump
-#+BEGIN_SRC emacs-lisp
-(use-package ace-jump-mode
-  :bind ("M-J" . ace-jump-mode))
-#+END_SRC
 ** Shackle
 https://github.com/wasamasa/shackle
 #+BEGIN_SRC emacs-lisp
 (use-package shackle 
   :config
   (setq shackle-default-alignment 'below)
-  (setq shackle-default-size 0.4)
   (setq shackle-default-rule
-	'(:select t ; Select the popped-up window
-		  :popup t ; Pop up a new window instead of displaying the buffer in the current one.
-		  :same nil ; Display buffer in a NEW window.
-   ))
-  ;; (setq shackle-rules
-  ;; 	'((".*\\*Org tags.*" :align below :select t :popup t :same nil :regexp t)
-  ;; 	  ("*Org todo*"      :align below :select t :popup t :same nil)
-  ;; 	  (".*\\*Org Src.*"  :align below :select t :popup t :same nil :regexp t)))
+        '(:select t ; Select the popped-up window
+          :popup t ; Pop up a new window instead of displaying the buffer in the current one.
+          :same nil ; Display buffer in a NEW window.
+          ;; :size 0.4 ; occupy 40% of the old window
+          ))
+  (setq shackle-rules
+        '(("\\*Org Src.*"            :align right :select t   :popup t :same nil :regexp t :size 0.5)
+          (" *Org todo*"             :align below :select t   :popup t :same nil)
+          (" *Org tags*"             :align below :select t   :popup t :same nil)
+          (" *Agenda Commands*"      :align below :select t   :popup t :same nil)
+          ("*Org Note*"              :align below :select t   :popup t :same nil)
+          ("CAPTURE.*"               :align below :select t   :popup t :same nil :regexp t)
+          ("*Org Select*"            :align below :select t   :popup t :same nil)
+          ;; (" *Org Links*"            :align below             :popup t :same nil :size 0.1)
+          ;; ("*Select Link*"           :align below :select t   :popup t :same nil)
+          ("*Org Clock*"             :align below :select t   :popup t :same nil)
+          ("*Edit Formulas*"         :align below :select t   :popup t :same nil)
+          ("*Org Attach*"            :align below :select t   :popup t :same nil)
+          ("*Org Export Dispatcher*" :align below :select t   :popup t :same nil)
+          ))
+
+
+  ;; Make org-mode listen to shackle
+  ;; Source: https://emacs.stackexchange.com/a/31634
+  (setq org-src-window-setup 'other-window)
+  ;;
+  ;; Re-define org-switch-to-buffer-other-window to NOT use org-no-popups.
+  ;; Primarily for compatibility with shackle.
+  (defun org-switch-to-buffer-other-window (args)
+    "Switch to buffer in a second window on the current frame.
+    In particular, do not allow pop-up frames.
+    Returns the newly created buffer.
+    Redefined to allow pop-up windows."
+    ;;  (org-no-popups
+    ;;     (apply 'switch-to-buffer-other-window args)))
+    (switch-to-buffer-other-window args)
+
+
+    ;; Source: https://github.com/sk8ingdom/.emacs.d/blob/9d2f40c261864533df59be452117941a7f9b3e3f/general-config/general-plugins.el
+    ;; Function to suppress delete-other-windows in functions
+    (defun my/suppress-delete-other-windows (old-fun &rest args)
+      (cl-flet ((silence (&rest args) (ignore)))
+        (advice-add 'delete-other-windows :around #'silence)
+        (unwind-protect
+            (apply old-fun args)
+          (advice-remove 'delete-other-windows #'silence))))
+    ;;
+    ;; Adds my/suppress-delete-other-windows to org-mode functions for compatibility with shackle
+    (advice-add 'org-capture-place-template :around #'my/suppress-delete-other-windows)
+    (advice-add 'org-agenda :around #'my/suppress-delete-other-windows)
+    (advice-add 'org-add-log-note :around #'my/suppress-delete-other-windows)
+    (advice-add 'org-todo :around #'my/suppress-delete-other-windows)
+    (advice-add 'org-set-tags-command :around #'my/suppress-delete-other-windows)
+    ;; (advice-add 'org-insert-link :around #'my/suppress-delete-other-windows)
+    )
+
+  ;; Enable shackle-mode globally
   (shackle-mode 1))
 #+END_SRC
 ** Undo tree
@@ -2343,8 +2126,11 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
+  :defer 2
+  :diminish
   :init (global-flycheck-mode)
-  :diminish)
+  :custom
+  (flycheck-display-errors-delay .75))
 ;; Permanently enable syntax checking
 (add-hook 'after-init-hook #'global-flycheck-mode)
 (add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
@@ -2361,12 +2147,13 @@ Provides
 - transpose-frame
 - flop-frame
 #+BEGIN_SRC emacs-lisp
-(use-package transpose-frame)
+(use-package transpose-frame   :defer t)
 #+END_SRC
 ** Smartparens
 This config is adapted from Spruce Bondera's .emacs.d
 #+BEGIN_SRC emacs-lisp
 (use-package smartparens
+  :defer t
   :config
   ;; Enable the default config
   (require 'smartparens-config)
@@ -2415,6 +2202,7 @@ This config is adapted from Spruce Bondera's .emacs.d
 ** Multi-web mode
 #+BEGIN_SRC emacs-lisp
 (use-package multi-web-mode
+  :defer t
   :config
   (setq mweb-default-major-mode 'html-mode)
   (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
@@ -2431,9 +2219,9 @@ This config is adapted from Spruce Bondera's .emacs.d
 Visual studio has a "Go to definition" option in the context menu. It's nice. Gimme!
 #+BEGIN_SRC emacs-lisp
 (use-package dumb-jump
+  :defer t
   :config
   (dumb-jump-mode 1)
-  ;; (setq dumb-jump-selector 'helm)
   (setq dumb-jump-prefer-searcher 'rg))
 #+END_SRC
 ** Hide-show mode
@@ -2451,22 +2239,14 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 #+END_SRC
 ** Rainbow-parens
 #+BEGIN_SRC emacs-lisp
-(use-package rainbow-delimiters)
-#+END_SRC
-** title-capitalization
-- Source: https://github.com/novoid/title-capitalization.el
-- Usage: M-x title-capitalization
-- Note: I need to add title-capitalization as a submodule and/or
-  install it via marmalade or another package manager. Currently,
-  title-capitalization.el lives in =~/.emacs.d/elisp/=
-#+BEGIN_SRC emacs-lisp
-;; (require 'title-capitalization)
+(use-package rainbow-delimiters   :defer 10)
 #+END_SRC
 ** Which-key
 #+BEGIN_SRC emacs-lisp
 (message "[krista] loading which-key...")
 (use-package which-key              ;;; Display available keybindings in popup
   :diminish which-key-mode
+  :defer 5
   :config
   (setq which-key-idle-delay 1.5))
 (with-eval-after-load 'which-key
@@ -2481,14 +2261,14 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 ;;(use-package whitespace)
 
 ;; Show trailing whitespace by default
-;;(setq-default show-trailing-whitespace nil)
-                                        ;(add-hook 'before-save-hook 'delete-trailing-whitespace)
+;; (setq-default show-trailing-whitespace nil)
+;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
 ;; ... but don't show trailing whitespace if I'm in
 ;; - a minibuffer
 ;; - help mode
 ;; - in a makefile
-(defun hide-trailing-whitespace ()
-  (setq show-trailing-whitespace nil))
+(defun hide-trailing-whitespace () (setq show-trailing-whitespace nil))
+
 (add-hook 'minibuffer-setup-hook
           'hide-trailing-whitespace)
 (add-hook 'help-mode-hook
@@ -2516,6 +2296,7 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 #+BEGIN_SRC emacs-lisp
 (message "[krista] Loading cc-mode...")
 (use-package cc-mode
+  :defer t
   :config
   ;; This function matches any existing whitespace style that can be found
   ;; Source: Spruce Bondera's config
@@ -2528,12 +2309,13 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
          ("M-j" . join-line)))
 
 (use-package cpputils-cmake
+  :defer t
   :config
   (add-hook 'c-mode-common-hook
             (lambda ()
               (if (derived-mode-p 'c-mode 'c++-mode)
-                  (cppcm-reload-all))))
-  )
+                  (cppcm-reload-all)))))
+
 
 (c-add-style "krista-style"             ; title
              '("python"                 ; inherit from the python style
@@ -2542,7 +2324,7 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
                (fill-column . 80)))     ; when to wrap line? (In chars)
 (setq c-default-style "krista-style")
 
-(use-package modern-cpp-font-lock)
+(use-package modern-cpp-font-lock   :defer t)
 (add-hook 'c++-mode-hook #'modern-c++-font-lock-mode)
 
 ;; (defface font-lock-operator-face
@@ -2596,23 +2378,21 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 #+END_SRC
 *** Slime (lisp)
 #+BEGIN_SRC emacs-lisp
-;; The SBCL binary and command-line arguments
-;; (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform")
-
 ;; Quicklisp install and this config from https://gist.github.com/jteneycke/7947353
-(load (expand-file-name "~/quicklisp/slime-helper.el"))
+;; (load (expand-file-name "~/quicklisp/slime-helper.el"))
 ;; Replace "sbcl" with the path to your implementation
-(setq inferior-lisp-program "/usr/local/bin/sbcl")
-(add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode)
-(add-hook 'slime-mode-hook #'rainbow-delimiters-mode)
+;; (setq inferior-lisp-program "/usr/local/bin/sbcl")
+;; (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode)
+;; (add-hook 'slime-mode-hook #'rainbow-delimiters-mode)
 #+END_SRC
 *** haskell
 #+BEGIN_SRC emacs-lisp
-(use-package haskell-mode)
+(use-package haskell-mode :defer t)
 #+END_SRC
 *** C#
 #+BEGIN_SRC emacs-lisp
 (use-package csharp-mode
+  :defer t
   :config
 
   ;; TODO: try removing this. Spruce said that it's unnecessary -- should look into that
@@ -2638,6 +2418,38 @@ Visual studio has a "Go to definition" option in the context menu. It's nice. Gi
 (eval-after-load
     'company
   '(add-to-list 'company-backends 'company-omnisharp))
+#+END_SRC
+* Hydra
+Putting hydra after most config (for now) because I'm not sure how
+best to structure hydra config
+See also: https://github.com/abo-abo/hydra#the-one-with-the-least-amount-of-code
+#+BEGIN_SRC emacs-lisp
+(use-package hydra
+  :defer 5
+  :bind ("C-c f" . hydra-flycheck/body))
+
+(defhydra hydra-flycheck (:color blue)
+  "
+  ^
+  ^Flycheck^          ^Errors^            ^Checker^
+  ^────────^──────────^──────^────────────^───────^─────
+  _q_ quit            _<_ previous        _?_ describe
+  _M_ manual          _>_ next            _d_ disable
+  _v_ verify setup    _f_ check           _m_ mode
+  ^^                  _l_ list            _s_ select
+  ^^                  ^^                  ^^
+  "
+  ("q" nil)
+  ("<" flycheck-previous-error :color pink)
+  (">" flycheck-next-error :color pink)
+  ("?" flycheck-describe-checker)
+  ("M" flycheck-manual)
+  ("d" flycheck-disable-checker)
+  ("f" flycheck-buffer)
+  ("l" flycheck-list-errors)
+  ("m" flycheck-mode)
+  ("s" flycheck-select-checker)
+  ("v" flycheck-verify-setup))
 #+END_SRC
 * Getting help
 This section is not part of my config file per say, but contains instructions
@@ -2757,11 +2569,3 @@ Homepage: https://github.com/gongo/org-redmine
 - would be useful for org-calendar
 ** TODO Install winner, windmove
 See https://github.com/angrybacon/dotemacs/blob/master/dotemacs.org
-* heap
-#+BEGIN_SRC emacs-lisp
-(defun revert-buffer-no-prompt ()
-  "Revert buffer without confirm prompt"
-  (interactive)
-  (revert-buffer t t))
-(bind-key "H-R" #'revert-buffer-no-prompt)
-#+END_SRC

@@ -1,5 +1,10 @@
 #+TITLE: Krista's mode-line config
 * Mode line format
+** How to display the battery
+See docs for the symbol battery-mode-line-format
+#+BEGIN_SRC emacs-lisp
+(setq battery-mode-line-format "%p%%")
+#+END_SRC
 ** Mode line format
 #+BEGIN_SRC emacs-lisp
 ;; https://emacs.stackexchange.com/a/16660
@@ -61,6 +66,11 @@
         '(:eval (propertize krista-buffer-unchanged-string
                             'face 'font-lock-comment-face))))))
 
+(setq krista/buffer-modified-status-help-echo
+      (concat "Buffer modified status:\n"
+	      "Readonly: " krista-buffer-readonly-string "\n"
+	      "Modified: " krista-buffer-modified-string "\n"
+	      "Unchanged: " krista-buffer-unchanged-string))
 ;; To customize the mode line, make a list of all of the things that
 ;; should be displayed (listed in order from left to right)
 ;; See also: https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Format.html#Mode-Line-Format
@@ -73,18 +83,24 @@
    ;; Display buffer's local modified status
    ;; --------------------------------
    '(:eval
-     (if buffer-read-only
-         '((:eval (propertize krista-buffer-readonly-string
-                              'face 'font-lock-doc-face)))
-       ;; What to display if the buffer has been modified since the
-       ;; last save
-       (if (buffer-modified-p)
-           '((:eval (propertize krista-buffer-modified-string
-                                'face 'font-lock-warning-face)))
-         ;; What to display if the buffer is not read-only, but also
-         ;; hasn't been modified
-         '(:eval (propertize krista-buffer-unchanged-string
-                             'face 'font-lock-comment-face)))))
+      (if buffer-read-only
+          '((:eval (propertize krista-buffer-readonly-string
+                               'face 'font-lock-doc-face
+			       'mouse-face 'mode-line-highlight
+			       'help-echo 'krista/buffer-modified-status-help-echo)))
+	;; What to display if the buffer has been modified since the
+	;; last save
+	(if (buffer-modified-p)
+            '((:eval (propertize krista-buffer-modified-string
+                                 'face 'font-lock-warning-face
+				 'mouse-face 'mode-line-highlight
+				 'help-echo 'krista/buffer-modified-status-help-echo)))
+          ;; What to display if the buffer is not read-only, but also
+          ;; hasn't been modified
+          '(:eval (propertize krista-buffer-unchanged-string
+                              'face 'font-lock-comment-face
+			      'mouse-face 'mode-line-highlight
+			      'help-echo 'krista/buffer-modified-status-help-echo)))))
 
    ;; Padding
    " "
@@ -92,37 +108,49 @@
    '(:eval (propertize (if (stringp vc-mode) vc-mode
                          (format "%-12s" "\ ")) ; Default case (no version control)
                        'face 'font-lock-builtin-face))
+
    ;; Buffer/file name (just this file... not the whole path)
-   " %12b"
+   '(:eval (propertize " %12b"
+		       'help-echo (replace-regexp-in-string
+				   "nil"
+				   "This buffer is not file-backed"
+				   (format "%s" (buffer-file-name)))
+		       'mouse-face 'mode-line-highlight))
    ;; '(:eval (propertize " %12b" 'face '(:foreground "cyan")))
+
    " "
-   ;; Show fixed-width
-   ;;     (line, column)
+
+   ;; Show fixed-width (line, column)
    ;; WIP: a help tooltip equal to the file size
    ;; NOTE: file size should be displayed in in human-readable terms (e.g. 43k)
-   '(:eval (propertize (concat (format "%5s" "(%l,") (format "%5s" " %c)"))
+   '(:eval (propertize (concat "(" "L:%5l" "," "C:%3c" ")")
                        'face 'font-lock-comment-face
-                       'help-echo "(Line, column)"
+                       'help-echo "(Line, Column)"
                        'mouse-face 'mode-line-highlight))
+
+   ;; " "
+   ;; ;; Show percentage through buffer (WITHOUT showing the dumb "Top" or "Bot" string!)
+   ;; '(:eval (propertize (concat (format "%-3d" (/ (point) 0.01 (point-max))) "%%")
+   ;;                     'face 'font-lock-comment-face
+   ;;                     'help-echo "Progress in buffer, expressed as a percentage"
+   ;;                     'mouse-face 'mode-line-highlight))
+
    " "
+   ;; Show name of the current major mode
    '(:eval (propertize mode-name
-                       'face 'font-lock-builtin-face))
+                       'face 'font-lock-builtin-face
+                       'mouse-face 'mode-line-highlight
+                       'help-echo "Major mode"))
    " "
    ;; Includes battery info from fancy-battery
    mode-line-misc-info
    " "
-   mode-line-end-spaces))
-
+   ;; mode-line-end-spaces
+   ))
 
 (setq-default mode-line-format '(:eval krista-modeline-format))
-;; Reload the mode line config whenever you reload this file
-;; 
-;; IMPORTANT: uncomment when you're tweaking the modeline, so you
-;; don't have to restart emacs to see your changes take effect.
-(force-mode-line-update t)
 #+END_SRC
 ** Remove the word "Git" from my version-control string
-*** The config itself
 #+BEGIN_SRC emacs-lisp
   (defadvice vc-mode-line (after krista-strip-backend () activate)
     (when (stringp vc-mode)
@@ -135,14 +163,28 @@
                (format "%-12s" (replace-regexp-in-string "^ Git." ":" vc-mode))))
                (setq vc-mode vc-no-backend))))
 #+END_SRC
-** Replace "Top" and "Bottom" in percentage string
-#+BEGIN_SRC emacs-lisp          
-  ;; (defadvice mode-line-position (after krista-rm-top() activate)
-      ;; (let ((better-position-string (replace-regexp-in-string 
-      ;;                                "Top"
-      ;;                                "⤒"
-      ;;                                mode-line-position)))
-      ;;   (setq mode-line-position better-position-string)))
+* Time in the mode line(?)
+#+BEGIN_SRC emacs-lisp
+;; Source: https://emacs.stackexchange.com/a/20819
+;; (setq display-time-string-forms
+;;       '(12-hours ":" minutes am-pm))
+
+;; Show the time in the modeline
+(display-time-mode t)
+
+;; (setq display-time-24hr-format nil)
+
+;; Do show the date
+(setq display-time-day-and-date t)
+;; %l == hour, in 12-hour time
+;; %M == minute
+;; %p == AM/PM; %#p == am/pm
+;; %a == abbreviated name of the day of week (e.g. Sat for Saturday)
+;; %b == abbreviated name of the month (e.g. Aug for August)
+;; %e == day of month (1-31)
+;; %Z == name of time zone
+;; (setq display-time-format " %l:%M%#p %a, %b.%e (%Z) ")
+(setq display-time-format "%l:%M%#p %a, %b %e")
 #+END_SRC
 * Fancy battery mode
 ** TODO switch from fancy-battery-mode to an indicator
@@ -161,11 +203,8 @@ I want to see:
   :config
   ;; Turn on fancy battery display, turn off emacs default
   (fancy-battery-mode t)
-  ;; Don't show the load average
-  (setq display-time-default-load-average nil)
-  (display-battery-mode -1)
   ;; Show a percentage instead of "remaining time to charge/discharge"
-  (setq fancy-battery-show-percentage t))
+(setq fancy-battery-show-percentage t))
 #+END_SRC
 * Fonts and colors
 #+BEGIN_SRC emacs-lisp
@@ -251,4 +290,14 @@ Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
   - ₩
   - Ｗ - Fullwidth Latin Capital Letter W - U+FF37
   - 𝕎 - Unicode number U+1D54E
-    
+* Echo area
+Source: https://www.reddit.com/r/emacs/comments/67npjq/change_the_face_for_the_echo_area/
+#+BEGIN_SRC emacs-lisp
+(with-current-buffer " *Echo Area 0*" (face-remap-add-relative 'default '(:foreground "#77A4DE" :background "#23272e")))
+(with-current-buffer " *Echo Area 1*" (face-remap-add-relative 'default '(:foreground "#77A4DE" :background "#23272e")))
+#+END_SRC
+* Make everything take effect
+Finish up with this function
+#+BEGIN_SRC emacs-lisp
+(force-mode-line-update t)
+#+END_SRC
