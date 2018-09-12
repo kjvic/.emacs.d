@@ -1,3 +1,8 @@
+* Table of Contents                                                     :TOC:
+- [[#magit-tutorial][Magit tutorial]]
+- [[#config][Config]]
+- [[#color-scheme][Color scheme]]
+
 * [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
 * Config
 #+BEGIN_SRC emacs-lisp :noweb tangle

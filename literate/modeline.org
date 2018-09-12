@@ -1,4 +1,25 @@
 #+TITLE: Krista's mode-line config
+* Table of Contents                                                     :TOC:
+- [[#mode-line-format][Mode line format]]
+  - [[#how-to-display-the-battery][How to display the battery]]
+  - [[#mode-line-format-1][Mode line format]]
+  - [[#remove-the-word-git-from-my-version-control-string][Remove the word "Git" from my version-control string]]
+- [[#time-in-the-mode-line][Time in the mode line(?)]]
+- [[#fancy-battery-mode][Fancy battery mode]]
+  - [[#switch-from-fancy-battery-mode-to-an-indicator][switch from fancy-battery-mode to an indicator]]
+  - [[#current-config][Current config]]
+- [[#fonts-and-colors][Fonts and colors]]
+- [[#diminish][Diminish!]]
+  - [[#do-not-display-the-following-modes][Do not display the following modes]]
+- [[#helpful-unicode-symbols-to-possibly-use-in-modeline][Helpful: unicode symbols to possibly use in modeline]]
+  - [[#git-status][Git status]]
+  - [[#for-the-git-logo][for the git logo:]]
+  - [[#to-replace-top--bot-in-the-position-string][To replace "TOP / BOT" in the position string]]
+  - [[#for-the-battery][For the battery]]
+  - [[#line-endings-indicator][Line endings indicator]]
+- [[#echo-area][Echo area]]
+- [[#make-everything-take-effect][Make everything take effect]]
+
 * Mode line format
 ** How to display the battery
 See docs for the symbol battery-mode-line-format

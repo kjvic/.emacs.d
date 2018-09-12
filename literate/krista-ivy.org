@@ -1,4 +1,13 @@
 #+PROPERTY: header-args :tangle yes
+* Table of Contents                                                     :TOC:
+- [[#ivyswipercounsel][Ivy/Swiper/Counsel]]
+  - [[#globally-override-many-default-functions-with-ivy-versions][Globally override many default functions with Ivy versions]]
+  - [[#helm-style-go-up-a-directory-in-find-file][Helm-style "go up a directory" in Find-file]]
+  - [[#ivy-bookmarks][Ivy Bookmarks]]
+  - [[#fix-incremental-completion-behavior-in-org-mode][Fix incremental completion behavior in org mode]]
+- [[#projectile][Projectile]]
+  - [[#counsel-projectile][counsel projectile]]
+
 * Ivy/Swiper/Counsel
 - Comparison with helm
   - Ivy

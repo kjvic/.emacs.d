@@ -1,3 +1,26 @@
+* Table of Contents                                                     :TOC:
+- [[#behavioral-tweaks][Behavioral tweaks]]
+  - [[#remove-default-startup-message-text-at-the-top-of-scratch-buffers][Remove default startup message, text at the top of scratch buffers]]
+  - [[#dont-warn-me-before-opening-large-files][Don't warn me before opening large files]]
+  - [[#remove-the-default-emacs-toolbar-top-of-screen][Remove the default emacs toolbar (top of screen)]]
+  - [[#hide-the-scrollbar][Hide the scrollbar]]
+  - [[#when-cursor-is-on-a-paren-highlight-the-other-one][When cursor is on a paren, highlight the other one]]
+  - [[#put-relevant-info-in-the-title-bar][Put /relevant/ info in the title bar]]
+  - [[#dont-try-to-edit-read-only-portions-of-the-minibuffer][Don't try to edit read-only portions of the minibuffer]]
+  - [[#dont-litter-working-directory-with-backup-files][Don't litter working directory with backup files]]
+  - [[#dont-litter-working-directory-with-autosave-files][Don't litter working directory with autosave files]]
+  - [[#delete-highlighted-text-if-you-start-typing-on-top-of-it][Delete highlighted text if you start typing on top of it]]
+  - [[#change-yes-or-no-prompts-to-y-or-n-prompts][Change "yes or no" prompts to "y or n" prompts]]
+  - [[#dont-add-2-spaces-after-a-period][Don't add 2 spaces after a period]]
+  - [[#make-customize-sort-colors-by-color-rather-than-alphabetically][Make Customize sort colors by color, rather than alphabetically]]
+  - [[#make-c-k-kill-the-text-and-newline][Make C-k kill the text AND newline]]
+  - [[#enable-upcasedowncase-region-commands][Enable upcase/downcase-region commands]]
+- [[#aesthetic-tweaks][Aesthetic tweaks]]
+  - [[#set-cursor-appearance][Set cursor appearance]]
+  - [[#change-the-fringe-wrap-indicators][Change the fringe wrap indicators]]
+  - [[#hide-the-fringe][Hide the fringe]]
+  - [[#fonts][Fonts]]
+
 * Behavioral tweaks
 ** Remove default startup message, text at the top of scratch buffers
 #+BEGIN_SRC emacs-lisp

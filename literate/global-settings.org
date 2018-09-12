@@ -1,3 +1,27 @@
+* Table of Contents                                                     :TOC:
+- [[#tools-for-configuring-emacs][Tools for configuring emacs]]
+  - [[#quickly-open-evaluate-my-config-file][Quickly open, evaluate my config file]]
+  - [[#evaluate-a-region-or-the-buffer-whatevers-appropriate][Evaluate a region, or the buffer (whatever's appropriate)]]
+  - [[#switch-to-messages-buffer][Switch to *Messages* buffer]]
+  - [[#record-keyboard-macros][Record keyboard macros]]
+  - [[#funnel-settings-from-customize-into-another-file][Funnel settings from Customize into another file]]
+- [[#initial-buffer-settings][Initial buffer settings]]
+- [[#buffer-management][Buffer management]]
+  - [[#dont-scroll-a-full-screenful-at-a-time][Don't scroll a full screenful at a time]]
+  - [[#cycle-backwards-through-buffers][Cycle backwards through buffers]]
+  - [[#toggle-fullscreen][Toggle fullscreen]]
+  - [[#createdelete-frames][Create/delete frames]]
+  - [[#save-recent-files][Save recent files]]
+- [[#editing][Editing]]
+  - [[#backwards-kill-line][Backwards kill-line]]
+  - [[#transpose-line-up-or-down][Transpose line up or down]]
+- [[#global-keybindings][Global keybindings]]
+- [[#shell--filesystem][Shell / filesystem]]
+  - [[#file-interactions-delete-rename-etc][File interactions (delete, rename, etc.)]]
+  - [[#copy-file-path-to-clipboard][Copy file path to clipboard]]
+  - [[#immediate-todo-buffer]["Immediate todo" buffer]]
+  - [[#revert-buffer-without-prompting][Revert buffer without prompting]]
+
 * Tools for configuring emacs
 This is where I put things that help me modify my emacs install more efficiently
 ** Quickly open, evaluate my config file

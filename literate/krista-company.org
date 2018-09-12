@@ -1,3 +1,6 @@
+* Table of Contents                                                     :TOC:
+- [[#company][Company]]
+
 * Company
 =company= is short for COM-plete ANY-thing
 #+BEGIN_SRC emacs-lisp

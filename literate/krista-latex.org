@@ -1,4 +1,14 @@
 #+PROPERTY: header-args :tangle yes
+* Table of Contents                                                     :TOC:
+- [[#structure-of-main-latex-config][Structure of main LaTeX config]]
+- [[#tex-command-shell-escape][Tex command shell escape]]
+- [[#open-output-buffer][open output buffer]]
+- [[#tweak-compile-function][Tweak compile function]]
+- [[#auto-revert-pdf-buffer][Auto-revert PDF buffer]]
+- [[#quickly-insert-math-section][Quickly insert math section]]
+- [[#font-latex][Font-latex]]
+- [[#reftex][Reftex]]
+
 * Structure of main LaTeX config
 #+BEGIN_SRC emacs-lisp :noweb tangle
 (use-package tex

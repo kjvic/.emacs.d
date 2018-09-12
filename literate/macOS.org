@@ -1,3 +1,11 @@
+* Table of Contents                                                     :TOC:
+- [[#railwaycats-macport-of-the-emacs-gui][Railwaycat's macport of the emacs gui]]
+- [[#script-to-open-the-emacs-gui-from-the-command-line][script to open the emacs gui from the command line]]
+- [[#modifier-keys][modifier keys]]
+- [[#flycheck][Flycheck]]
+- [[#ivy-locate-command][Ivy locate command]]
+- [[#use-macos-open-command-to-choose-an-application][Use macOS open command to choose an application]]
+
 * Railwaycat's [[https://github.com/railwaycat/homebrew-emacsmacport][macport]] of the emacs gui
 * TODO [[https://gist.github.com/railwaycat/4043945][script]] to open the emacs gui from the command line
 * modifier keys

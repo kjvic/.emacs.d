@@ -1,3 +1,20 @@
+* Table of Contents                                                     :TOC:
+- [[#windows-is-ahem-_overzealous_-about-garbage-collection][Windows is... \*ahem* _overzealous_ about garbage collection]]
+  - [[#dont-gc-when-im-in-the-minibuffer][Don't gc when I'm in the minibuffer!]]
+- [[#open-a-windows-explorer-window-from-emacs-at-the-path-of-the-current-buffer][Open a windows explorer window from emacs at the path of the current buffer]]
+- [[#desktop-manager][Desktop manager]]
+  - [[#note-set-process-priority-to-high-or-realtime-to-avoid-win-lag-on-desktop-switching][Note: set "Process priority" to "high" or "realtime" to avoid win-lag on desktop-switching]]
+  - [[#shortcut-series][Shortcut series]]
+- [[#visual-studio-integration][Visual studio integration]]
+  - [[#install-open-in-emacs-vs-extension][Install "Open in emacs" VS extension]]
+  - [[#globally-bind-buildcleansolution-to-ctrlshiftc][Globally bind Build.CleanSolution to Ctrl+Shift+C]]
+  - [[#use-visual-studio-compliant-settings][Use visual studio-compliant settings]]
+- [[#remap-capslock-to-control][Remap capslock to control]]
+  - [[#open-or-download-sharpkeys][Open or download SharpKeys]]
+  - [[#add-new-keymapping][Add new keymapping]]
+- [[#powershell][Powershell]]
+- [[#cygwin][Cygwin]]
+
 * Windows is... \*ahem* _overzealous_ about garbage collection
 Make sure that that's not the case
 #+BEGIN_SRC emacs-lisp

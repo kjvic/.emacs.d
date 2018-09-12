@@ -1,4 +1,27 @@
 #+PROPERTY: header-args :tangle yes
+* Table of Contents                                                     :TOC:
+- [[#org-mode-proper][Org-mode proper]]
+  - [[#tips-from-httporgmodeorgworgorg-tutorialsorgtutorial_dtohtml][Tips from http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html]]
+  - [[#aesthetics][Aesthetics]]
+  - [[#habits][Habits]]
+  - [[#org-ordered-tasks][Org ordered tasks]]
+  - [[#exporting-to-latex][Exporting to LaTeX]]
+  - [[#org-capture][Org Capture]]
+  - [[#org-refile][Org Refile]]
+  - [[#agenda][Agenda]]
+  - [[#super-agenda][Super-agenda]]
+  - [[#inline-images][inline images]]
+  - [[#tweaks-to-tree-behavior][Tweaks to tree behavior]]
+  - [[#quickly-add-source-blocks][Quickly add source blocks]]
+  - [[#babel--languages][Babel / Languages]]
+  - [[#links][Links]]
+  - [[#org-tables][Org tables]]
+  - [[#markdown-as-org-mode][markdown as org mode]]
+  - [[#timestamps][Timestamps]]
+- [[#calfw][Calfw]]
+- [[#org-gcal][org-gcal]]
+- [[#toc-org][toc-org]]
+
 * Org-mode proper
 #+BEGIN_SRC emacs-lisp :noweb tangle
 (message "[krista] Loading org-mode settings...")
