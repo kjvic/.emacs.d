@@ -150,6 +150,7 @@ Get emacs off the ground!
 - This is because my external files have "use-package" statements,
   which won't work if use-package hasn't been loaded yet!
 ** OS-specific config
+Sourcing [[file:literate/macOS.org::*Railwaycat's%20%5B%5Bhttps://github.com/railwaycat/homebrew-emacsmacport%5D%5Bmacport%5D%5D%20of%20the%20emacs%20gui][macOS.org]], [[file:literate/windows.org::*Windows%20is...%20\*ahem*%20_overzealous_%20about%20garbage%20collection][windows.org]]
 #+BEGIN_SRC emacs-lisp
 (message "[krista] OS-specific config")
 (krista/new-config-file macOS "macOS")
@@ -160,61 +161,73 @@ Get emacs off the ground!
        (org-babel-load-file krista/windows-config-file)))
 #+END_SRC
 ** Better defaults
+Sourcing [[file:literate/better-defaults.org::*Behavioral%20tweaks][better-defaults.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file better-defaults "better-defaults")
 (org-babel-load-file krista/better-defaults-config-file)
 #+END_SRC
 ** Global settings
+Sourcing [[file:literate/global-settings.org::*Tools%20for%20configuring%20emacs][global-settings.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file global-settings "global-settings")
 (org-babel-load-file krista/global-settings-config-file)
 #+END_SRC
 ** Gcal
+Sourcing hidden/.gitignored file gcal-secrets.org
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file gcal-secrets "gcal-secrets")
 (org-babel-load-file krista/gcal-secrets-config-file)
 #+END_SRC
 ** Ivy
+Sourcing [[file:literate/krista-ivy.org][krista-ivy.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file krista-ivy "krista-ivy")
 (org-babel-load-file krista/krista-ivy-config-file)
 #+END_SRC
 ** Magit
+Sourcing [[file:literate/krista-magit.org][krista-magit.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file krista-magit "krista-magit")
 (org-babel-load-file krista/krista-magit-config-file)
 #+END_SRC
 ** Org-mode
+Sourcing [[file:literate/krista-org-mode.org][krista-org-mode.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file krista-org-mode "krista-org-mode")
 (org-babel-load-file krista/krista-org-mode-config-file)
 #+END_SRC
 ** Company
+Sourcing [[file:literate/krista-company.org][krista-company.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file krista-company "krista-company")
 (org-babel-load-file krista/krista-company-config-file)
 #+END_SRC
 ** Tramp
+Sourcing [[file:literate/krista-tramp.org][krista-tramp.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file krista-tramp "krista-tramp")
 (org-babel-load-file krista/krista-tramp-config-file)
 #+END_SRC
 ** Modeline
+Sourcing [[file:literate/krista-modeline.org]krista-modeline.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file modeline "modeline")
 (org-babel-load-file krista/modeline-config-file)
 #+END_SRC
 ** Programming support
+Sourcing [[file:literate/programming-support.org][programming-support.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file programming-support "programming-support")
 (org-babel-load-file krista/programming-support-config-file)
 #+END_SRC
 ** Minor packages
+Sourcing [[file:literate/minor-packages.org][minor-packages.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file minor-packages "minor-packages")
 (org-babel-load-file krista/minor-packages-config-file)
 #+END_SRC
 ** LaTeX
+Sourcing [[file:literate/krista-latex.org][krista-latex.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file krista-latex "krista-latex")
 (org-babel-load-file krista/krista-latex-config-file)
