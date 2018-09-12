@@ -11,13 +11,13 @@ Get emacs off the ground!
 (add-to-list 'load-path "~/.emacs.d/elisp/")
 (add-to-list 'load-path (concat user-emacs-directory "literate/tron-doom/"))
 #+END_SRC
-** Profiling? Set `:tangle yes` below
-To profile accurately, I need to reload all of my packages. I don't
-normallly want to waste time like that, so I set :tangle no
-https://sriramkswamy.github.io/dotemacs/
-#+BEGIN_SRC emacs-lisp :tangle no
-(require 'package)
-(package-initialize)
+** Profiling? Uncomment this
+- To profile accurately, I need to reload all of my packages
+  - Source: https://sriramkswamy.github.io/dotemacs/
+- To do this, I need to uncomment this block of code:
+#+BEGIN_SRC emacs-lisp
+;; (require 'package)
+;; (package-initialize)
 #+END_SRC
 ** use-package: package management management
 [[https://github.com/jwiegley/use-package][use-package github]]
@@ -32,14 +32,13 @@ https://sriramkswamy.github.io/dotemacs/
 ;; All packages in a use-package macro should be automagically installed
 (setq use-package-always-ensure t)
 #+END_SRC
-** Literate programming support
+** Tangling helpers / Literate programming support
 - NOTE: you /must/ have each tangle block on a new line in order for it
   to be tangled correctly!!!!
 - NOTE: It is important that use-package has been loaded before this
   block is executed
 - This is because my external files have "use-package" statements,
   which won't work if use-package hasn't been loaded yet!
-*** Tangling helpers
 #+BEGIN_SRC emacs-lisp
 (message "[krista] Defining helper macros for tangling")
 (setq-default krista/org-config-directory "literate")
@@ -60,12 +59,12 @@ https://sriramkswamy.github.io/dotemacs/
        (add-to-list
         (quote krista/config-org-files) (quote (,name . ,filename)) t))))
 #+END_SRC
-*** Now actually tangle the external files
+** Tangle external files
 - NOTE: It is important that use-package has been loaded before this
   block is executed
 - This is because my external files have "use-package" statements,
   which won't work if use-package hasn't been loaded yet!
-**** OS-specific config
+*** OS-specific config
 #+BEGIN_SRC emacs-lisp
 (message "[krista] OS-specific config")
 (krista/new-config-file macOS "macOS")
@@ -75,22 +74,22 @@ https://sriramkswamy.github.io/dotemacs/
       ((member system-type '(ms-dos windows-nt cygwin))
        (org-babel-load-file krista/windows-config-file)))
 #+END_SRC
-**** Modeline
+*** Modeline
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file modeline "modeline")
 (org-babel-load-file krista/modeline-config-file)
 #+END_SRC
-**** Gcal
+*** Gcal
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file gcal-secrets "gcal-secrets")
 (org-babel-load-file krista/gcal-secrets-config-file)
 #+END_SRC
-**** LaTeX
+*** LaTeX
 #+BEGIN_SRC emacs-lisp
-(krista/new-config-file latex-config "latex-config")
-;; (org-babel-load-file krista/latex-config-file)
+(krista/new-config-file krista-latex "krista-latex")
+(org-babel-load-file krista/krista-latex-config-file)
 #+END_SRC
-** Special Files: GTD, media, orgzly, etc.
+** Special files: [gtd]/agenda, [media] etc.
 #+BEGIN_SRC emacs-lisp
 (setq krista/orgzly-dir "~/Dropbox/orgzly/")
 
@@ -136,43 +135,6 @@ https://sriramkswamy.github.io/dotemacs/
 (bind-key "H-g" '(lambda () (interactive) (find-file krista/gcal-file)))
 (bind-key "H-h" '(lambda () (interactive) (find-file krista/habits-file)))
 #+END_SRC
-** Show org agenda at startup
-  #+BEGIN_SRC emacs-lisp
-  (setq inhibit-startup-screen t
-        inhibit-startup-message t
-        initial-major-mode 'fundamental-mode
-        inhibit-splash-screen t)
-  (add-hook 'emacs-startup-hook
-            (lambda ()
-              ;; GTD review
-              (org-agenda nil "r")
-              (delete-other-windows)))
-  #+END_SRC
-** +Byte-compile+
-   #+BEGIN_SRC emacs-lisp
-   ;; (defun diego/async-tangle-init ()
-   ;;   (async-start
-   ;;    (lambda ()
-   ;;      ;; make async emacs aware of packages (for byte-compilation)
-   ;;      (package-initialize)
-   ;;      (setq package-enable-at-startup nil)
-   ;;      (require 'org)
-
-   ;;      ;; tangle
-   ;;      (org-babel-tangle-file
-   ;;       (expand-file-name (concat user-emacs-directory "config.org"))
-   ;;       (expand-file-name (concat user-emacs-directory "config.el")) 
-   ;;       "emacs-lisp")
-
-   ;;      ;; these guys were producing errors at byte-compilation, requiring them fixed this
-   ;;      ;; (require 'crux)
-   ;;      ;; (require 'fringe-helper)
-
-   ;;      ;; byte-compile
-   ;;      (byte-compile-file
-   ;;       (expand-file-name  (concat user-emacs-directory "config.el"))))
-   ;;    'ignore))
-   #+END_SRC
 * Tools for configuring emacs
 This is where I put things that help me modify my emacs install more efficiently
 ** Quickly open, evaluate my config file
@@ -260,6 +222,18 @@ This is where I put things that help me modify my emacs install more efficiently
 ;; (load custom-file :noerror)
 #+END_SRC
 * Global settings
+** Show org agenda at startup
+  #+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-screen t
+        inhibit-startup-message t
+        initial-major-mode 'fundamental-mode
+        inhibit-splash-screen t)
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              ;; GTD review
+              (org-agenda nil "r")
+              (delete-other-windows)))
+  #+END_SRC
 ** Better defaults
 *** Remove default startup message, text at the top of scratch buffers
 #+BEGIN_SRC emacs-lisp
@@ -678,143 +652,7 @@ out how to set it immediately, but this should suffice as startup config.
 (setq display-time-default-load-average nil)
 #+END_SRC
 * Major packages
-** LaTeX
-#+BEGIN_EXAMPLE 
-#+BEGIN_SRC emacs-lisp
-(use-package tex
-  :ensure auctex
-  :defer 5
-  :config
-  ;; TODO: fucks up prettify for some reason?
-  ;; (company-auctex-init)
-  ;; save buffer style info
-  (setq TeX-auto-save t)
-  ;; automatically parse style info
-  (setq TeX-parse-self t)
-  ;; no tabs
-  (setq TeX-auto-untabify t)
-  ;; TODO: unsure what this does
-  ;; (setq-default TeX-master 'dwim)
-  (TeX-PDF-mode 1)
-  (defun spruce/TeX-open-output-buffer ()
-    (interactive)
-    (let ((output-file (with-current-buffer TeX-command-buffer
-                         (expand-file-name
-                          (TeX-active-master (TeX-output-extension))))))
-      (find-file output-file)))
-  (add-to-list 'TeX-view-program-list
-               (list "Emacs" #'spruce/TeX-open-output-buffer))
-
-  (setq TeX-view-program-selection '((output-pdf "Emacs")))
-  ;; better name for local variable
-  (defun latex-compile ()
-    (interactive)
-    (save-buffer)
-    (TeX-command "LaTeX" 'TeX-master-file))
-
-  (setq TeX-auto-local ".auctex-auto")
-  ;; auto revert pdf buffer
-  (add-hook 'TeX-after-compilation-finished-functions
-            #'TeX-revert-document-buffer)
-  ;; show errors if there were any
-  (setq TeX-error-overview-open-after-TeX-run t)
-  ;; don't confirm before cleaning files
-  (setq TeX-clean-confirm nil)
-  (setq TeX-save-query nil)
-  (defun TeX-insert-pair (arg open-str close-str)
-    "Like TeX-insert-brackes but for any pair"
-    (interactive "P")
-    (if (TeX-active-mark)
-        (progn
-          (if (< (point) (mark)) (exchange-point-and-mark))
-          (insert close-str)
-          (save-excursion (goto-char (mark)) (insert open-str)))
-      (insert open-str)
-      (save-excursion
-        (if arg (forward-sexp (prefix-numeric-value arg)))
-        (insert close-str))))
-  (setq TeX-electric-sub-and-superscript t)
-  (put 'TeX-command-extra-options 'safe-local-variable
-       (lambda (x) (string-equal x "-shell-escape")))
-  (setq-default TeX-command-extra-options "-shell-escape")
-  (use-package latex
-    :ensure nil
-    :config
-    (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-    (setq LaTeX-math-menu-unicode t)
-    (add-hook 'LaTeX-mode-hook (lambda () (latex-electric-env-pair-mode t)))
-    (add-hook 'LaTeX-mode-hook
-              (lambda () (set-fill-column 90)))
-    (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
-    ;; (add-hook 'LaTeX-mode-hook (lambda () (prettify-symbols-mode)))
-    (defun spruce/LaTeX-insert-inline-math (arg)
-      (interactive "P")
-      (TeX-insert-pair arg "\\( " " \\)"))
-    (defun spruce/LaTeX-insert-display-math (arg)
-      (interactive "P")
-      (TeX-insert-pair arg "\\[ " " \\]"))
-
-    (defun spruce/LaTeX-insert-problem (problem-number &optional is-last)
-      (beginning-of-line)
-      (let ((problem (concat "\\problem{" problem-number "}"))
-            (unfinished "\\unfinished{}"))
-        (insert problem "\n\n" unfinished "\n"
-                (if is-last "" "\n"))))
-
-    (defun spruce/LaTeX-make-problem-list ()
-      (interactive)
-      (let ((data (split-string (thing-at-point 'line t))))
-        (when data
-          (delete-region (line-beginning-position)
-                         (line-end-position))
-          (mapc #'spruce/LaTeX-insert-problem (butlast data))
-          (spruce/LaTeX-insert-problem (car (last data)) t))))
-
-    (defun spruce/LaTeX-mode-keybindings ()
-      (bind-key "H-C-j" #'spruce/LaTeX-insert-inline-math
-                (current-local-map))
-      (bind-key "H-C-k" #'spruce/LaTeX-insert-display-math
-                (current-local-map))
-      (bind-key "C-c x p" #'spruce/LaTeX-make-problem-list
-                (current-local-map))
-      (local-unset-key "\""))
-
-    (add-hook 'LaTeX-mode-hook #'spruce/LaTeX-mode-keybindings)
-    (add-hook 'org-mode-hook #'spruce/LaTeX-mode-keybindings)
-    (with-eval-after-load 'smartparens
-      (add-hook 'TeX-mode-hook #'smartparens-mode))
-    (use-package font-latex
-      :ensure nil
-      :config
-      (set-face-attribute 'font-latex-sedate-face nil
-                          :inherit 'font-lock-constant-face
-                          :foreground 'unspecified))
-    :bind (:map LaTeX-mode-map
-           ("C-c c" . latex-compile))))
-
-(use-package reftex
-  :diminish reftex-mode
-  :config
-  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  (setq reftex-plug-into-AUCTeX t)
-  (setq reftex-toc-follow-mode t))
-
-;; Don't prompt me for section labels!!!
-;; Source: https://tex.stackexchange.com/a/194017
-;; (eval-after-load "latex"
-;;   '(progn
-;;      (defun LaTeX-label (env))))
-;; (setq latex-templates-directory (with-user-d "templates" "latex-templates"))
-;; (defun latex-template ()
-;;   (interactive)
-;;   (let* ((files (file-expand-wildcards (concat latex-templates-directory "*.tex")))
-;;          (selection (completing-read "LaTeX Template: "
-;;                                      (mapcar #'file-name-base files))))
-;;     (insert-file-contents (concat latex-templates-directory selection ".tex"))))
-#+END_SRC
-#+END_EXAMPLE
 ** Org-mode
-*** Config
 #+BEGIN_SRC emacs-lisp :noweb tangle
 (message "[krista] Loading org-mode settings...")
 (setq org-modules '(org-bbdb org-bibtex org-docview org-gnus
@@ -2183,7 +2021,7 @@ This config is adapted from Spruce Bondera's .emacs.d
   (setq sp-escape-quotes-after-insert nil)
 
   ;; https://smartparens.readthedocs.io/en/latest/pair-management.html
-  (sp-pair "$" "$")   ;; latex inline math mode. Pairs can have same opening and closing string
+  ;; (sp-pair "$" "$")   ;; latex inline math mode. Pairs can have same opening and closing string
 
   :bind (("C-M-f" . sp-forward-sexp)
          ("C-M-b" . sp-backward-sexp)

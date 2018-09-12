@@ -1,0 +1,139 @@
+* Structure of main LaTeX config
+#+BEGIN_SRC emacs-lisp :noweb tangle
+(use-package tex
+  :ensure auctex
+  :defer 5
+  :config
+
+  (setq TeX-auto-save t  ; save buffer style info
+	TeX-parse-self t ; automatically parse style info
+	TeX-auto-untabify t ; no tabs
+	TeX-view-program-selection '((output-pdf "Emacs"))
+	TeX-auto-local ".auctex-auto"
+	TeX-error-overview-open-after-TeX-run t ; show errors if there were any
+	TeX-clean-confirm nil ; don't confirm before cleaning files
+	TeX-save-query nil
+	TeX-electric-sub-and-superscript t
+	)
+  <<tex-shell-escape>>
+  <<open-output-buffer>>
+  <<tweak-compile-function>>
+  <<auto-revert-pdf-buffer>>
+
+  (use-package latex
+    :ensure nil
+    :config
+    (setq LaTeX-math-menu-unicode t)
+    (add-hook 'LaTeX-mode-hook 
+	      (lambda ()
+		(latex-electric-env-pair-mode t)
+		(set-fill-column 90)
+		(turn-on-auto-fill)
+		(LaTeX-math-mode)))
+    <<quick-insert-math>>
+    <<font-latex>>
+    <<reftex>>
+
+    :bind (:map LaTeX-mode-map
+           ("C-c c" . latex-compile))
+
+    ) ;; End of use-package latex
+  ) ;; End of use-package tex
+#+END_SRC
+
+* Tex command shell escape
+#+BEGIN_SRC emacs-lisp :noweb-ref tex-shell-escape :tangle no
+  (put 'TeX-command-extra-options 'safe-local-variable
+       (lambda (x) (string-equal x "-shell-escape")))
+  (setq-default TeX-command-extra-options "-shell-escape")
+#+END_SRC
+* open output buffer
+#+BEGIN_SRC emacs-lisp :noweb-ref open-output-buffer :tangle no
+  (defun spruce/TeX-open-output-buffer ()
+    (interactive)
+    (let ((output-file (with-current-buffer TeX-command-buffer
+                         (expand-file-name
+                          (TeX-active-master (TeX-output-extension))))))
+      (find-file output-file)))
+  
+  (add-to-list 'TeX-view-program-list
+               (list "Emacs" #'spruce/TeX-open-output-buffer))
+
+#+END_SRC
+* Tweak compile function
+#+BEGIN_SRC emacs-lisp :noweb-ref tweak-compile-function :tangle no
+;; compile with pdflatex
+(TeX-PDF-mode 1)
+
+;; Save before compiling
+(defun latex-compile ()
+    (interactive)
+    (save-buffer)
+    (TeX-command "LaTeX" 'TeX-master-file))
+#+END_SRC
+* Auto-revert PDF buffer
+#+BEGIN_SRC emacs-lisp :noweb-ref auto-revert-pdf-buffer :tangle no
+  ;; auto revert pdf buffer
+  (add-hook 'TeX-after-compilation-finished-functions
+            #'TeX-revert-document-buffer)
+#+END_SRC
+* Quickly insert math section
+#+BEGIN_SRC emacs-lisp :noweb-ref quick-insert-math :tangle no
+;; General helper function
+(defun TeX-insert-pair (arg open-str close-str)
+  "Like TeX-insert-brackes but for any pair"
+  (interactive "P")
+  (if (TeX-active-mark)
+      (progn
+        (if (< (point) (mark)) (exchange-point-and-mark))
+        (insert close-str)
+        (save-excursion (goto-char (mark)) (insert open-str)))
+    (insert open-str)
+    (save-excursion
+      (if arg (forward-sexp (prefix-numeric-value arg)))
+      (insert close-str))))
+
+;; Define the quick-insert-math functions...
+(defun spruce/LaTeX-insert-inline-math (arg)
+  (interactive "P")
+  (TeX-insert-pair arg "\\( " " \\)"))
+(defun spruce/LaTeX-insert-display-math (arg)
+  (interactive "P")
+  (TeX-insert-pair arg "\\[ " " \\]"))
+
+;; Helper function: call this to bind quick-insert-math functions to
+;; the current mode's local map
+(defun spruce/common-LaTeX-mode-keybindings ()
+  (bind-key "H-C-j" #'spruce/LaTeX-insert-inline-math
+            (current-local-map))
+  (bind-key "H-C-k" #'spruce/LaTeX-insert-display-math
+            (current-local-map))
+  (local-unset-key "\""))
+
+;; Make these bindings available in LaTeX-mode and org-mode
+;;
+;; NOTE: the reason why I'm adding this to org-mode is because org
+;; mode has support for inline latex. These bindings are therefore
+;; helpful
+(add-hook 'LaTeX-mode-hook #'spruce/common-LaTeX-mode-keybindings)
+(add-hook 'org-mode-hook   #'spruce/common-LaTeX-mode-keybindings)
+#+END_SRC
+* Font-latex
+The mode =font-latex= offers fontification (syntax highlighting) for latex
+#+BEGIN_SRC emacs-lisp :noweb-ref font-latex :tangle no
+    (use-package font-latex
+      :ensure nil
+      :config
+      (set-face-attribute 'font-latex-sedate-face nil
+                          :inherit 'font-lock-constant-face
+                          :foreground 'unspecified))
+#+END_SRC
+* Reftex
+#+BEGIN_SRC emacs-lisp noweb-ref reftex :tangle no
+(use-package reftex
+  :diminish reftex-mode
+  :config
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-plug-into-AUCTeX t)
+  (setq reftex-toc-follow-mode t))
+#+END_SRC
