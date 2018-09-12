@@ -1,7 +1,47 @@
 #+TITLE: Krista Victorsen's Emacs configuration
 #+AUTHOR: Krista Victorsen
 #+PROPERTY: header-args :tangle yes
-* Table of Contents
+* Table of Contents                                                     :TOC:
+- [[#bootstrap][Bootstrap]]
+  - [[#load-path][Load-path]]
+  - [[#special-files-gtdagenda-media-etc][Special files: gtd/agenda, media etc.]]
+  - [[#profiling-uncomment-this][Profiling? Uncomment this]]
+  - [[#use-package-package-management-management][use-package: package management management]]
+  - [[#tangling-helpers--literate-programming-support][Tangling helpers / Literate programming support]]
+- [[#tangle-external-files][Tangle external files]]
+  - [[#os-specific-config][OS-specific config]]
+  - [[#better-defaults][Better defaults]]
+  - [[#global-settings][Global settings]]
+  - [[#gcal][Gcal]]
+  - [[#ivy][Ivy]]
+  - [[#magit][Magit]]
+  - [[#org-mode][Org-mode]]
+  - [[#company][Company]]
+  - [[#tramp][Tramp]]
+  - [[#modeline][Modeline]]
+  - [[#programming-support][Programming support]]
+  - [[#minor-packages][Minor packages]]
+  - [[#latex][LaTeX]]
+- [[#tron-doom-theme][Tron doom theme]]
+- [[#getting-help][Getting help]]
+  - [[#how-tos][How-to's]]
+  - [[#troubleshooting-your-config-file][Troubleshooting your config file]]
+  - [[#helpful-resources][Helpful resources]]
+- [[#further-plans][Further plans]]
+  - [[#add-submodules-for-repos-that-are-not-on-melpa][Add submodules for repos that are not on MELPA]]
+  - [[#gtd-goals][Gtd goals]]
+  - [[#improvements-to-org-mode][Improvements to org mode]]
+  - [[#kinesis-specific-keyboard-issues][Kinesis-specific keyboard issues]]
+  - [[#integrated-compiler--version-control--logging-facility][Integrated compiler / version control / logging facility]]
+  - [[#set-up-steam-integration-with-emacs][Set up steam integration with emacs]]
+  - [[#spotify-controls-in-emacs][spotify controls in emacs]]
+  - [[#install--configure-hackernews-mode][install & configure hackernews mode]]
+  - [[#emacsw3][Emacs/W3]]
+  - [[#multiple-cursors][multiple-cursors]]
+  - [[#add-more-to-yasnippet][Add more to yasnippet]]
+  - [[#install-the-alert-package][Install the alert package]]
+  - [[#install-winner-windmove][Install winner, windmove]]
+
 * Bootstrap
 Get emacs off the ground!
 ** Load-path
@@ -10,7 +50,7 @@ Get emacs off the ground!
 (add-to-list 'load-path "~/.emacs.d/elisp/")
 (add-to-list 'load-path (concat user-emacs-directory "literate/tron-doom/"))
 #+END_SRC
-** Special files: [gtd]/agenda, [media] etc.
+** Special files: gtd/agenda, media etc.
 #+BEGIN_SRC emacs-lisp
 (setq krista/orgzly-dir "~/Dropbox/orgzly/")
 
