@@ -1,3 +1,4 @@
+#+PROPERTY: header-args :tangle yes
 * Structure of main LaTeX config
 #+BEGIN_SRC emacs-lisp :noweb tangle
 (use-package tex

@@ -1,0 +1,164 @@
+* Whitespace preferences
+#+BEGIN_SRC emacs-lisp
+(message "[krista] Loading whitespace preferences...")
+(setq tab-width 4)
+
+(use-package whitespace)
+
+;; Show trailing whitespace by default
+(setq-default show-trailing-whitespace t)
+;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
+;; ... but don't show trailing whitespace if I'm in
+;; - a minibuffer
+;; - help mode
+;; - in a makefile
+(defun hide-trailing-whitespace () (setq show-trailing-whitespace nil))
+(add-hook 'minibuffer-setup-hook
+          'hide-trailing-whitespace)
+(add-hook 'help-mode-hook
+          'hide-trailing-whitespace)
+(add-hook 'compilation-mode-hook
+          'hide-trailing-whitespace)
+(add-hook 'makefile-mode-hook
+          'hide-trailing-whitespace)
+(add-hook 'text-mode-hook
+          'hide-trailing-whitespace)
+;; Function hide-trailing-whitespace is adapted from
+;; the function no-trailing-whitespace, available:
+;; https://ogbe.net/emacsconfig.html
+
+;; This is commented out because it automatically cleans up whitespace on save
+;; This can be a pain when collaborating with other people, so I have it disabled by default
+;; TODO: set up to auto-enable or disable based on number of collaborators
+
+(setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
+(add-hook 'prog-mode-hook 'whitespace-mode)
+;; (setq whitespace-action '(auto-cleanup))
+#+END_SRC
+* Programming languages
+** C / C++
+#+BEGIN_SRC emacs-lisp
+(message "[krista] Loading cc-mode...")
+(use-package cc-mode
+  :defer t
+  :config
+  ;; This function matches any existing whitespace style that can be found
+  ;; Source: Spruce Bondera's config
+  (with-eval-after-load 'dtrt-indent
+    (add-hook 'c-mode-common-hook
+              (lambda () (dtrt-indent-mode t))))
+  :bind (:map
+         c-mode-base-map
+         ("C-c b" . compile)
+         ("M-j" . join-line)))
+
+(use-package cpputils-cmake
+  :defer t
+  :config
+  (add-hook 'c-mode-common-hook
+            (lambda ()
+              (if (derived-mode-p 'c-mode 'c++-mode)
+                  (cppcm-reload-all)))))
+
+
+(c-add-style "krista-style"             ; title
+             '("python"                 ; inherit from the python style
+               (indent-tabs-mode . nil) ; indents: use spaces, not tabs
+               (c-basic-offset . 4)     ; indents: 4 chars wide
+               (fill-column . 80)))     ; when to wrap line? (In chars)
+(setq c-default-style "krista-style")
+
+(use-package modern-cpp-font-lock   :defer t)
+(add-hook 'c++-mode-hook #'modern-c++-font-lock-mode)
+
+;; (defface font-lock-operator-face
+;;   '((((class color)
+;;        :background "darkseagreen2")))
+;;   "Basic face for highlighting."
+;;   :group 'basic-faces)
+
+;; ;; You'll have a hard time missing these colors
+;; (set-face-foreground 'font-lock-operator-face "red")
+;; (set-face-background 'font-lock-operator-face "blue")
+
+;; (font-lock-add-keywords 'c++-mode
+;;   '(("\\(~:^&\|!<>:=,.?\\+*/%-]\\)" 0 'font-lock-operator-face)))
+#+END_SRC
+** Python
+*** Pylint minor mode
+#+BEGIN_SRC emacs-lisp
+(message "[krista] Loading python config...")
+(autoload 'pylint "pylint")
+(add-hook 'python-mode-hook 'pylint-add-menu-items)
+(add-hook 'python-mode-hook 'pylint-add-key-bindings)
+#+END_SRC
+*** Python shell interpreter
+- Problem: When I ran =run-python=, I got the following error message:
+  - Warning (python): Your ‘python-shell-interpreter’ doesn’t seem to
+    support readline, yet ‘python-shell-completion-native’ was t and
+    "python" is not part of the
+    ‘python-shell-completion-native-disabled-interpreters’ list.
+    Native completions have been disabled locally.
+- Solution (via [[https://emacs.stackexchange.com/a/30970][this]]):
+  #+BEGIN_SRC emacs-lisp
+  (with-eval-after-load 'python
+    (defun python-shell-completion-native-try ()
+      "Return non-nil if can trigger native completion."
+      (let ((python-shell-completion-native-enable t)
+            (python-shell-completion-native-output-timeout
+             python-shell-completion-native-try-output-timeout))
+        (python-shell-completion-native-get-completions
+         (get-buffer-process (current-buffer))
+         nil "_"))))
+  #+END_SRC
+*** Press <tab> to indent with 2 spaces
+#+BEGIN_SRC emacs-lisp
+(setq python-indent 2)
+(add-hook 'python-mode-hook
+          (lambda ()
+            (setq indent-tabs-mode nil)
+            (setq tab-width 2)
+            (setq python-indent 2)))
+#+END_SRC
+** Slime (lisp)
+#+BEGIN_SRC emacs-lisp
+;; Quicklisp install and this config from https://gist.github.com/jteneycke/7947353
+;; (load (expand-file-name "~/quicklisp/slime-helper.el"))
+;; Replace "sbcl" with the path to your implementation
+;; (setq inferior-lisp-program "/usr/local/bin/sbcl")
+;; (add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode)
+;; (add-hook 'slime-mode-hook #'rainbow-delimiters-mode)
+#+END_SRC
+** haskell
+#+BEGIN_SRC emacs-lisp
+(use-package haskell-mode :defer t)
+#+END_SRC
+** C#
+#+BEGIN_SRC emacs-lisp
+(use-package csharp-mode
+  :defer t
+  :config
+
+  ;; TODO: try removing this. Spruce said that it's unnecessary -- should look into that
+  (autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
+  (setq auto-mode-alist
+        (append '(("\\.cs$" . csharp-mode)) auto-mode-alist))
+
+  :bind
+  ("C-c C-c" . recompile))
+
+;; Csharp mode Whitespace preferences
+(c-add-style "krista-csharp-style"      ; title
+             '("python"                 ; inherit from the python style
+               (indent-tabs-mode . nil) ; indents: use spaces, not tabs
+               (c-basic-offset . 4)     ; indents: 4 chars wide
+               (fill-column . 80)))     ; when to wrap line? (In chars)
+
+(add-hook 'csharp-mode-hook (lambda () (c-set-style "krista-csharp-style")))
+;; TODO: Set default csharp style
+;; (add-hook  'csharp-mode-hook 'my-csharp-mode t)
+
+(add-hook 'csharp-mode-hook 'omnisharp-mode)
+(eval-after-load 'company
+  '(add-to-list 'company-backends 'company-omnisharp))
+#+END_SRC

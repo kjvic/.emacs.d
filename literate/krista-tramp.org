@@ -1,0 +1,17 @@
+* Tramp
+#+BEGIN_SRC emacs-lisp
+(use-package tramp
+  :config
+  (setq tramp-default-method "ssh")
+
+  ;; Make tramp actually read my PATH variable
+  ;; NOTE: needed to restart emacs and rm ~/.emacs.d/tramp on my local to get
+  ;; this config to take effect
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+  
+  ;; Use SSH ControlMasters to try to keep any connections alive as long as
+  ;; possible. This gets rid of a lot of time spent reconnecting and
+  ;; re-inputting credentials
+  (setq tramp-ssh-controlmaster-options
+        "-o ControlMaster=auto -o ControlPersist=yes"))
+#+END_SRC

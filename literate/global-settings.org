@@ -1,0 +1,244 @@
+* Tools for configuring emacs
+This is where I put things that help me modify my emacs install more efficiently
+** Quickly open, evaluate my config file
+#+BEGIN_SRC emacs-lisp
+(defun krista/speedy-open-config ()
+  "Quickly open my config file"
+  (interactive)
+  (find-file (or "~/.emacs.d/config.org"
+                 user-init-file "")))
+(bind-key "C-c e" #'krista/speedy-open-config)
+
+(defun krista/speedy-eval-config ()
+  "Quickly evaluate my config file"
+  (interactive)
+  (load-file user-init-file)
+  ;; Restart org mode
+  (org-mode-restart)
+  ;; Update modeline
+  (force-mode-line-update t))
+(bind-key "C-c C-h" #'krista/speedy-eval-config)
+#+END_SRC
+** Evaluate a region, or the buffer (whatever's appropriate)
+#+BEGIN_SRC emacs-lisp
+(defun eval-region-or-buffer ()
+  "Let me eval either a region or a buffer at a time"
+  (interactive)
+  (let ((debug-on-error t))
+    (cond
+     (mark-active
+      (call-interactively 'eval-region)
+      (message "Region evaluated!")
+      (setq deactivate-mark t))
+     (t
+      (eval-buffer)
+      (message "Buffer evaluated!")))))
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (bind-key "C-c C-b" #'eval-region-or-buffer)))
+#+END_SRC
+** Switch to *Messages* buffer
+#+BEGIN_SRC emacs-lisp
+(defun switch-to-messages-buffer ()
+  "Open up the *Messages* buffer in a new frame"
+  (interactive)
+  (switch-to-buffer-other-window "*Messages*"))
+(bind-key "C-c m" #'switch-to-messages-buffer)
+#+END_SRC
+** Record keyboard macros
+#+BEGIN_SRC emacs-lisp
+;; Start & end recording new keyboard macro
+(bind-key "M-[" #'kmacro-start-macro)
+(bind-key "M-]" #'kmacro-end-macro)
+;; Call the last keyboard macro that was recorded
+(bind-key "C-l" #'call-last-kbd-macro)
+#+END_SRC
+** Funnel settings from Customize into another file
+#+BEGIN_SRC emacs-lisp
+;; Save the pesky Custom options elsewhere! (i.e. in user-emacs-directory/custom.el)
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+;; Uncomment this ONLY if you want to see the pesky Custom options. They *are* saved, although they're not loaded
+;; (load custom-file :noerror)
+#+END_SRC
+* Initial buffer settings
+  #+BEGIN_SRC emacs-lisp
+  (setq inhibit-startup-screen t
+        inhibit-startup-message t
+        initial-major-mode 'fundamental-mode
+        inhibit-splash-screen t)
+  ;; (add-hook 'emacs-startup-hook
+  ;;           (lambda ()
+  ;;             ;; GTD review
+  ;;             (org-agenda nil "r")
+  ;;             (delete-other-windows)))
+  #+END_SRC
+* Buffer management
+See also: [[*Ace-window]]
+** Don't scroll a full screenful at a time
+Keep some "context lines" around
+#+BEGIN_SRC emacs-lisp
+(setq next-screen-context-lines 3)
+#+END_SRC
+** Cycle backwards through buffers
+"C-x o", meet your new friend "C-c o"!
+#+BEGIN_SRC emacs-lisp
+(bind-key "C-c o" #'previous-multiframe-window)
+#+END_SRC
+** Toggle fullscreen
+Note: this resizes/maximizes the frame, but does not enter the OS's native fullscreen mode
+#+BEGIN_SRC emacs-lisp
+(bind-key "C-c C-<return>" #'toggle-frame-fullscreen)
+#+END_SRC 
+** Create/delete frames
+#+BEGIN_SRC emacs-lisp
+(bind-key "H-n" #'make-frame)
+(bind-key "H-w" #'delete-frame)
+#+END_SRC
+** Save recent files
+Recent files are saved/managed by recentf mode (short for _recent_ _f_ iles)
+#+BEGIN_SRC emacs-lisp
+(recentf-mode 1)
+
+;; Number of items to save/suggest
+(setq recentf-max-menu-items 75)
+
+;; Save recentf every n seconds (n=300)
+;;
+;; Note: Recentf runs when you /close/ files. This means that you lose
+;; your history if the session crashes!
+;;
+;; Source: https://emacs.stackexchange.com/a/15115
+(run-at-time (current-time) 300 'recentf-save-list)
+
+;; Exclude some files from the recentf list
+;; Source: https://stackoverflow.com/a/8025312
+;; 
+;; Note: you can call recentf-cleanup to update your recentf list with
+;; your updated exclude preferences
+(add-to-list 'recentf-exclude "recentf")
+(add-to-list 'recentf-exclude "bookmarks")
+(add-to-list 'recentf-exclude "autoloads")
+(add-to-list 'recentf-exclude "org-archive")
+#+END_SRC
+* Editing
+- This section contains variable settings and functions.
+- Rebind preexisting commands in [[*Global%20keybindings][*Global keybindings]]
+** Backwards kill-line
+- It's the backwards version of C-k
+- Note: M-k was originally bound to =kill-sentence=
+- Source: https://www.emacswiki.org/emacs/BackwardKillLine
+#+BEGIN_SRC emacs-lisp
+(defun backward-kill-line (arg)
+  "Kill ARG lines backward."
+  (interactive "p")
+  (kill-line (- 1 arg)))
+(bind-key "M-k" #'backward-kill-line)
+#+END_SRC
+** Transpose line up or down
+#+BEGIN_SRC emacs-lisp
+(defun move-line-up ()
+  "Move up the current line."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
+(defun move-line-down ()
+  "Move down the current line."
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
+(global-set-key (kbd "M-p")  'move-line-up)
+(global-set-key (kbd "M-n")  'move-line-down)
+#+END_SRC
+** Comment out the current line
+Source: https://www.emacswiki.org/emacs/CommentingCode
+#+BEGIN_SRC emacs-lisp
+(defun comment-dwim-line (&optional arg)
+  "Replacement for the comment-dwim command.
+        If no region is selected and current line is not blank and we are not at the end of the line,
+        then comment current line.
+        Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
+  (interactive "*P")
+  (comment-normalize-vars)
+  (if (and (not (region-active-p)) (not (looking-at "[ \t]*$")))
+      (comment-or-uncomment-region (line-beginning-position) (line-end-position))
+    (comment-dwim arg)))
+(bind-key "M-;" #'comment-dwim-line)
+#+END_SRC
+* Global keybindings
+#+BEGIN_SRC emacs-lisp
+;; Eval buffer
+(bind-key "C-c b" #'eval-buffer)
+
+;; Count words in selected region
+
+(bind-key "C-c w" #'count-words)
+;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
+;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
+(bind-key "M-j" #'join-line)
+
+;; Unbind Ctrl+meta+<right>, Ctrl+meta+<left> so BTT can use that to
+;;bring a window to a new desktop
+(global-unset-key (kbd "C-M-<left>"))
+(global-unset-key (kbd "C-M-<right>"))
+#+END_SRC
+* Shell / filesystem
+** File interactions (delete, rename, etc.)
+- Note: OS-specific settings should be in their own literate/OS.org file.
+- However, some OS-agnostic settings can still live here to reduce code duplication
+#+BEGIN_SRC emacs-lisp
+(bind-key "H-d" #'delete-file)
+(bind-key "H-R" #'rename-file)
+
+;; I don't want a prompt, but I /do/ want some verification when a revert happens
+(defun krista/revert-buffer-no-prompt-yes-message ()
+  "Revert buffer without a yes/no prompt, and then show a message"
+  (revert-buffer-no-prompt)
+  (message "Buffer reverted"))
+(bind-key "H-C-r" #'krista/revert-buffer-no-prompt-yes-message)
+#+END_SRC
+** Copy file path to clipboard
+#+BEGIN_SRC emacs-lisp
+;; Source: https://stackoverflow.com/a/2417617
+(defun copy-file-name-to-clipboard ()
+  "Put the current file name on the clipboard"
+  (interactive)
+  (let ((filename (if (equal major-mode 'dired-mode)
+                      default-directory
+                    (buffer-file-name))))
+    (when filename
+      (with-temp-buffer
+        (insert filename)
+        (clipboard-kill-region (point-min) (point-max)))
+      (message filename))))
+(bind-key "H-f" #'copy-file-name-to-clipboard)
+#+END_SRC
+** "Immediate todo" buffer
+When I'm tired or overwhelmed, it often helps me to write a
+super-granular todo list. I usually don't want to save these, but I
+would like to be able to quickly open a new org-mode buffer to gather
+my thoughts.
+
+This function lets me do just that!
+#+BEGIN_SRC emacs-lisp
+;; Sources: 
+;; https://stackoverflow.com/questions/25791605/emacs-how-do-i-create-a-new-empty-buffer-whenever-creating-a-new-frame
+;; https://stackoverflow.com/questions/26419164/programmatically-setting-major-mode-of-buffer-with-emacs-lisp
+(defun krista/immediate-todo ()
+  "Create a new temp buffer in org mode."
+  (interactive)
+  (let ((buffer (generate-new-buffer "*Krista* Immediate Todo")))
+    (switch-to-buffer buffer)
+    (with-current-buffer buffer (org-mode))))
+(bind-key "C-c i" #'krista/immediate-todo)
+#+END_SRC
+** Revert buffer without prompting
+#+BEGIN_SRC emacs-lisp
+(defun revert-buffer-no-prompt ()
+  "Revert buffer without confirm prompt"
+  (interactive)
+  (revert-buffer t t))
+(bind-key "H-R" #'revert-buffer-no-prompt)
+#+END_SRC

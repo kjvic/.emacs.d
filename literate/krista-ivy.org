@@ -1,0 +1,176 @@
+#+PROPERTY: header-args :tangle yes
+* Ivy/Swiper/Counsel
+- Comparison with helm
+  - Ivy
+    - Like Helm
+    - Standalone package
+  - Swiper
+    - Like Helm swoop
+    - Mini-package -- relies on & contained by Ivy
+  - Counsel
+    - Like Helm descbinds + Helm persistent action
+    - Mini-package -- relies on & contained by Ivy
+#+BEGIN_SRC emacs-lisp :noweb tangle
+(message "[krista] Loading ivy...")
+(use-package ivy :ensure t
+  :diminish (ivy-mode . "")
+  :config
+
+  (ivy-mode 1)
+
+  
+  (message "[krista] Loading ivy settings...")
+  (setq ivy-use-virtual-buffers t ; if t: add ‘recentf-mode’,
+				  ; bookmarks to ‘ivy-switch-buffer’.
+	
+	ivy-height 20 ; number of result lines to display
+	enable-recursive-minibuffers t
+	ivy-display-style 'fancy
+	ivy-initial-inputs-alist nil ; if nil: no regexp by default
+				     ; (i.e. remove initial `^' input)
+      ivy-count-format "(%d/%d) "
+      counsel-grep-base-command "grep -Ei -n -e %s %s"
+      )
+ 
+  ;; configure regexp engine.
+  (setq ivy-re-builders-alist '((t . ivy--regex-plus)
+                                (t . ivy--regex-fuzzy)
+                                (t   . ivy--regex-ignore-order)))
+
+  (message "[krista] Loading helm-style-parent-directory...")
+  <<helm-style-parent-directory>>
+
+  (message "[krista] Loading ivy-bookmarks...")
+  <<ivy-bookmarks>>
+
+  )
+
+(message "[krista] Setting ivy keybindings globally...")
+<<set-global-bindings>>
+
+(message "[krista] Configuring org for ivy completion...")
+<<configure-org-for-ivy-completion>>
+
+#+END_SRC
+** Globally override many default functions with Ivy versions
+#+BEGIN_SRC emacs-lisp :noweb-ref set-global-bindings :tangle no
+(global-set-key (kbd "C-s") 'swiper)
+(global-set-key (kbd "C-c C-r") 'ivy-resume) ; Resume ivy session
+(global-set-key (kbd "M-I") 'counsel-imenu)
+(global-set-key (kbd "M-x") 'counsel-M-x)
+(global-set-key (kbd "C-x C-f") 'counsel-find-file)
+(global-set-key (kbd "C-h b") 'counsel-descbinds)
+(global-set-key (kbd "C-h f") 'counsel-describe-function)
+(global-set-key (kbd "C-h v") 'counsel-describe-variable)
+(global-set-key (kbd "C-h F") 'counsel-describe-face)
+(global-set-key (kbd "M-y") 'counsel-yank-pop)
+(global-set-key (kbd "<f1> l") 'counsel-find-library)
+(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+(global-set-key (kbd "C-c g") 'counsel-git)
+(global-set-key (kbd "C-c j") 'counsel-git-grep)
+(global-set-key (kbd "C-c k") 'counsel-ag)
+(global-set-key (kbd "C-x l") 'counsel-locate)
+(global-set-key (kbd "C-S") 'counsel-grep-or-swiper)
+(global-set-key (kbd "C-x C-r") 'counsel-recentf)
+(global-set-key (kbd "C-c C-j") 'counsel-org-goto)
+(global-set-key [remap switch-to-buffer] 'ivy-switch-buffer)
+
+(bind-key (kbd "C-r") #'counsel-minibuffer-history minibuffer-local-map)
+ #+END_SRC
+** Helm-style "go up a directory" in Find-file
+#+BEGIN_SRC emacs-lisp :noweb-ref helm-style-parent-directory :tangle no
+;; I used Helm before using Ivy, so I still have the muscle memory C-l to move
+;; up a directory. This snippet allows me to bind C-l to interact helm-style
+;; Source: https://github.com/abo-abo/swiper/issues/1257
+(defun ivy-backward-directory ()
+  "Forward to `kill-start-of-line'.
+   On error (read-only), call `ivy-on-del-error-function'."
+  (interactive)
+  (if (and ivy--directory (= (minibuffer-prompt-end) (point)))
+      (progn
+        (let ((old-dir (file-name-nondirectory
+                        (directory-file-name ivy--directory)))
+              idx)
+          (ivy--cd (file-name-directory
+                    (directory-file-name
+                     (expand-file-name
+                      ivy--directory))))
+          (ivy--exhibit)
+          (when (setq idx (cl-position
+                           (file-name-as-directory old-dir)
+                           ivy--old-cands
+                           :test 'equal))
+            (ivy-set-index idx))))
+    (condition-case nil
+        (kill-start-of-line) ; a little different here
+      (error
+       (when ivy-on-del-error-function
+         (funcall ivy-on-del-error-function))))))
+
+(bind-key (kbd "C-l") #'ivy-backward-directory ivy-minibuffer-map)
+#+END_SRC
+** Ivy Bookmarks
+#+BEGIN_SRC emacs-lisp :noweb-ref ivy-bookmarks :tangle no
+;; Ivy interface for bookmarks
+;; Source: http://blog.binchen.org/posts/hello-ivy-mode-bye-helm.html
+;; (defun ivy-bookmark-goto ()
+;;   "Open ANY bookmark"
+;;   (interactive)
+;;   (let (bookmarks filename)
+;;     ;; load bookmarks
+;;     (unless (featurep 'bookmark)
+;;       (require 'bookmark))
+;;     (bookmark-maybe-load-default-file)
+;;     (setq bookmarks (and (boundp 'bookmark-alist) bookmark-alist))
+
+;;     ;; do the real thing
+;;     (ivy-read "bookmarks:"
+;;               (delq nil (mapcar (lambda (bookmark)
+;;                                   (let (key)
+;;                                     ;; build key which will be displayed
+;;                                     (cond
+;;                                      ((and (assoc 'filename bookmark) (cdr (assoc 'filename bookmark)))
+;;                                       (setq key (format "%s (%s)" (car bookmark) (cdr (assoc 'filename bookmark)))))
+;;                                      ((and (assoc 'location bookmark) (cdr (assoc 'location bookmark)))
+;;                                       ;; bmkp-jump-w3m is from bookmark+
+;;                                       (unless (featurep 'bookmark+)
+;;                                         (require 'bookmark+))
+;;                                       (setq key (format "%s (%s)" (car bookmark) (cdr (assoc 'location bookmark)))))
+;;                                      (t
+;;                                       (setq key (car bookmark))))
+;;                                     ;; re-shape the data so full bookmark be passed to ivy-read:action
+;;                                     (cons key bookmark)))
+;;                                 bookmarks))
+;;               :action (lambda (bookmark)
+;;                         (bookmark-jump bookmark)))
+;;     ))
+;; (bind-key "C-x r l" #'ivy-bookmark-goto)
+#+END_SRC
+** Fix incremental completion behavior in org mode
+Make ivy play nice with "C-c C-w" (org-refile)
+Source: https://github.com/abo-abo/swiper/issues/986#issuecomment-300482804
+#+BEGIN_SRC emacs-lisp :noweb-ref configure-org-for-ivy-completion :tangle no
+(setq org-goto-interface 'outline-path-completion
+      org-outline-path-complete-in-steps nil)
+#+END_SRC
+* Projectile
+#+BEGIN_SRC emacs-lisp :noweb tangle
+(message "[krista] Loading projectile...")
+(use-package projectile
+  :diminish
+  :config
+  (setq projectile-keymap-prefix (kbd "C-c p s"))
+  (with-eval-after-load 'ivy
+    (setq projectile-completion-system 'ivy))
+  (projectile-mode)
+  <<counsel-projectile>>
+  )
+#+END_SRC
+** counsel projectile
+#+BEGIN_SRC emacs-lisp :noweb-ref counsel-projectile :tangle no
+(use-package counsel-projectile
+  :diminish
+  :config
+  (counsel-projectile-mode))
+#+END_SRC

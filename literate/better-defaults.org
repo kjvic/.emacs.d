@@ -1,0 +1,149 @@
+* Behavioral tweaks
+** Remove default startup message, text at the top of scratch buffers
+#+BEGIN_SRC emacs-lisp
+(setq initial-scratch-message "")
+#+END_SRC
+** Don't warn me before opening large files
+#+BEGIN_SRC emacs-lisp
+(setq large-file-warning-threshold nil)
+#+END_SRC
+** Remove the default emacs toolbar (top of screen)
+#+BEGIN_SRC emacs-lisp
+(tool-bar-mode -1)
+#+END_SRC
+** Hide the scrollbar
+#+BEGIN_SRC emacs-lisp
+(scroll-bar-mode -1)
+#+END_SRC
+** When cursor is on a paren, highlight the other one 
+#+BEGIN_SRC emacs-lisp
+(show-paren-mode 1)
+(setq show-paren-delay 0)
+#+END_SRC
+** Put /relevant/ info in the title bar
+Set the format for the title bar
+- Disambiguation: 
+  - An example [[https://cdn1.tekrevue.com/wp-content/uploads/2015/09/osx-finder-path-in-title-bar.jpg][window title bar]] in macOS
+  - macOS calls this thing a "window title"
+  - emacs calls this thing a "frame title"
+- See also: https://www.emacswiki.org/emacs/FrameTitle
+#+BEGIN_SRC emacs-lisp
+;; %b - Buffer name
+;; %m - Buffer mode
+(setq frame-title-format '("%b - [%m]"))
+#+END_SRC
+** Don't try to edit read-only portions of the minibuffer
+Source: http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
+#+BEGIN_SRC emacs-lisp
+(customize-set-variable
+ 'minibuffer-prompt-properties
+ (quote (read-only t cursor-intangible t face minibuffer-prompt)))
+#+END_SRC
+** Don't litter working directory with backup files
+#+BEGIN_SRC emacs-lisp
+(setq
+   backup-by-copying t      ; don't clobber symlinks
+   backup-directory-alist
+    '((".*" . "~/.emacs.d/backup/"))    ; don't litter my filesystem
+   delete-old-versions t
+   kept-new-versions 50
+   kept-old-versions 50
+   version-control t)       ; use versioned backups
+#+END_SRC
+** Don't litter working directory with autosave files
+#+BEGIN_SRC emacs-lisp
+(setq auto-save-file-prefix "~/.emacs.d/autosaves/.saves-")
+(setq auto-save-interval 1000) ; 1000 characters
+(setq auto-save-timeout 60)    ; or 60 seconds
+#+END_SRC
+** Delete highlighted text if you start typing on top of it
+#+BEGIN_SRC emacs-lisp
+(delete-selection-mode 1)
+#+END_SRC
+** Change "yes or no" prompts to "y or n" prompts
+#+BEGIN_SRC emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+** Don't add 2 spaces after a period
+#+BEGIN_SRC emacs-lisp
+(setq sentence-end-double-space nil)
+#+END_SRC
+** Make Customize sort colors by color, rather than alphabetically
+#+BEGIN_SRC emacs-lisp
+(setq list-colors-sort 'luminance)
+#+END_SRC
+** Make C-k kill the text AND newline
+#+BEGIN_SRC emacs-lisp
+(setq kill-whole-line t)
+#+END_SRC
+** Enable upcase/downcase-region commands
+#+BEGIN_SRC emacs-lisp
+;; Enable "C-x u" for upcase-region, "C-x l" for downcase-region
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+#+END_SRC
+* Aesthetic tweaks
+** Set cursor appearance
+Note: changing the cursor-type does not take effect until emacs is restarted,
+because it only sets the /default/ cursor type. I have not yet figured
+out how to set it immediately, but this should suffice as startup config.
+#+BEGIN_SRC emacs-lisp
+(setq-default cursor-type 'bar)
+(setq-default cursor-in-non-selected-windows 'hollow)
+#+END_SRC
+** Change the fringe wrap indicators
+- Fringe wrap indicators are used to show that a line is wider than
+  the current window. 
+- The default fringe wrap indicators are a curly arrow
+- I prefer an ellipsis:
+  #+BEGIN_SRC emacs-lisp
+   ;; Only relevant if indicate-empty-line is set to t
+   (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0]) 
+
+   (define-fringe-bitmap 'right-curly-arrow
+     [#b00000000
+      #b00000000
+      #b00000000
+      #b00000000
+      #b00000000
+      #b10010010
+      #b10010010
+      #b00000000])
+
+   (define-fringe-bitmap 'left-curly-arrow
+     [#b00000000
+      #b00000000
+      #b00000000
+      #b00000000
+      #b00000000
+      #b10010010
+      #b10010010
+      #b00000000])
+
+  (setq visual-line-fringe-indicators (quote (left-curly-arrow right-curly-arrow)))
+  #+END_SRC
+** Hide the fringe
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'fringe nil :background "#001519")
+;;(set-face-attribute 'vertical-border nil :foreground "#cf7a00")
+#+END_SRC
+** Fonts
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'default nil :font "Fira Code-13" :weight 'light)
+(set-face-attribute 'bold nil :weight 'demibold)
+;; https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs
+;; for the railwaycat emacs port
+(mac-auto-operator-composition-mode)
+
+
+(set-face-attribute 'bold-italic nil
+                    :slant 'oblique
+                    :weight 'bold)
+
+(set-face-attribute 'font-lock-doc-face nil
+                    :foreground "#58615a"
+                    :family "Fira Code")
+
+(set-face-attribute 'region nil :background "#032929")
+
+#+END_SRC

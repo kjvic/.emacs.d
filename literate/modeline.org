@@ -205,6 +205,9 @@ I want to see:
   (fancy-battery-mode t)
   ;; Show a percentage instead of "remaining time to charge/discharge"
 (setq fancy-battery-show-percentage t))
+
+;; nil => Do not display load average in mode line
+(setq display-time-default-load-average nil)
 #+END_SRC
 * Fonts and colors
 #+BEGIN_SRC emacs-lisp

@@ -1,0 +1,1018 @@
+* Org-mode proper
+#+BEGIN_SRC emacs-lisp :noweb tangle
+(message "[krista] Loading org-mode settings...")
+(setq org-modules '(org-bbdb org-bibtex org-docview org-gnus
+			     org-habit org-info org-irc org-mhe
+			     org-rmail org-w3m))
+
+(use-package org
+  :diminish org-indent-mode
+  :config
+
+  ;; Places to sniff when compiling a list of TODO items
+  ;;
+  ;; NOTE: putting this piece of config here because a lot of
+  ;; org-agenda stuff relies on the variable org-agenda-files
+  (setq org-agenda-files
+	(list
+	 ;; GTD files
+	 krista/todo-file
+	 krista/projects-file
+	 krista/waiting-file
+	 krista/tickler-file
+         ;; Other files w/daily info
+	 krista/gcal-file))
+
+  (message "[krista] Setting org-modules...")
+  (message "[krista] Loading org-aesthetics...")
+  <<org-aesthetics>>
+
+  (message "[krista] Loading org-habits...")
+  <<org-habits>>
+
+  (message "[krista] Loading org-ordered-tasks...")
+  <<org-ordered-tasks>>
+
+  (message "[krista] Loading org-capture...")
+  <<org-capture>>
+
+  (message "[krista] Loading org-refile...")
+  <<org-refile>>
+
+  (message "[krista] Loading org-agenda...")
+  <<org-agenda>>
+  <<org-super-agenda>>
+
+  (message "[krista] Loading org-inline-images...")
+  <<org-inline-images>>
+  
+  (message "[krista] Loading org-tree-behavior...")
+  <<org-tree-behavior>>
+
+  (message "[krista] Loading org-code-snippets...")
+  <<org-quick-source-blocks>>
+  <<org-babel-config>>
+
+  (message "[krista] Loading org-links...")
+  <<org-links>>
+
+  (message "[krista] Loading org-tables...")
+  <<org-tables>>
+
+  (message "[krista] Loading markdown-as-org...")
+  <<markdown-as-org>>
+
+  (message "[krista] Loading org-timestamps...")
+  <<org-timestamps>>
+  :bind (
+         ("C-c c" . org-capture)
+         ("C-c a" . org-agenda)
+         ;; Links!
+         ;; - C-c C-l will insert link,
+         ;; - C-c C-o will open the link at the point
+         ("C-c l" . org-store-link)
+
+         ;; (:map org-mode-map
+	 ;;       ("M-N" . org-shiftmetadown)
+	 ;;       ("M-B" . org-shiftmetaleft)
+	 ;;       ("M-F" . org-shiftmetaright)
+	 ;;       ("M-P" . org-shiftmetaup)
+	 ;;       ;;
+	 ;;       ("M-n" . org-metadown)
+	 ;;       ("M-b" . org-metaleft)
+	 ;;       ("M-f" . org-metaright)
+	 ;;       ("M-p" . org-metaup))
+         ))
+
+#+END_SRC
+** Tips from http://orgmode.org/worg/org-tutorials/orgtutorial_dto.html
+*** todo / schedule / deadline
+- C-c C-t :: org-todo
+- C-c C-s :: org-schedule
+- C-c C-d :: org-deadline
+- M-shift-RET :: org-insert-todo-heading
+                 - Adds newline
+                 - Adds bullet at same indentation level
+                 - Bullet automatically has a `TODO' header
+*** agenda view:
+- hit `t' to mark an item DONE
+- hit `l' to enter log display
+*** shift-TAB :: OVERVIEW vs. normal mode
+** Aesthetics
+#+BEGIN_SRC emacs-lisp :noweb-ref org-aesthetics :tangle no
+;; Display bullets instead of asterisks
+(use-package org-bullets
+  :diminish
+  :config
+  ;; (setq org-bullets-bullet-list (quote ("⊕" "⦷" "⊜" "⊝"))))
+  (setq org-bullets-bullet-list (quote ("•" "•" "•" "•"))))
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode t)))
+
+;; Make LaTeX bigger when I'm presenting
+;; (setq org-format-latex-options (plist-put org-format-latex-options :scale 4.0))
+
+;; Setting this to `t' will automatically render LaTeX special
+;; characters, if possible/sensible
+;; E.g. "\" + "alpha" becomes a lowercase alpha
+;; I have it turned off, but it's here
+;; (setq org-pretty-entities t)
+
+;; Setting this to `t' will use {} to render sub/super-scripts
+;; e.g. asdf_{123} is rendered as "asdf sub 123"
+;; I have it turned off, but it's here
+(setq org-use-sub-superscripts "{}")
+
+
+;; Hide org markup elements
+;; See http://stackoverflow.com/questions/10969617/hiding-markup-elements-in-org-mode
+;; Note: This change may not take effect until you restart emacs:
+;; See http://orgmode.org/manual/Emphasis-and-monospace.html
+(setq org-hide-emphasis-markers t)
+
+;; Only annotate/mark up /part/ of a word
+;;
+;; Background/problem: in org mode, you can't do something like
+;; *G*nu's *N*ot *U*nix
+;; i.e. you can't mark up a portion of the word. It's all or nothing
+;;
+;; Solution: insert a zero-width space to break up the word into portions
+;; Example: *G*\x200Bnu's *N*\x200Bot *U*\x200Bnix
+;;
+;; Source: https://emacs.stackexchange.com/a/18511
+(defun insert-zero-width-space ()
+  (interactive)
+  (insert-char #x200b))
+(define-key org-mode-map (kbd "C-*") 'insert-zero-width-space)
+(setq org-emphasis-regexp-components
+      '("   ('\"{\x200B" "-     .,:!?;'\")}\\[\x200B" "     
+,\"'" "." 1))
+(setq-default org-emphasis-regexp-components
+      '("   ('\"{\x200B" "-     .,:!?;'\")}\\[\x200B" "     
+,\"'" "." 1))
+
+;; One thing about inserting these spaces is that it might look
+;; strange when exported to other formats. So this export filter
+;; removes the spaces on export
+;;
+;; Source: https://emacs.stackexchange.com/a/18511 (same post)
+;; (defun my-filter-remove-u200b (text backend info)
+;;   "Remove zero width space character (U+200B) from TEXT."
+;;   (replace-regexp-in-string "\x200B" "" text))
+;; (add-to-list 'org-export-filter-plain-text-functions
+;; 	 'my-filter-remove-u200b)
+
+;; Make top-level headings larger, and lower-level headings progressively smaller
+;; (set-face-attribute 'org-level-1 nil :inherit 'outline-1 :height 1.2)
+;; (set-face-attribute 'org-level-2 nil :inherit 'outline-2 :height 1.0)
+
+;; Use my theme as the color scheme for source blocks
+(setq org-src-fontify-natively t)
+
+;; Set different faces for TODO items with different priority levels
+;; Source: https://emacs.stackexchange.com/a/17405
+(setq org-priority-faces '((?A . (:foreground "#cf7a00"))
+			  (?B . (:foreground "#00a890"))
+			  (?C . (:foreground "#075f5f"))))
+
+;; If t: apply the priority-face to all headline text for agenda view
+;; (setq org-agenda-fontify-priorities nil)
+
+;; WIP: Trying to get org subheadings to inherit priority from parent
+;;
+;; Source: https://emacs.stackexchange.com/questions/37800/how-to-inherit-priority-in-org-mode?rq=1
+;; (setq org-use-property-inheritance '("PRIORITY"))
+;;
+;; Source: https://emacs.stackexchange.com/questions/7335/properties-inheriting-in-org-doesnt-work
+(setq org-use-property-inheritance (quote ("owner")))
+
+;; Don't add a weird indent to source blocks
+(setq org-src-preserve-indentation nil
+      org-edit-src-content-indentation 0)
+
+;; Org mode clean view
+;; <http://orgmode.org/manual/Clean-view.html>
+(setq org-hide-leading-stars t)
+(setq org-startup-indented t)
+(setq org-indent-indentation-per-level 4)
+(setq org-adapt-indentation t)
+
+;; When you visit an agenda for the first time, still honor my startup preferences
+(setq org-agenda-inhibit-startup nil)
+
+;; In org mode C-a/e moves to beginning of text in line, after header asterisks
+;; ( however you can press C-a/C-e again to go all the way to the beginning/end)
+(setq org-special-ctrl-a/e t)
+
+;; Set default size for org tables
+(setq org-table-default-size "2x3")
+
+(set-face-attribute 'org-code nil
+		    :inherit 'shadow
+		    :foreground "dark sea green"
+		    :family "Courier")
+
+(set-face-attribute 'org-verbatim nil
+		    :inherit 'shadow
+		    :stipple nil
+		    :foreground "AntiqueWhite4"
+		    :family "Andale Mono")
+
+;; SOURCE: Adapted from
+;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#org-todo-keywords
+;;
+;; Semantics of each TODO keyword:
+;; 
+;; TODO:	An action that will have to be completed eventually, but maybe not yet
+;; NEXT:	An action that can be completed at this very moment, in the correct context
+;; DONE:	An item that is completed, and ready to be archived
+;; WAITING:	An item that awaits input from an external party
+;; BLOCKED:	An item which cannot be completed due to some circumstances
+;; CANCELLED:	An item that was once considered,
+(setq org-todo-keywords
+      '((sequence "NEXT(n)" "TODO(t)" "PROJECT(p)" "BLOCKED(b)" "WAITING(w)" "|" "CANCELLED(c)" "DONE(d)")))
+;; Org todo keyword faces
+;; NOTE: see also: doom-themes-common.el, where org-todo, org-done are defined
+(setq org-todo-keyword-faces
+      '(("TODO" :foreground "#77A4DE")
+	("NEXT" :foreground "#87BADE")
+	("PROJECT" :foreground "#8A84B6")
+	("BLOCKED" :foreground "#888a85")
+	("WAITING" :foreground "#888a85")
+	;; ("SOMEDAY" :foreground "#58615a")
+	("DONE" :foreground "#075f5f" :strike-through "#075f5f")
+	("CANCELLED" :foreground "#58615a" :strike-through "#58615a")))
+
+;; Org "there's more under this headline/bullet!" ellipsis
+;; ‣ ⁕ ↷ ↝ → ⇀ ⇢ ⇾ ⋱ 〉 ► ▻ ➝ ➛ ⟝ ⟶ ⫎ ⬎ ✳
+(set-display-table-slot standard-display-table
+			'selective-display (string-to-vector " ⬎"))
+
+
+;; Source: https://www.reddit.com/r/orgmode/comments/3c4xdk/spacing_between_items_when_trees_are_folded/
+(setq org-cycle-separator-lines 1)
+
+
+;; Prettier time tracking
+;; Config from https://www.youtube.com/watch?v=uVv49htxuS8
+(setq org-clock-into-drawer "CLOCKING")
+#+END_SRC
+** Habits
+#+BEGIN_SRC emacs-lisp :noweb-ref org-habits :tangle no
+;; If non-nil: Don't pollute the agenda with repetitions of the habit
+;; (I only want to see the habit printout on today's agenda entry!)
+(setq org-habit-show-habits-only-for-today t)
+
+;; NOTE: If using unicode/non-fixed-width glyphs for
+;; org-habit-today-glyph and org-habit-completed-glyph, then the
+;; "today" glyphs won't necessarily line up :(
+(setq org-habit-today-glyph ?!)
+(setq org-habit-completed-glyph ?x)
+
+;; If non-nil: show all habits in the agenda, even if you're not
+;; scheduled to do them today
+(setq org-habit-show-all-today t)
+
+;; If non-nil: if you do something late, show it as green (EVEN if you
+;; did it later than you were supposed to)
+(setq org-habit-show-done-always-green nil)
+
+;; Move the org habits graphs over to the rhs of the screen 
+;; NOTE: This is as far as I can move it without overflowing the
+;; buffer when I have the agenda in half of the frame
+;;
+;; => If I make changes to org-habit-following/preceding-days, then I
+;; should also change org-habit-graph-column
+(setq org-habit-following-days 3)
+(setq org-habit-preceding-days 21)
+(setq org-habit-graph-column 63)
+#+END_SRC
+** Org ordered tasks
+- Source: https://www.youtube.com/watch?v=9hxEEbUWJYA
+- Note: Toggle :ORDERED: property with C-c C-x o
+#+BEGIN_SRC emacs-lisp :noweb-ref org-ordered-tasks :tangle no
+;; Automatically make a tag when you mark something as ordered
+(setq track-ordered-property-with-tag t)
+
+;; if t: Dim out blocked tasks when in the agenda view
+(setq org-agenda-dim-blocked-tasks t)
+
+
+;; If t: Don't let me mark dependent TODO items done until pre-reqs
+;; are done
+(setq org-enforce-todo-dependencies nil)
+(setq org-enforce-todo-checkbox-dependencies t) ; Same for todo checkboxes
+
+#+END_SRC
+** Exporting to LaTeX
+#+BEGIN_SRC emacs-lisp
+;; Put newlines around my images, please!
+;; http://emacs.stackexchange.com/questions/5363/centered-figures-in-org-mode-latex-export?rq=1
+(advice-add 'org-latex--inline-image :around
+            (lambda (orig link info)
+              (concat
+               "\\begin{center}"
+               (funcall orig link info)
+               "\\end{center}")))
+#+END_SRC
+** Org Capture
+#+BEGIN_SRC emacs-lisp :noweb yes :noweb-ref org-capture :tangle no
+;; Default file if a capture template doesn't specify otherwise
+(setq org-default-notes-file krista/inbox-file)
+
+;; The capture templates!
+;;
+;; Overview - Components of a capture template:
+;; https://orgmode.org/manual/Template-elements.html#Template-elements
+;;
+;; A quick starter example:
+;; https://orgmode.org/manual/Capture-templates.html#Capture-templates
+;;
+;; The gory details of what goes into an org-capture template:
+;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
+(setq org-capture-templates
+      '(
+
+        ;; Prefix key. See https://lists.gnu.org/archive/html/emacs-orgmode/2015-10/msg00124.html
+        ;; ("g" "(G)TD...")
+        
+        ;; The "%^g" = a prompt for tags
+        ;; Source: https://stackoverflow.com/a/31688974
+        ("t" "(t)ODO item" entry
+         (file krista/todo-file)
+         "* NEXT %i%? %^g\n")
+
+        ("P" "Inactive (P)roject" entry
+         (file krista/inactive-projects-file)
+         "* PROJECT %i%?\n")
+
+        ("p" "Active (p)roject" entry
+         (file krista/projects-file)
+         "* PROJECT %i%?\n")
+
+        ("w" "(w)aiting list" entry
+         (file krista/waiting-file)
+         "* WAITING %i%?\n Date created: %U. Follow up on %^t\n")
+
+        ("i" "(i)nbox" entry
+         (file krista/inbox-file)
+         "* %i%?\n")
+
+        ("?" "Someday-maybe(?)" entry
+         (file krista/someday-maybe-file)
+         "* %i%?\n")
+
+        ("T" "(T)ickler" entry
+         (file krista/tickler-file)
+         "* %i%?\n  Prompt on: %^t\n")
+
+        ;; m prefix key
+        ("m" "(m)edia...")
+
+        ("mb" "(b)ooks" entry
+         (file krista/books-file) "* %i%?\n")
+        ("mm" "(m)usic" entry
+         (file krista/music-file) "* %i%?\n")
+        ("mM" "(M)ovies" entry
+         (file krista/movies-file) "* %i%?\n")
+        ("mr" "(r)eading" entry
+         (file krista/reading-file) "* %i%?\n")
+        ("mt" "(t)elevision" entry
+         (file krista/tv-file) "* %i%?\n")
+        ("mv" "(v)ideo games" entry
+         (file krista/video-games-file) "* %i%?\n")
+
+        ;; Note: this entry is coupled to my config for org-gcal.
+        ("c" "(c)alendar" entry
+         (file  "~/Dropbox/orgzly/gcal.org")
+         "* %i%?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
+        
+        ("Q" "(Q)uotes" entry
+         (file+olp "~/core/lists/quotes.org" "quotes")
+         "* %i%?\n")
+
+        ("s" "(s)hopping" entry
+         (file+olp krista/shopping-file "Shopping")
+         "* %i%?\n")
+
+        ;; Shortcut key for the capture menu:
+        ("a"                            
+         ;; Description for the capture menu:
+         "(A)nnoy"                      
+         ;; Type -- Is it a headline ("entry"), checkbox, etc?
+         entry
+         ;; Target destination -- file + heading(s):
+         (file+olp krista/annoy-file "annoy" "refile")
+         ;; Pre-formatting:
+         ;; (Example: you can have the template automatically add the
+         ;; date, or you can specify certain properties,etc.)
+         "* %?\n%i\n")
+
+        ))
+
+;; If t: add a bookmark pointing to the last thing I captured
+;; (setq org-capture-bookmark nil)
+#+END_SRC
+** Org Refile
+#+BEGIN_SRC emacs-lisp :noweb-ref org-refile :tangle no
+(setq org-refile-use-outline-path 'file)
+(setq org-refile-allow-creating-parent-nodes (quote confirm)) ; allow refile to create parent tasks with confirmation
+
+;; Options for org-refile. limiting level to 2 for performance reasons.
+(setq org-refile-targets `((,(append org-agenda-files
+				     krista/media-files
+				     (list krista/someday-maybe-file
+					   krista/annoy-file
+                                         krista/random-ideas-file
+                                         krista/shopping-file))
+			    :maxlevel . 2)))
+#+END_SRC
+** Agenda
+For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw-data-for-an-org-mode-agenda-without-an-agenda-view/12563#12563
+#+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
+;; If non-nil: mousing over TODO items in org agenda => show TODO item in other buffer
+(setq org-agenda-start-with-follow-mode nil)
+
+;; Don't eat my timestamps! If I put them in the org-agenda-prefix-format, then I *WANT* them in the org-agenda-prefix-format!!!
+(setq org-agenda-remove-times-when-in-prefix nil)
+
+;; Show all agenda dates - even if they are empty
+(setq org-agenda-show-all-dates t)
+
+;; Start the week on Sunday
+;; https://emacs.stackexchange.com/a/28913
+(setq org-agenda-start-on-weekday 0)
+
+;; Show the whole week (7 days)
+(setq org-agenda-span 7)
+
+;; Don't display items that are done
+(setq org-agenda-skip-scheduled-if-done t)
+(setq org-agenda-skip-deadline-if-done nil)
+
+;; If a task is due soon, but I have it scheduled, skip the "DANGER, WILL ROBINSON! DEADLINE APPROACHING" reminder.
+;; https://orgmode.org/manual/Deadlines-and-scheduling.html#Deadlines-and-scheduling
+(setq org-agenda-skip-deadline-prewarning-if-scheduled t)
+
+;; Don't display *all* future repetitions of an event when I'm in agenda view
+;; Source: https://emacs.stackexchange.com/a/12618
+;; In the future (Org 9.1), use this: (setq org-agenda-show-future-repeats nil)
+(setq org-agenda-repeating-timestamp-show-all nil)
+
+;; Documentation for this variable: https://orgmode.org/worg/doc.html
+(setq org-agenda-sorting-strategy
+      '((agenda habit-down priority-down tag-up effort-down todo-state-up time-up deadline-up scheduled-up)
+        (todo   habit-down priority-down tag-up effort-down todo-state-up time-up deadline-up scheduled-up)))
+
+;; Default effort estimates
+(setq org-global-properties
+      '(("Effort_ALL" . "0:05 0:15 0:30 1:00 1:30 2:00 4:00 6:00 8:00 0:00")))
+
+;; Org Tags
+;; --------
+(setq org-agenda-use-tag-inheritance t)
+(setq org-use-tag-inheritance t)
+
+;; Docs for org-tag-alist and quick-selection: https://orgmode.org/manual/Setting-tags.html
+(setq org-tag-alist
+      '(("home" . ?h)
+        ("laptop" . ?l)
+        ("anywhere" . ?a)
+        ("phone" . ?p)
+        ("reading" . ?r)
+        ("errand" . ?e)
+        ("call" . ?c)
+        ("email" . ?m)
+        ("text" . ?t)))
+;; Turn on quick-selection for tags
+(setq org-fast-tag-selection-single-key t)
+
+;; Align tags close to the right-hand side of the window
+;; Source: https://lists.gnu.org/archive/html/emacs-orgmode/2010-12/msg00410.html
+(add-hook 'org-finalize-agenda-hook 'place-agenda-tags)
+(defun place-agenda-tags ()
+  "Put the agenda tags by the right border of the agenda window."
+  (setq org-agenda-tags-column (- 15 (window-width)))
+  (org-agenda-align-tags))
+
+
+;; Don't use a time grid in the agenda view
+(setq org-agenda-use-time-grid nil)
+;; Don't use a time grid anywhere else, either! (Time grid doesn't
+;; disappear from agenda view unless timegrid is disabled everywhere.
+;; Hrm.)
+(setq org-agenda-time-grid
+      '((daily today require-timed)
+        (800 1000 1200 1400 1600 1800 2000)
+        "" ""))
+
+;; Make 'q' kill the org agenda buffer
+(setq org-agenda-sticky nil)
+
+;; Don't smush todo/agenda sections together when displaying both
+(setq org-agenda-compact-blocks nil)
+
+;; Add a separator between days of the week. This variable specifies
+;; the separator character(s) to use as fill
+(setq org-agenda-block-separator ?-)
+
+;; If t: Don't necessarily build the agenda just because I'm opening
+;; the Agenda Commands dispatch. (Note: this improves performance)
+(setq org-agenda-inhibit-startup t)
+
+
+;; Archiving TODO items
+;; ---------------------
+
+;; Put archived todo items in a separate folder, rather than littering
+;; the current directory with hidden files
+(setq org-archive-location "~/core/emacs-archives/%s-archive::")
+
+;; Modified from: https://stackoverflow.com/a/27043756
+;; I added an interactive option to specify the scope interactively
+(defun org-archive-done-tasks ()
+  (interactive)
+  (let ((scopes '(("file" . 'file) ("tree" . 'tree) ("agenda" . 'agenda))))
+    (org-map-entries (lambda ()
+                       (org-archive-subtree)
+                       (setq org-map-continue-from (outline-previous-heading)))
+                     "/DONE|CANCELLED"
+                     (cdr (assq (completing-read
+                                 "Scope: " '(("file" 1) ("tree" 2) ("agenda" 3))
+                                 nil t "")
+                                scopes)))))
+
+;; Source: https://github.com/aaronbieber/dotfiles/blob/master/configs/emacs.d/lisp/init-org.el
+(defun air-org-skip-if-habit (&optional subtree)
+  "Skip an agenda entry if it has a STYLE property equal to \"habit\".
+Skip the current entry unless SUBTREE is not nil, in which case skip
+the entire subtree."
+  (let ((end (if subtree (save-excursion (org-end-of-subtree t))
+               (save-excursion (progn (outline-next-heading) (1- (point)))))))
+    (if (string= (org-entry-get nil "STYLE") "habit")
+        end
+      nil)))
+
+(setq org-stuck-projects
+      ;; Tag/todo keyword/property(s) identifying GTD Projects
+      '("+PROJECT/-CANCELLED-DONE" 
+
+	;; todo keyword(s) identifying GTD Next Actions
+	("NEXT")
+
+	;; tags identifying non-stuck projects.
+	("shopping")
+
+	;; An arbitrary regular expression matching non-stuck projects.
+        ""))
+
+;; Custom agenda commands
+(setq org-agenda-custom-commands
+      '(
+
+	("a" "Show (a)genda & high priority todo items"
+	 ((agenda ""
+                  ((org-agenda-overriding-header "Agenda")))
+	  (tags-todo "+PRIORITY=\"A\""
+                     ((org-agenda-overriding-header "High priority todo items")))
+	  ))
+
+	("n" "Show both agenda & todo items"
+	 ((agenda ""
+                  ((org-agenda-overriding-header "Agenda")))
+	  (todo ""
+                ((org-agenda-overriding-header "Global todo list")))
+	  ))
+
+        ("g" "(g)roup actionable items by context"
+	 ((tags-todo "home/NEXT"
+		     ((org-agenda-overriding-header "Home")))
+          (tags-todo "laptop/NEXT"
+		     ((org-agenda-overriding-header "Laptop")))
+          (tags-todo "anywhere/NEXT"
+		     ((org-agenda-overriding-header "Anywhere")))
+          (tags-todo "phone/NEXT"
+		     ((org-agenda-overriding-header "Phone")))
+          (tags-todo "reading/NEXT"
+		     ((org-agenda-overriding-header "Reading")))
+          (tags-todo "errand/NEXT"
+		     ((org-agenda-overriding-header "Errand")))
+          (tags-todo "call/NEXT"
+		     ((org-agenda-overriding-header "Call")))
+          (tags-todo "text/NEXT" 
+		     ((org-agenda-overriding-header "Text")))
+          (tags-todo "1password/NEXT" 
+		     ((org-agenda-overriding-header "1Password")))
+	  ))
+
+        ;; Commands to only display one GTD context
+        ("c" . "Select GTD (c)ontext...")
+        ("ch" "(h)ome" tags-todo "home/NEXT" nil)
+        ("cl" "(l)aptop" tags-todo "laptop/NEXT" nil)
+        ("ca" "(a)nywhere" tags-todo "anywhere/NEXT" nil)
+        ("cp" "(p)hone" tags-todo "phone/NEXT" nil)
+        ("cr" "(r)eading" tags-todo "reading/NEXT" nil)
+        ("ce" "(e)rrand" tags-todo "errand/NEXT" nil)
+        ("cc" "(c)all" tags-todo "call/NEXT" nil)
+        ("ct" "(t)ext" tags-todo "text/NEXT" nil)
+        ("c1" "(1)Password" tags-todo "1password/NEXT" nil)
+
+        ;; Source: modified from
+        ;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#stage-3-reviewing
+        ("r" "GTD Weekly (r)eview"
+         (
+	  (agenda ""
+                  ((org-agenda-overriding-header "Agenda")))
+	  (tags-todo "+PRIORITY=\"A\""
+		     ((org-agenda-overriding-header "High priority todo items")))
+          (todo ""
+                ((org-agenda-overriding-header "To Refile")
+                 (org-agenda-files (list krista/inbox-file))))
+          (todo "PROJECT"
+                ((org-agenda-overriding-header "List of Projects")
+		 (org-agenda-files (list krista/projects-file))))
+          (todo "NEXT" 
+                ((org-agenda-overriding-header "Next (Ready to do)")))
+          (todo "TODO"
+                ((org-agenda-overriding-header "Todo queue (i.e. not ready to do yet)")
+                 (org-agenda-files (list krista/todo-file krista/projects-file))
+                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'deadline
+                                                                      'scheduled))))
+          (todo "BLOCKED"
+                ((org-agenda-overriding-header "Blocked")))
+          (todo "WAITING"
+                ((org-agenda-overriding-header "Waiting for input")))
+          (todo "PROJECT"
+                ((org-agenda-overriding-header "Someday-maybe")
+                 (org-agenda-files (list krista/someday-maybe-file))))
+          ))
+
+        ;; NOTE: I only want to see the names of projects, and then
+        ;; use follow mode to review the nitty-gritty details.
+        ("?" "Someday-maybe(?)" todo "PROJECT"
+         ((org-agenda-files `(,krista/someday-maybe-file))
+          (org-agenda-start-with-follow-mode t)))
+
+        ("i" "(i)nbox" todo ""
+         ((org-agenda-files `(,krista/inbox-file))))
+
+        ))
+#+END_SRC
+** Super-agenda
+- https://github.com/alphapapa/org-super-agenda 
+- Note: I love this package / it makes it wayyyy easier to define
+  custom agenda commands that actually look good. However, I want to
+  get the rest of my GTD workflow a bit more stable before I re-enable
+  super-agenda
+*** config itself
+#+BEGIN_EXAMPLE 
+#+BEGIN_SRC emacs-lisp :noweb-ref org-super-agenda :tangle no
+(use-package org-super-agenda 
+  :config
+  (org-super-agenda-mode)
+  (setq org-super-agenda-fontify-whole-header-line t)
+
+  (setq org-super-agenda-groups
+  '((:name "Scheduled today"
+		 :time-grid t
+		 :scheduled today)
+	  (:name "Due today"
+		 :time-grid t
+           :deadline today)
+	  (:name "Due soon"
+		 :deadline future)
+	  (:name "Overdue"
+		 :deadline past)
+	  (:name "Backlog"
+		 :scheduled past)
+	  (:name "Blocked/Waiting"
+		 :todo "WAITING"
+		 :order 98)
+	  (:name "Back-burner"
+		 :todo ("MAYBE")
+		 :order 100)))
+
+  ;; Source: https://stackoverflow.com/a/35905794
+  (setq org-agenda-prefix-format 
+	'((todo . "  %-14t%-32b")
+	  (agenda . " %14t %12c %-15(concat \"[\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") "))))
+#+END_SRC
+#+END_EXAMPLE
+** inline images
+#+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
+;; Let me resize them plz!
+(setq org-image-actual-width '(500))
+;; => if there is a #+ATTR.*: width="200", resize to 200,
+;;     otherwise resize to 500 pixels wide
+;; link credit: http://lists.gnu.org/archive/html/emacs-orgmode/2012-08/msg01388.html
+
+;; By default, *do* display inline images
+(setq org-startup-with-inline-images t)
+
+;; TODO set this up
+;; (use-package org-download)
+#+END_SRC
+** Tweaks to tree behavior
+Use shift+meta-<right>, to get lateral shifts (demotion/promotion) that apply to the whole subtree!
+#+BEGIN_SRC emacs-lisp :noweb-ref org-tree-behavior :tangle no
+;; Source: Spruce Bondera
+(defun krista/org-cycle-current-subtree ()
+  (interactive)
+  (let ((old-tab-style org-cycle-emulate-tab))
+    (setq org-cycle-emulate-tab nil)
+    (org-cycle)
+    (setq org-cycle-emulate-tab old-tab-style)))
+(bind-key "C-<tab>" #'krista/org-cycle-current-subtree)
+#+END_SRC
+** Quickly add source blocks
+Example: Start a new elisp block in org mode by typing <el and then pressing TAB
+#+BEGIN_SRC emacs-lisp :noweb-ref org-quick-source-blocks :tangle no
+(add-to-list 'org-structure-template-alist
+             '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("c" "#+BEGIN_SRC C\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("cs" "#+BEGIN_SRC csharp\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("txt" "#+BEGIN_SRC txt\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("css" "#+BEGIN_SRC css\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("cpp" "#+BEGIN_SRC C++\n?\n#+END_SRC" ""))
+(add-to-list 'org-structure-template-alist
+             '("p" "#+BEGIN_SRC python\n?\n#+END_SRC" ""))
+;; "Example" block for plaintext
+(add-to-list 'org-structure-template-alist
+             '("ex" "#+BEGIN_EXAMPLE \n?\n#+END_EXAMPLE" ""))
+#+END_SRC
+** Babel / Languages
+#+BEGIN_SRC emacs-lisp :noweb-ref org-babel-config :tangle no
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((latex . t)
+   (python . t)
+   (emacs-lisp . t)
+   (C . t)
+   (lisp . t)))
+#+END_SRC
+** Links
+Org link workflow:
+1. save link to current location with C-c l
+2. move to spot where I'd like to insert the link
+3. C-c C-o to insert link
+4. (TODO! Fix this annoyance:) delete the default string, because I
+   basically never use the file path as the link description
+5. type in my own description
+6. carry on with my life
+#+BEGIN_SRC emacs-lisp :noweb-ref org-links :tangle no
+(defun org-link-describe (link desc)
+  (if (file-exists-p link)
+      desc
+    (read-string "Description: " nil)))
+(setf org-make-link-description-function #'org-link-describe)
+
+;; Make it so you can follow links with RET
+;; Source: https://orgmode.org/manual/Handling-links.html#Handling-links
+(setq org-return-follows-link t)
+
+
+;; Note: I like to be able to link to specific emails. This is
+;; possible on macOS by copying the unique ID in an email (e.g.
+;; <20180701182008.1.72CDCB49D189BF41@japan-rail-pass.com>⁩) and then
+;; creating a link string like
+;; message://<20180701182008.1.72CDCB49D189BF41@japan-rail-pass.com>⁩
+;; See also: https://hints.macworld.com/article.php?story=20071118154803739
+;;
+;; I have set up my web browser to respect these links (i.e.
+;; automatically open such links using the macOS Mail app). However,
+;; emacs does not do such a good job of interpreting these links -- it
+;; attempts to treat the link text as a reference to some headline in
+;; the org doc. Not what I want!
+;; 
+;; This config tells emacs to open `message://` links in the macOS mail app
+;;(setq org-file-apps
+;;      '((auto-mode . emacs)
+;;        ("message://" . "open -a Mail %s")))
+
+;; Config: open `mailto` links in macOS Mail
+;; (add-to-list 'org-link-abbrev-alist 
+;;     '("email" . "message://%s"))
+
+(defun insert-email-url ()
+  "Ask for message id, insert a macOS email url"
+  (interactive)
+  (save-excursion
+    (insert
+     (concat "[[shell:open\%20-a\%20Mail\%20\"message://"
+	     (read-string "Message ID (e.g. <2018070...118F41@gmail.com>⁩):")
+	     "%E2%81%A9\""
+	     "]["
+	     (read-string "Description:")
+	     "]]"))))
+#+END_SRC
+** Org tables
+Source: https://emacs.stackexchange.com/a/30871
+#+BEGIN_SRC emacs-lisp :noweb-ref org-tables :tangle no
+(defun org-table-wrap-to-width (width) 
+  "Wrap current column to WIDTH."
+  (interactive (list (read-number "Enter column width: ")))
+  (org-table-check-inside-data-field)
+  (org-table-align)
+
+  (let (cline (ccol (org-table-current-column)) new-row-count (more t))
+    (org-table-goto-line 1)
+    (org-table-goto-column ccol)
+
+    (while more
+      (setq cline (org-table-current-line))
+
+      ;; Cut current field
+      (org-table-copy-region (point) (point) 'cut)
+
+      ;; Justify for width
+      (setq org-table-clip 
+            (mapcar 'list (org-wrap (caar org-table-clip) width nil)))
+
+      ;; Add new lines and fill
+      (setq new-row-count (1- (length org-table-clip)))
+      (if (> new-row-count 0)
+          (org-table-insert-n-row-below new-row-count)) 
+      (org-table-goto-line cline)
+      (org-table-goto-column ccol)
+      (org-table-paste-rectangle)
+      (org-table-goto-line (+ cline new-row-count))
+
+      ;; Move to next line
+      (setq more (org-table-goto-line (+ cline new-row-count 1)))
+      (org-table-goto-column ccol))
+
+    (org-table-goto-line 1)
+    (org-table-goto-column ccol)))
+
+;; ;; Default cell width
+;; (setq org-cell-fill-column 50)
+
+;; ;; Define a dwim, so the regular binding for M-q still works when I'm not in an
+;; ;; org-table data field
+;; (defun org-table-fill-dwim
+;;     (if (org-table-check-inside-data-field)
+;;         (org-table-wrap-to-width)
+;;       (fill-paragraph)))
+
+;; (add-hook 'org-mode-hook
+;;           (lambda () (bind-key "M-q" #'org-table-fill-dwim)))
+
+(defun org-table-insert-n-row-below (n)
+  "Insert N new lines below the current."
+  (let* ((line (buffer-substring (point-at-bol) (point-at-eol)))
+         (new (org-table-clean-line line)))
+    ;; Fix the first field if necessary
+    (if (string-match "^[ \t]*| *[#$] *|" line)
+        (setq new (replace-match (match-string 0 line) t t new)))
+    (beginning-of-line 2)
+    (setq new
+      (apply 'concat (make-list n (concat new "\n"))))
+    (let (org-table-may-need-update) (insert-before-markers new))  ;;; remove? 
+    (beginning-of-line 0)
+    (re-search-forward "| ?" (point-at-eol) t)
+    (and (or org-table-may-need-update org-table-overlay-coordinates) ;;; remove? 
+         (org-table-align))
+    (org-table-fix-formulas "@" nil (1- (org-table-current-dline)) n)))
+
+;; (global-set-key (kbd "C-c M-q") org-table-))
+#+END_SRC
+** markdown as org mode
+Remark: this requires config
+Credit: the fabulous Spruce Bondera
+#+BEGIN_SRC emacs-lisp :noweb-ref markdown-as-org :tangle no
+(defun spruce/edit-markdown-as-org ()
+  (interactive)
+  (save-buffer)
+  (let* ((filename (buffer-file-name))
+         (org-buffer-name (concat (file-name-base filename) ".org"))
+         (org-buffer (generate-new-buffer org-buffer-name)))
+    (shell-command (format "pandoc %s -f markdown -t org" filename)
+                   org-buffer)
+    (with-current-buffer org-buffer
+      (org-mode))))
+#+END_SRC
+** Timestamps
+#+BEGIN_SRC emacs-lisp :noweb-ref org-timestamps :tangle no
+;; Customize dates
+;; ----------------
+  ;; Use am/pm instead of 24-hour time!
+  ;; Source: http://dept.stat.lsa.umich.edu/~jerrick/org_agenda_calendar.html
+  (setq org-agenda-timegrid-use-ampm t)
+  (setq-default org-display-custom-times t)
+
+  (setq org-time-stamp-custom-formats
+        ;; What this string does:
+        ;; [a = abbreviated day of week] [b = abbreviated month] [e = day of month] [Y = 4-digit year]
+        '("<%a %b %e %Y>"
+          ;;
+          ;; ^^ + [l = hour (1-12)]:[M = minute] [a = am/pm]
+          . "<%a %b %e %Y %l:%M%p>"))
+
+  ;; TODO: see this for custom time formats
+  ;; https://orgmode.org/manual/Custom-time-format.html#Custom-time-format
+
+  ;; Org timestamp DWIM
+  ;; Source: https://emacs.stackexchange.com/a/3320
+  (defvar time-range-with-pm-suffix '("1:00" . "6:59"))
+  (defun org-analyze-date-dwim (original-fun ans org-def org-defdecode)
+    (let* ((time (funcall original-fun ans org-def org-defdecode))
+           (minute (nth 1 time))
+           (hour (nth 2 time))
+           (minutes (+ minute (* 60 hour)))
+           s)
+      (when (and (< hour 12)
+                 (not (string-match "am" ans))
+                 (>= minutes (org-duration-to-minutes (car time-range-with-pm-suffix)))
+                 (<= minutes (org-duration-to-minutes (cdr time-range-with-pm-suffix))))
+        (setf (nth 2 time) (+ hour 12))
+        (when (boundp 'org-end-time-was-given)
+          (setq s org-end-time-was-given)
+          (if (and s (string-match "^\\([0-9]+\\)\\(:[0-9]+\\)$" s))
+              (setq org-end-time-was-given
+                    (concat (number-to-string (+ 12 (string-to-number (match-string 1 s))))
+                            (match-string 2 s))))))
+      time))
+  (advice-add 'org-read-date-analyze :around #'org-analyze-date-dwim)
+
+
+  ;; Don't penalize me for accidentally typing too much!
+  ;; Source: https://emacs.stackexchange.com/a/2591
+  (defvar parse-time-weekdays-longer
+    '(("sund" . 0) ("tues" . 2) ("thurs" . 4)))
+  (defvar parse-time-months-longer
+    '(("janu" . 1) ("dece" . 12)))
+  (eval-after-load 'parse-time
+    '(progn
+       (setq parse-time-weekdays (nconc parse-time-weekdays
+                                        parse-time-weekdays-longer))
+       (setq parse-time-months (nconc parse-time-months
+                                      parse-time-months-longer))))
+#+END_SRC
+* Calfw
+CAL-endar F-rameW-ork
+#+BEGIN_SRC emacs-lisp
+(use-package calfw
+  :defer t
+  :config 
+
+  (use-package calfw-org
+    :config
+    (setq cfw:org-overwrite-default-keybinding t)
+    (bind-key "H-c" #'cfw:open-org-calendar))
+
+  ;; Unicode characters
+  ;; (setq cfw:fchar-junction ?╋
+  ;;       cfw:fchar-vertical-line ?┃
+  ;;       cfw:fchar-horizontal-line ?━
+  ;;       cfw:fchar-left-junction ?┣
+  ;;       cfw:fchar-right-junction ?┫
+  ;;       cfw:fchar-top-junction ?┯
+  ;;       cfw:fchar-top-left-corner ?┏
+  ;;       cfw:fchar-top-right-corner ?┓)
+  (setq cfw:fchar-junction ?╬
+        cfw:fchar-vertical-line ?║
+        cfw:fchar-horizontal-line ?═
+        cfw:fchar-left-junction ?╠
+        cfw:fchar-right-junction ?╣
+        cfw:fchar-top-junction ?╦
+        cfw:fchar-top-left-corner ?╔
+        cfw:fchar-top-right-corner ?╗)
+
+  (setq cfw:render-line-breaker 'cfw:render-line-breaker-none))
+
+#+END_SRC
+* org-gcal
+- https://github.com/myuhe/org-gcal.el
+- http://cestlaz.github.io/posts/using-emacs-26-gcal/
+- note regarding synchronization issues:
+  - https://github.com/myuhe/org-gcal.el/issues/82
+  - tl;dr
+    #+BEGIN_EXAMPLE 
+    # In the shell
+    rm -rf ~/.emacs.d/org-gcal/.org-gcal-token
+
+    # In emacs, eval this:
+    (org-gcal-request-token)
+    #+END_EXAMPLE
+#+BEGIN_SRC emacs-lisp
+(use-package org-gcal
+  :defer t
+  :ensure t
+  :config
+  (setq org-gcal-file-alist (list (cons "victorsenkrista@gmail.com" krista/gcal-file)))
+  (defun krista/org-gcal-pull ()
+    "Do both a `gcal-fetch' and a `gcal-sync' (akin to git `merge')."
+    (interactive)
+    (org-gcal-fetch)
+    (org-gcal-sync)))
+
+;; Sync org-gcal when loading agenda mode
+;; (add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
+;; Sync org-gcal after capturing. This is handy for recording events
+;; in org mode via capture, although I'm not using it at this time
+;; (add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
+#+END_SRC
