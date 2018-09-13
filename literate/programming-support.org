@@ -482,7 +482,7 @@ Hide-show mode lets you "hide/show" a block of code by collapsing it
 
 *After*
 #+CAPTION: After folding with 'hs-toggle-hiding'
-#+attr_org: :width="35px"
+#+attr_org: :width="25px"
 #+NAME:   figure
 [[file:./screenshots/after-folding-with-hs-mode.png]]
 
