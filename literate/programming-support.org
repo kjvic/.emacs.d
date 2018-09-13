@@ -1,3 +1,4 @@
+#+PROPERTY: header-args :tangle yes
 * Table of Contents                                                     :TOC:
 - [[#whitespace-preferences][Whitespace preferences]]
 - [[#programming-languages][Programming languages]]
@@ -6,6 +7,18 @@
   - [[#slime-lisp][Slime (lisp)]]
   - [[#haskell][haskell]]
   - [[#c][C#]]
+  - [[#multi-web-mode][Multi-web mode]]
+- [[#global-programming-tools][Global programming tools]]
+  - [[#company][Company]]
+  - [[#tramp][Tramp]]
+  - [[#magit][Magit]]
+  - [[#projectile][Projectile]]
+  - [[#flycheck][Flycheck]]
+  - [[#dumb-jump][Dumb-jump]]
+- [[#delimiters---parens-brackets-curly-braces-blocks-of-code][Delimiters - parens, brackets, curly braces, blocks of code]]
+  - [[#rainbow-delimiters][Rainbow-delimiters]]
+  - [[#smartparens][Smartparens]]
+  - [[#hide-show-mode][Hide-show mode]]
 
 * Whitespace preferences
 #+BEGIN_SRC emacs-lisp
@@ -14,8 +27,6 @@
 
 (use-package whitespace)
 
-;; Show trailing whitespace by default
-(setq-default show-trailing-whitespace t)
 ;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
 ;; ... but don't show trailing whitespace if I'm in
 ;; - a minibuffer
@@ -40,9 +51,15 @@
 ;; This can be a pain when collaborating with other people, so I have it disabled by default
 ;; TODO: set up to auto-enable or disable based on number of collaborators
 
+;; Don't show whitespace in non-programming modes
+(setq-default show-trailing-whitespace nil)
+
 (setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
-(add-hook 'prog-mode-hook 'whitespace-mode)
-;; (setq whitespace-action '(auto-cleanup))
+(add-hook 'prog-mode-hook
+	  (lambda ()
+	    (whitespace-mode)
+	    ;; Show trailing whitespace
+	    (setq show-trailing-whitespace t)))
 #+END_SRC
 * Programming languages
 ** C / C++
@@ -170,4 +187,312 @@
 (add-hook 'csharp-mode-hook 'omnisharp-mode)
 (eval-after-load 'company
   '(add-to-list 'company-backends 'company-omnisharp))
+#+END_SRC
+** Multi-web mode
+- It's not just one programming language, but a few.
+- Multi-web mode gives you syntax highlighting for web-related
+  programming languages, even if they're /nested/!
+  - /Example/:
+    - you have html with embedded javascript
+    - Multi-web mode will do syntax highlighting for both the html and
+      the javascript
+#+BEGIN_SRC emacs-lisp
+(use-package multi-web-mode
+  :defer t
+  :config
+  (setq mweb-default-major-mode 'html-mode)
+  (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
+                    (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
+                    (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
+  (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
+  (multi-web-global-mode 1))
+#+END_SRC
+* Global programming tools
+** Company
+- =company= is a syntax-aware auto-completion tool for coding, shell
+  commands, or just plain writing
+=- company= is short for COM-plete ANY-thing
+#+BEGIN_SRC emacs-lisp
+(message "[krista] Loading company...")
+(use-package company 
+  :defer t
+  :diminish
+  :config
+  (global-company-mode)
+  ;; Trigger suggestions faster (default value: 0.5 (seconds))
+  (setq company-idle-delay 0.1)
+  :bind (("C-;" . company-complete-selection)))
+
+
+;; Backends -- company provides a unified interface for
+;; autocompletion, but these are the engines which actually make the
+;; completions "smart"
+(use-package company-irony   :defer t)
+(use-package company-c-headers   :defer t)
+(with-eval-after-load 'company
+  (add-to-list 'company-backends 'company-irony)
+  (add-to-list 'company-backends 'company-c-headers)
+  ;; Scroll through completion options with C-n and C-p (instead of M-n
+  ;; and M-p)
+  ;; Source: https://emacs.stackexchange.com/a/2990
+  (define-key company-active-map (kbd "M-n") nil)
+  (define-key company-active-map (kbd "M-p") nil)
+  (define-key company-active-map (kbd "C-n") #'company-select-next)
+  (define-key company-active-map (kbd "C-p") #'company-select-previous))
+#+END_SRC
+** Tramp
+- SSH / networking tool
+- Allows you to "tramp around a network like it's all local"
+- Lets you access other machines via ssh, just by "finding" them through find-file
+#+BEGIN_SRC emacs-lisp
+(use-package tramp
+  :config
+  (setq tramp-default-method "ssh")
+
+  ;; Make tramp actually read my PATH variable
+  ;; NOTE: needed to restart emacs and rm ~/.emacs.d/tramp on my local to get
+  ;; this config to take effect
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+  
+  ;; Use SSH ControlMasters to try to keep any connections alive as long as
+  ;; possible. This gets rid of a lot of time spent reconnecting and
+  ;; re-inputting credentials
+  (setq tramp-ssh-controlmaster-options
+        "-o ControlMaster=auto -o ControlPersist=yes"))
+#+END_SRC
+** Magit
+- Layer on top of git that makes life way easier
+- Seriously, this tool is the best git tutorial I have ever seen
+- [[https://magit.vc/][Magit homepage]]
+- [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
+- It runs git commands for you, but you interact with...
+  - a graphical depiction of your "index".
+    - translation: it's easy to tell what's included in your commit or
+      not!
+  - built-in explanations and prompts
+  - a graphical depiction of the commit tree.
+    - example: you can check out a specific commit by looking at your
+      tree of commits, moving your mouse to the right commit, and
+      pressing ENTER. Easy peasy!
+#+BEGIN_SRC emacs-lisp :noweb tangle
+(message "[krista] Loading magit...")
+(use-package magit
+  :config
+  <<magit-color-scheme>>
+  ;; Default arguments to magit log
+  (setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
+  :bind
+  (("C-c g" . magit-status)))
+#+END_SRC
+- This piece of code makes magit match the rest of my theme
+- Note: "vc" stands for *V*-ersion *C*-ontrol -- this config would also
+  edit other git [[https://stackoverflow.com/a/6976506][porcelains]]
+#+BEGIN_SRC emacs-lisp :noweb-ref magit-color-scheme :tangle no
+(setq vc-annotate-background nil)
+(setq vc-annotate-color-map
+      (quote
+       ((20 . "#f2777a")
+        (40 . "#f99157")
+        (60 . "#ffcc66")
+        (80 . "#99cc99")
+        (100 . "#66cccc")
+        (120 . "#6699cc")
+        (140 . "#cc99cc")
+        (160 . "#f2777a")
+        (180 . "#f99157")
+        (200 . "#ffcc66")
+        (220 . "#99cc99")
+        (240 . "#66cccc")
+        (260 . "#6699cc")
+        (280 . "#cc99cc")
+        (300 . "#f2777a")
+        (320 . "#f99157")
+        (340 . "#ffcc66")
+        (360 . "#99cc99"))))
+(setq vc-annotate-very-old-color nil)
+#+END_SRC
+** Projectile
+- Projectile lets you do project-wide actions
+- *How it works:*
+  - when projectile sees that there's a .git directory, it defines a
+    "project" for the repo
+  - You can edit
+- *What you can do with projectile:*
+  - Easily find-replace across every file in your repo
+  - Easily search throughout your entire repo
+  - Easily switch to "related" files
+    - /Example:/
+      - You're in a file hello.cpp
+      - Projectile will notice that hello.h is "related"
+      - Calling =projectile-find-other-file= (keybinding "C-c p s a")
+        will switch you to hello.h
+      - Calling =projectile-find-other-file= again will switch back to
+        hello.cpp
+    - Note: you don't have to set anything up when you enter a new
+      project! Projectile will automatically figure out which files
+      are related
+  - Easily save every file you've modified
+#+BEGIN_SRC emacs-lisp
+(message "[krista] Loading projectile...")
+(use-package projectile
+  :diminish
+  :config
+  (setq projectile-keymap-prefix (kbd "C-c p s"))
+
+  ;; DEPENDENCY: I use ivy for my search/filtering/popup interface.
+  ;; You can replace "ivy" with "helm" or another framework if
+  ;; desired. If you don't use any of these packages, you should just
+  ;; remove this snippet
+  (with-eval-after-load 'ivy
+    (setq projectile-completion-system 'ivy))
+  ;; END_DEPENDENCY
+
+  (projectile-mode))
+#+END_SRC
+** Flycheck
+- flycheck provides on-the-fly syntax checking
+- flycheck gives you
+  - Red squigglies under your code if it's causing an error
+  - White squigglies under your code if you're using bad style
+  - Helpful popups which explain why there are squigglies
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :diminish
+  :init (global-flycheck-mode)
+  :custom
+  (flycheck-display-errors-delay .75))
+;; Permanently enable syntax checking
+(add-hook 'after-init-hook #'global-flycheck-mode)
+(add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
+(add-hook 'c++-mode-hook (lambda () (setq flycheck-clang-language-standard "c++11")))
+#+END_SRC
+*** Usage
+via http://www.flycheck.org/en/latest/user/quickstart.html#enable
+- =C-c ! n=: go forward to next error
+- =C-c ! p=: go backward to prev. error
+- =C-c ! l=: show a popup list of errors
+** Dumb-jump
+- Visual studio has a "Go to definition" option in the context menu.
+- Dumb-jump lets you have that in emacs
+- Keybindings: 
+  - C-M-g : =dumb-jump-go= 
+    - go to the place where [thing under cursor] is defined
+  - C-M-p : =dumb-jump-prev= 
+    - go back to where you were when you called =dumb-jump-go=
+  - C-M-q : =dumb-jump-quick-look= 
+    - "peek" at a definition without actually moving
+    - =dumb-jump-go= requires a mental context switch -- don't put
+      yourself through that if you just want to peek at the function &
+      then get back to what you're doing
+#+BEGIN_SRC emacs-lisp
+(use-package dumb-jump
+  :defer t
+  :config
+  (dumb-jump-mode 1)
+  ;; Use ripgrep (rg) for searching -- much faster than grep or ag
+  (setq dumb-jump-prefer-searcher 'rg))
+#+END_SRC
+* Delimiters - parens, brackets, curly braces, blocks of code
+** Rainbow-delimiters
+If you have many nested parens/brackets/grouping symbols,
+rainbow-delimiters will color-code them so it's easier to tell which
+ones match
+#+BEGIN_SRC emacs-lisp
+(use-package rainbow-delimiters)
+#+END_SRC
+** Smartparens
+- *Smartparens lets you...*
+  - Highlight some text and then press " to wrap it in quotes
+    - (Same goes for parentheses, brackets, or anything else that
+      comes in pairs)
+  - Easily see if you've missed a delimiter
+    - Suppose you type =(some stuff=
+    - When you mouse over the unmatched =(=, smartparens will make it
+      bold & bright red
+  - Easily see which delimiters match
+    - When you mouse over a paren that /does/ have a match, both parens
+      in the pair will turn bright white & bold
+  - Easily navigate from one paren to its match
+  - (optional) Automatically escape quotes if you type them in a string
+  - (optional) 
+- Credits: This config is adapted from Spruce Bondera's .emacs.d
+#+BEGIN_SRC emacs-lisp
+(use-package smartparens
+  :defer t
+  :config
+  ;; Enable the default config
+  (require 'smartparens-config)
+
+  ;; There's several modes in which I usually prefer strings to be treated
+  ;; similar to s-expressions. In others its less relevant/string literals are
+  ;; less common.
+  ;;(setq sp-navigate-consider-stringlike-sexp
+  ;;      (append sp-navigate-consider-stringlike-sexp (list 'python-mode
+  ;;                                                         'org-mode
+  ;;                                                         'coffeescript-mode)))
+
+  ;; This overlay ended up being on basically all the time and overriding my
+  ;; syntax highlighting. More distracting than helpful.
+
+  ;; From the docs:
+  ;; If non-nil, autoinserted pairs are highlighted while point is inside the pair.
+  (setq sp-highlight-pair-overlay nil)
+
+  ;; smartparens will automatically escape quotes, so if you type this:
+  ;;     The expression of the day is My Expression!
+  ;;
+  ;; and then try to highlight and quote My Expression!, you'll get this:
+  ;;     "The expression of the day is \"My Expression!\""
+  ;;
+  ;; I don't like that. This line turns it off.
+  (setq sp-escape-quotes-after-insert nil)
+
+  ;; https://smartparens.readthedocs.io/en/latest/pair-management.html
+  ;; (sp-pair "$" "$")   ;; latex inline math mode. Pairs can have same opening and closing string
+
+  :bind (("C-M-f" . sp-forward-sexp)
+         ("C-M-b" . sp-backward-sexp)
+         ("C-M-u" . sp-backward-up-sexp)
+         ("C-M-d" . sp-down-sexp)
+         ("C-M-a" . sp-backward-down-sexp)
+         ("C-M-e" . sp-forward-up-sexp)
+         ("C-M-n" . sp-beginning-of-next-sexp)
+         ("C-M-p" . sp-beginning-of-previous-sexp)
+
+         ;; Unwrap, or remove the parens/outer pair from the current s-exp
+         ;;
+         ;; Unwrap the pair moving forwards. 
+         ;; (Binding is similar to "M-d" to delete a /word/ forwards)
+         ("C-M-d" . sp-unwrap-sexp)
+         ;; Unwrap the pair moving backwards 
+         ;; (Binding is similar to "M-<backspace>" to delete a /word/ backwards)
+         ("C-M-<backspace>" . sp-backward-unwrap-sexp))) ;; Unwrap the pair moving backwards
+
+;; Enable smartparens globally
+(smartparens-global-mode)
+#+END_SRC
+** Hide-show mode
+Hide-show mode lets you "hide/show" a block of code by collapsing it
+#+CAPTION: Before
+#+attr_org: :width="100px"
+#+NAME:   figure
+[[file:./screenshots/before-folding-with-hs-mode.png]]
+
+#+CAPTION: After folding with 'hs-toggle-hiding'
+#+attr_org: :width="35px"
+#+NAME:   figure
+[[file:./screenshots/after-folding-with-hs-mode.png]]
+
+Intro: https://www.emacswiki.org/emacs/HideShow
+- Note: =hs= is a common abbreviation for hide-show
+#+BEGIN_SRC emacs-lisp
+;; (hs-minor-mode)
+(load-library "hideshow")
+(global-set-key (kbd "C--") 'hs-toggle-hiding)
+(global-set-key (kbd "C-M--") 'hs-hide-all)
+(global-set-key (kbd "C-M-=") 'hs-show-all)
+(add-hook 'prog-mode-hook 'hs-minor-mode)
+(add-hook 'c-mode-common-hook 'hs-minor-mode)
+(add-hook 'cc-mode-hook 'hs-minor-mode)
+(add-hook 'csharp-mode-hook 'hs-minor-mode)
 #+END_SRC

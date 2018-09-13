@@ -5,8 +5,7 @@
   - [[#helm-style-go-up-a-directory-in-find-file][Helm-style "go up a directory" in Find-file]]
   - [[#ivy-bookmarks][Ivy Bookmarks]]
   - [[#fix-incremental-completion-behavior-in-org-mode][Fix incremental completion behavior in org mode]]
-- [[#projectile][Projectile]]
-  - [[#counsel-projectile][counsel projectile]]
+- [[#counsel-projectile][counsel projectile]]
 
 * Ivy/Swiper/Counsel
 - Comparison with helm
@@ -163,23 +162,12 @@ Source: https://github.com/abo-abo/swiper/issues/986#issuecomment-300482804
 (setq org-goto-interface 'outline-path-completion
       org-outline-path-complete-in-steps nil)
 #+END_SRC
-* Projectile
-#+BEGIN_SRC emacs-lisp :noweb tangle
-(message "[krista] Loading projectile...")
-(use-package projectile
-  :diminish
-  :config
-  (setq projectile-keymap-prefix (kbd "C-c p s"))
-  (with-eval-after-load 'ivy
-    (setq projectile-completion-system 'ivy))
-  (projectile-mode)
-  <<counsel-projectile>>
-  )
-#+END_SRC
-** counsel projectile
+* counsel projectile
+Use ivy/counsel's interface for projectile
 #+BEGIN_SRC emacs-lisp :noweb-ref counsel-projectile :tangle no
-(use-package counsel-projectile
-  :diminish
-  :config
-  (counsel-projectile-mode))
+(with-eval-after-load 'projectile
+  (use-package counsel-projectile
+    :diminish
+    :config
+    (counsel-projectile-mode)))
 #+END_SRC

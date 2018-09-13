@@ -14,13 +14,10 @@
   - [[#global-settings][Global settings]]
   - [[#gcal][Gcal]]
   - [[#ivy][Ivy]]
-  - [[#magit][Magit]]
   - [[#org-mode][Org-mode]]
-  - [[#company][Company]]
-  - [[#tramp][Tramp]]
   - [[#modeline][Modeline]]
   - [[#programming-support][Programming support]]
-  - [[#minor-packages][Minor packages]]
+  - [[#misc-packages][Misc. packages]]
   - [[#latex][LaTeX]]
 - [[#tron-doom-theme][Tron doom theme]]
 - [[#getting-help][Getting help]]
@@ -61,7 +58,6 @@ Get emacs off the ground!
 (setq krista/todo-file  (concat krista/orgzly-dir "[gtd]-todo.org"))
 (setq krista/projects-file (concat krista/orgzly-dir "[gtd]-projects.org"))
 (setq krista/inactive-projects-file (concat krista/orgzly-dir "[gtd]-inactive-projects.org"))
-(setq krista/waiting-file (concat krista/orgzly-dir "[gtd]-waiting.org"))
 (setq krista/tickler-file (concat krista/orgzly-dir "[gtd]-tickler.org"))
 (setq krista/someday-maybe-file (concat krista/orgzly-dir "[gtd]-someday-maybe.org"))
 
@@ -91,7 +87,6 @@ Get emacs off the ground!
 (bind-key "H-T" '(lambda () (interactive) (find-file krista/tickler-file)))
 (bind-key "H-i" '(lambda () (interactive) (find-file krista/inbox-file)))
 (bind-key "H-a" '(lambda () (interactive) (find-file krista/annoy-file)))
-(bind-key "H-w" '(lambda () (interactive) (find-file krista/waiting-file)))
 (bind-key "H-?" '(lambda () (interactive) (find-file krista/someday-maybe-file)))
 (bind-key "H-g" '(lambda () (interactive) (find-file krista/gcal-file)))
 (bind-key "H-h" '(lambda () (interactive) (find-file krista/habits-file)))
@@ -184,32 +179,14 @@ Sourcing [[file:literate/krista-ivy.org][krista-ivy.org]]
 (krista/new-config-file krista-ivy "krista-ivy")
 (org-babel-load-file krista/krista-ivy-config-file)
 #+END_SRC
-** Magit
-Sourcing [[file:literate/krista-magit.org][krista-magit.org]]
-#+BEGIN_SRC emacs-lisp
-(krista/new-config-file krista-magit "krista-magit")
-(org-babel-load-file krista/krista-magit-config-file)
-#+END_SRC
 ** Org-mode
 Sourcing [[file:literate/krista-org-mode.org][krista-org-mode.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file krista-org-mode "krista-org-mode")
 (org-babel-load-file krista/krista-org-mode-config-file)
 #+END_SRC
-** Company
-Sourcing [[file:literate/krista-company.org][krista-company.org]]
-#+BEGIN_SRC emacs-lisp
-(krista/new-config-file krista-company "krista-company")
-(org-babel-load-file krista/krista-company-config-file)
-#+END_SRC
-** Tramp
-Sourcing [[file:literate/krista-tramp.org][krista-tramp.org]]
-#+BEGIN_SRC emacs-lisp
-(krista/new-config-file krista-tramp "krista-tramp")
-(org-babel-load-file krista/krista-tramp-config-file)
-#+END_SRC
 ** Modeline
-Sourcing [[file:literate/krista-modeline.org]krista-modeline.org]]
+Sourcing [[file:literate/krista-modeline.org][krista-modeline.org]]
 #+BEGIN_SRC emacs-lisp
 (krista/new-config-file modeline "modeline")
 (org-babel-load-file krista/modeline-config-file)
@@ -220,11 +197,11 @@ Sourcing [[file:literate/programming-support.org][programming-support.org]]
 (krista/new-config-file programming-support "programming-support")
 (org-babel-load-file krista/programming-support-config-file)
 #+END_SRC
-** Minor packages
-Sourcing [[file:literate/minor-packages.org][minor-packages.org]]
+** Misc. packages
+Sourcing [[file:literate/misc-packages.org][misc-packages.org]]
 #+BEGIN_SRC emacs-lisp
-(krista/new-config-file minor-packages "minor-packages")
-(org-babel-load-file krista/minor-packages-config-file)
+(krista/new-config-file misc-packages "misc-packages")
+(org-babel-load-file krista/misc-packages-config-file)
 #+END_SRC
 ** LaTeX
 Sourcing [[file:literate/krista-latex.org][krista-latex.org]]
@@ -257,9 +234,9 @@ for getting help with various parts of emacs
 - Edit code block: C-c'
 *** Embed an image in an org document
 #+BEGIN_EXAMPLE
-,#+CAPTION: This is the caption for the next figure link (or table)
-,#+attr_org: :width="50px"
-,#+NAME:   figure
+#+CAPTION: This is the caption for the next figure link (or table)
+#+attr_org: :width="50px"
+#+NAME:   figure
 [[file:./my_image.png]]
 #+END_EXAMPLE
 *** Select all: C-x h

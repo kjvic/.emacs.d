@@ -42,7 +42,6 @@
 	 ;; GTD files
 	 krista/todo-file
 	 krista/projects-file
-	 krista/waiting-file
 	 krista/tickler-file
          ;; Other files w/daily info
 	 krista/gcal-file))
@@ -374,7 +373,7 @@
          "* PROJECT %i%?\n")
 
         ("w" "(w)aiting list" entry
-         (file krista/waiting-file)
+         (file krista/tickler-file)
          "* WAITING %i%?\n Date created: %U. Follow up on %^t\n")
 
         ("i" "(i)nbox" entry
@@ -444,11 +443,12 @@
 ;; Options for org-refile. limiting level to 2 for performance reasons.
 (setq org-refile-targets `((,(append org-agenda-files
 				     krista/media-files
-				     (list krista/someday-maybe-file
-					   krista/annoy-file
-                                         krista/random-ideas-file
-                                         krista/shopping-file))
-			    :maxlevel . 2)))
+                                     (list krista/someday-maybe-file
+                                           krista/annoy-file
+                                           krista/random-ideas-file
+                                           krista/shopping-file
+                                           krista/inactive-projects-file))
+                            :maxlevel . 2)))
 #+END_SRC
 ** Agenda
 For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw-data-for-an-org-mode-agenda-without-an-agenda-view/12563#12563
@@ -578,55 +578,55 @@ the entire subtree."
 
 (setq org-stuck-projects
       ;; Tag/todo keyword/property(s) identifying GTD Projects
-      '("+PROJECT/-CANCELLED-DONE" 
+      '("+PROJECT/-CANCELLED-DONE"
 
-	;; todo keyword(s) identifying GTD Next Actions
-	("NEXT")
+        ;; todo keyword(s) identifying GTD Next Actions
+        ("NEXT")
 
-	;; tags identifying non-stuck projects.
-	("shopping")
+        ;; tags identifying non-stuck projects.
+        ("shopping")
 
-	;; An arbitrary regular expression matching non-stuck projects.
+        ;; An arbitrary regular expression matching non-stuck projects.
         ""))
 
 ;; Custom agenda commands
 (setq org-agenda-custom-commands
       '(
 
-	("a" "Show (a)genda & high priority todo items"
-	 ((agenda ""
+        ("a" "Show (a)genda & high priority todo items"
+         ((agenda ""
                   ((org-agenda-overriding-header "Agenda")))
-	  (tags-todo "+PRIORITY=\"A\""
+          (tags-todo "+PRIORITY=\"A\""
                      ((org-agenda-overriding-header "High priority todo items")))
-	  ))
+          ))
 
-	("n" "Show both agenda & todo items"
-	 ((agenda ""
+        ("n" "Show both agenda & todo items"
+         ((agenda ""
                   ((org-agenda-overriding-header "Agenda")))
-	  (todo ""
+          (todo ""
                 ((org-agenda-overriding-header "Global todo list")))
-	  ))
+          ))
 
         ("g" "(g)roup actionable items by context"
-	 ((tags-todo "home/NEXT"
-		     ((org-agenda-overriding-header "Home")))
+         ((tags-todo "home/NEXT"
+                     ((org-agenda-overriding-header "Home")))
           (tags-todo "laptop/NEXT"
-		     ((org-agenda-overriding-header "Laptop")))
+                     ((org-agenda-overriding-header "Laptop")))
           (tags-todo "anywhere/NEXT"
-		     ((org-agenda-overriding-header "Anywhere")))
+                     ((org-agenda-overriding-header "Anywhere")))
           (tags-todo "phone/NEXT"
-		     ((org-agenda-overriding-header "Phone")))
+                     ((org-agenda-overriding-header "Phone")))
           (tags-todo "reading/NEXT"
-		     ((org-agenda-overriding-header "Reading")))
+                     ((org-agenda-overriding-header "Reading")))
           (tags-todo "errand/NEXT"
-		     ((org-agenda-overriding-header "Errand")))
+                     ((org-agenda-overriding-header "Errand")))
           (tags-todo "call/NEXT"
-		     ((org-agenda-overriding-header "Call")))
-          (tags-todo "text/NEXT" 
-		     ((org-agenda-overriding-header "Text")))
-          (tags-todo "1password/NEXT" 
-		     ((org-agenda-overriding-header "1Password")))
-	  ))
+                     ((org-agenda-overriding-header "Call")))
+          (tags-todo "text/NEXT"
+                     ((org-agenda-overriding-header "Text")))
+          (tags-todo "1password/NEXT"
+                     ((org-agenda-overriding-header "1Password")))
+          ))
 
         ;; Commands to only display one GTD context
         ("c" . "Select GTD (c)ontext...")
@@ -644,30 +644,28 @@ the entire subtree."
         ;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#stage-3-reviewing
         ("r" "GTD Weekly (r)eview"
          (
-	  (agenda ""
+          (agenda ""
                   ((org-agenda-overriding-header "Agenda")))
-	  (tags-todo "+PRIORITY=\"A\""
-		     ((org-agenda-overriding-header "High priority todo items")))
-          (todo ""
-                ((org-agenda-overriding-header "To Refile")
-                 (org-agenda-files (list krista/inbox-file))))
-          (todo "PROJECT"
-                ((org-agenda-overriding-header "List of Projects")
-		 (org-agenda-files (list krista/projects-file))))
-          (todo "NEXT" 
+          (tags-todo "+PRIORITY=\"A\""
+                     ((org-agenda-overriding-header "High priority todo items")))
+          (todo "NEXT"
                 ((org-agenda-overriding-header "Next (Ready to do)")))
           (todo "TODO"
                 ((org-agenda-overriding-header "Todo queue (i.e. not ready to do yet)")
-                 (org-agenda-files (list krista/todo-file krista/projects-file))
+                 (org-agenda-files (list krista/todo-file
+					 krista/projects-file))
                  (org-agenda-skip-function '(org-agenda-skip-entry-if 'deadline
                                                                       'scheduled))))
+          (todo "PROJECT"
+                ((org-agenda-overriding-header "List of Projects")
+                 (org-agenda-files (list krista/projects-file))))
           (todo "BLOCKED"
                 ((org-agenda-overriding-header "Blocked")))
           (todo "WAITING"
                 ((org-agenda-overriding-header "Waiting for input")))
-          (todo "PROJECT"
-                ((org-agenda-overriding-header "Someday-maybe")
-                 (org-agenda-files (list krista/someday-maybe-file))))
+	  (todo ""
+                ((org-agenda-overriding-header "To Refile")
+                 (org-agenda-files (list krista/inbox-file))))
           ))
 
         ;; NOTE: I only want to see the names of projects, and then
@@ -676,8 +674,10 @@ the entire subtree."
          ((org-agenda-files `(,krista/someday-maybe-file))
           (org-agenda-start-with-follow-mode t)))
 
-        ("i" "(i)nbox" todo ""
-         ((org-agenda-files `(,krista/inbox-file))))
+        ("i" "Sort (i)nbox" todo ""
+         ((org-agenda-overriding-header "Stuff in the Inbox")
+	  (org-agenda-files `(,krista/inbox-file))
+	  ))
 
         ))
 #+END_SRC
@@ -965,22 +965,22 @@ Credit: the fabulous Spruce Bondera
 
   ;; Don't penalize me for accidentally typing too much!
   ;; Source: https://emacs.stackexchange.com/a/2591
-  (defvar parse-time-weekdays-longer
-    '(("sunday" . 0)
-      ("monday" . 1)
-      ("tuesday" . 2)
-      ("wednesday" . 3)
-      ("thursday" . 4)
-      ("friday" . 5)
-      ("saturday" . 6)))
-  (defvar parse-time-months-longer
-    '(("janu" . 1) ("dece" . 12)))
-  (eval-after-load 'parse-time
-    '(progn
-       (setq parse-time-weekdays (nconc parse-time-weekdays
-                                        parse-time-weekdays-longer))
-       (setq parse-time-months (nconc parse-time-months
-                                      parse-time-months-longer))))
+  ;; (defvar parse-time-weekdays-longer
+  ;;   '(("sunday" . 0)
+  ;;     ("monday" . 1)
+  ;;     ("tuesday" . 2)
+  ;;     ("wednesday" . 3)
+  ;;     ("thursday" . 4)
+  ;;     ("friday" . 5)
+  ;;     ("saturday" . 6)))
+  ;; (defvar parse-time-months-longer
+  ;;   '(("janu" . 1) ("dece" . 12)))
+  ;; (eval-after-load 'parse-time
+  ;;   '(progn
+  ;;      (setq parse-time-weekdays (nconc parse-time-weekdays
+  ;;                                       parse-time-weekdays-longer))
+  ;;      (setq parse-time-months (nconc parse-time-months
+  ;;                                     parse-time-months-longer))))
 #+END_SRC
 * Calfw
 CAL-endar F-rameW-ork

@@ -156,6 +156,10 @@
     (avy-lead-face-1 :inherit 'avy-lead-face)
     (avy-lead-face-2 :inherit 'avy-lead-face)
 
+    ;; ace-window
+    (aw-leading-char-face :foreground orange :height 3.0)
+    (aw-background        :foreground base5)
+
     ;; bookmark+
     (bmkp-*-mark :foreground bg :background yellow)
     (bmkp->-mark :foreground yellow)
