@@ -473,11 +473,14 @@ ones match
 #+END_SRC
 ** Hide-show mode
 Hide-show mode lets you "hide/show" a block of code by collapsing it
+
+*Before*
 #+CAPTION: Before
 #+attr_org: :width="100px"
 #+NAME:   figure
 [[file:./screenshots/before-folding-with-hs-mode.png]]
 
+*After*
 #+CAPTION: After folding with 'hs-toggle-hiding'
 #+attr_org: :width="35px"
 #+NAME:   figure
@@ -486,7 +489,6 @@ Hide-show mode lets you "hide/show" a block of code by collapsing it
 Intro: https://www.emacswiki.org/emacs/HideShow
 - Note: =hs= is a common abbreviation for hide-show
 #+BEGIN_SRC emacs-lisp
-;; (hs-minor-mode)
 (load-library "hideshow")
 (global-set-key (kbd "C--") 'hs-toggle-hiding)
 (global-set-key (kbd "C-M--") 'hs-hide-all)
