@@ -6,8 +6,6 @@
   - [[#habits][Habits]]
   - [[#org-ordered-tasks][Org ordered tasks]]
   - [[#exporting-to-latex][Exporting to LaTeX]]
-  - [[#org-capture][Org Capture]]
-  - [[#org-refile][Org Refile]]
   - [[#agenda][Agenda]]
   - [[#super-agenda][Super-agenda]]
   - [[#inline-images][inline images]]
@@ -19,7 +17,6 @@
   - [[#markdown-as-org-mode][markdown as org mode]]
   - [[#timestamps][Timestamps]]
 - [[#calfw][Calfw]]
-- [[#org-gcal][org-gcal]]
 - [[#toc-org][toc-org]]
 
 * Org-mode proper
@@ -33,18 +30,6 @@
   :diminish org-indent-mode
   :config
 
-  ;; Places to sniff when compiling a list of TODO items
-  ;;
-  ;; NOTE: putting this piece of config here because a lot of
-  ;; org-agenda stuff relies on the variable org-agenda-files
-  (setq org-agenda-files
-	(list
-	 ;; GTD files
-	 krista/todo-file
-	 krista/projects-file
-	 krista/tickler-file
-         ;; Other files w/daily info
-	 krista/gcal-file))
 
   (message "[krista] Setting org-modules...")
   (message "[krista] Loading org-aesthetics...")
@@ -55,12 +40,6 @@
 
   (message "[krista] Loading org-ordered-tasks...")
   <<org-ordered-tasks>>
-
-  (message "[krista] Loading org-capture...")
-  <<org-capture>>
-
-  (message "[krista] Loading org-refile...")
-  <<org-refile>>
 
   (message "[krista] Loading org-agenda...")
   <<org-agenda>>
@@ -337,119 +316,6 @@
                (funcall orig link info)
                "\\end{center}")))
 #+END_SRC
-** Org Capture
-#+BEGIN_SRC emacs-lisp :noweb yes :noweb-ref org-capture :tangle no
-;; Default file if a capture template doesn't specify otherwise
-(setq org-default-notes-file krista/inbox-file)
-
-;; The capture templates!
-;;
-;; Overview - Components of a capture template:
-;; https://orgmode.org/manual/Template-elements.html#Template-elements
-;;
-;; A quick starter example:
-;; https://orgmode.org/manual/Capture-templates.html#Capture-templates
-;;
-;; The gory details of what goes into an org-capture template:
-;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
-(setq org-capture-templates
-      '(
-
-        ;; Prefix key. See https://lists.gnu.org/archive/html/emacs-orgmode/2015-10/msg00124.html
-        ;; ("g" "(G)TD...")
-        
-        ;; The "%^g" = a prompt for tags
-        ;; Source: https://stackoverflow.com/a/31688974
-        ("t" "(t)ODO item" entry
-         (file krista/todo-file)
-         "* NEXT %i%? %^g\n")
-
-        ("P" "Inactive (P)roject" entry
-         (file krista/inactive-projects-file)
-         "* PROJECT %i%?\n")
-
-        ("p" "Active (p)roject" entry
-         (file krista/projects-file)
-         "* PROJECT %i%?\n")
-
-        ("w" "(w)aiting list" entry
-         (file krista/tickler-file)
-         "* WAITING %i%?\n Date created: %U. Follow up on %^t\n")
-
-        ("i" "(i)nbox" entry
-         (file krista/inbox-file)
-         "* %i%?\n")
-
-        ("?" "Someday-maybe(?)" entry
-         (file krista/someday-maybe-file)
-         "* %i%?\n")
-
-        ("T" "(T)ickler" entry
-         (file krista/tickler-file)
-         "* %i%?\n  Prompt on: %^t\n")
-
-        ;; m prefix key
-        ("m" "(m)edia...")
-
-        ("mb" "(b)ooks" entry
-         (file krista/books-file) "* %i%?\n")
-        ("mm" "(m)usic" entry
-         (file krista/music-file) "* %i%?\n")
-        ("mM" "(M)ovies" entry
-         (file krista/movies-file) "* %i%?\n")
-        ("mr" "(r)eading" entry
-         (file krista/reading-file) "* %i%?\n")
-        ("mt" "(t)elevision" entry
-         (file krista/tv-file) "* %i%?\n")
-        ("mv" "(v)ideo games" entry
-         (file krista/video-games-file) "* %i%?\n")
-
-        ;; Note: this entry is coupled to my config for org-gcal.
-        ("c" "(c)alendar" entry
-         (file  "~/Dropbox/orgzly/gcal.org")
-         "* %i%?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
-        
-        ("Q" "(Q)uotes" entry
-         (file+olp "~/core/lists/quotes.org" "quotes")
-         "* %i%?\n")
-
-        ("s" "(s)hopping" entry
-         (file+olp krista/shopping-file "Shopping")
-         "* %i%?\n")
-
-        ;; Shortcut key for the capture menu:
-        ("a"                            
-         ;; Description for the capture menu:
-         "(A)nnoy"                      
-         ;; Type -- Is it a headline ("entry"), checkbox, etc?
-         entry
-         ;; Target destination -- file + heading(s):
-         (file+olp krista/annoy-file "annoy" "refile")
-         ;; Pre-formatting:
-         ;; (Example: you can have the template automatically add the
-         ;; date, or you can specify certain properties,etc.)
-         "* %?\n%i\n")
-
-        ))
-
-;; If t: add a bookmark pointing to the last thing I captured
-;; (setq org-capture-bookmark nil)
-#+END_SRC
-** Org Refile
-#+BEGIN_SRC emacs-lisp :noweb-ref org-refile :tangle no
-(setq org-refile-use-outline-path 'file)
-(setq org-refile-allow-creating-parent-nodes (quote confirm)) ; allow refile to create parent tasks with confirmation
-
-;; Options for org-refile. limiting level to 2 for performance reasons.
-(setq org-refile-targets `((,(append org-agenda-files
-				     krista/media-files
-                                     (list krista/someday-maybe-file
-                                           krista/annoy-file
-                                           krista/random-ideas-file
-                                           krista/shopping-file
-                                           krista/inactive-projects-file))
-                            :maxlevel . 2)))
-#+END_SRC
 ** Agenda
 For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw-data-for-an-org-mode-agenda-without-an-agenda-view/12563#12563
 #+BEGIN_SRC emacs-lisp :noweb-ref org-agenda :tangle no
@@ -496,17 +362,6 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 (setq org-agenda-use-tag-inheritance t)
 (setq org-use-tag-inheritance t)
 
-;; Docs for org-tag-alist and quick-selection: https://orgmode.org/manual/Setting-tags.html
-(setq org-tag-alist
-      '(("home" . ?h)
-        ("laptop" . ?l)
-        ("anywhere" . ?a)
-        ("phone" . ?p)
-        ("reading" . ?r)
-        ("errand" . ?e)
-        ("call" . ?c)
-        ("email" . ?m)
-        ("text" . ?t)))
 ;; Turn on quick-selection for tags
 (setq org-fast-tag-selection-single-key t)
 
@@ -547,10 +402,6 @@ For reference: https://emacs.stackexchange.com/questions/4063/how-to-get-the-raw
 ;; Archiving TODO items
 ;; ---------------------
 
-;; Put archived todo items in a separate folder, rather than littering
-;; the current directory with hidden files
-(setq org-archive-location "~/core/emacs-archives/%s-archive::")
-
 ;; Modified from: https://stackoverflow.com/a/27043756
 ;; I added an interactive option to specify the scope interactively
 (defun org-archive-done-tasks ()
@@ -575,111 +426,6 @@ the entire subtree."
     (if (string= (org-entry-get nil "STYLE") "habit")
         end
       nil)))
-
-(setq org-stuck-projects
-      ;; Tag/todo keyword/property(s) identifying GTD Projects
-      '("+PROJECT/-CANCELLED-DONE"
-
-        ;; todo keyword(s) identifying GTD Next Actions
-        ("NEXT")
-
-        ;; tags identifying non-stuck projects.
-        ("shopping")
-
-        ;; An arbitrary regular expression matching non-stuck projects.
-        ""))
-
-;; Custom agenda commands
-(setq org-agenda-custom-commands
-      '(
-
-        ("a" "Show (a)genda & high priority todo items"
-         ((agenda ""
-                  ((org-agenda-overriding-header "Agenda")))
-          (tags-todo "+PRIORITY=\"A\""
-                     ((org-agenda-overriding-header "High priority todo items")))
-          ))
-
-        ("n" "Show both agenda & todo items"
-         ((agenda ""
-                  ((org-agenda-overriding-header "Agenda")))
-          (todo ""
-                ((org-agenda-overriding-header "Global todo list")))
-          ))
-
-        ("g" "(g)roup actionable items by context"
-         ((tags-todo "home/NEXT"
-                     ((org-agenda-overriding-header "Home")))
-          (tags-todo "laptop/NEXT"
-                     ((org-agenda-overriding-header "Laptop")))
-          (tags-todo "anywhere/NEXT"
-                     ((org-agenda-overriding-header "Anywhere")))
-          (tags-todo "phone/NEXT"
-                     ((org-agenda-overriding-header "Phone")))
-          (tags-todo "reading/NEXT"
-                     ((org-agenda-overriding-header "Reading")))
-          (tags-todo "errand/NEXT"
-                     ((org-agenda-overriding-header "Errand")))
-          (tags-todo "call/NEXT"
-                     ((org-agenda-overriding-header "Call")))
-          (tags-todo "text/NEXT"
-                     ((org-agenda-overriding-header "Text")))
-          (tags-todo "1password/NEXT"
-                     ((org-agenda-overriding-header "1Password")))
-          ))
-
-        ;; Commands to only display one GTD context
-        ("c" . "Select GTD (c)ontext...")
-        ("ch" "(h)ome" tags-todo "home/NEXT" nil)
-        ("cl" "(l)aptop" tags-todo "laptop/NEXT" nil)
-        ("ca" "(a)nywhere" tags-todo "anywhere/NEXT" nil)
-        ("cp" "(p)hone" tags-todo "phone/NEXT" nil)
-        ("cr" "(r)eading" tags-todo "reading/NEXT" nil)
-        ("ce" "(e)rrand" tags-todo "errand/NEXT" nil)
-        ("cc" "(c)all" tags-todo "call/NEXT" nil)
-        ("ct" "(t)ext" tags-todo "text/NEXT" nil)
-        ("c1" "(1)Password" tags-todo "1password/NEXT" nil)
-
-        ;; Source: modified from
-        ;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#stage-3-reviewing
-        ("r" "GTD Weekly (r)eview"
-         (
-          (agenda ""
-                  ((org-agenda-overriding-header "Agenda")))
-          (tags-todo "+PRIORITY=\"A\""
-                     ((org-agenda-overriding-header "High priority todo items")))
-          (todo "NEXT"
-                ((org-agenda-overriding-header "Next (Ready to do)")))
-          (todo "TODO"
-                ((org-agenda-overriding-header "Todo queue (i.e. not ready to do yet)")
-                 (org-agenda-files (list krista/todo-file
-					 krista/projects-file))
-                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'deadline
-                                                                      'scheduled))))
-          (todo "PROJECT"
-                ((org-agenda-overriding-header "List of Projects")
-                 (org-agenda-files (list krista/projects-file))))
-          (todo "BLOCKED"
-                ((org-agenda-overriding-header "Blocked")))
-          (todo "WAITING"
-                ((org-agenda-overriding-header "Waiting for input")))
-	  (todo ""
-                ((org-agenda-overriding-header "To Refile")
-                 (org-agenda-files (list krista/inbox-file))))
-          ))
-
-        ;; NOTE: I only want to see the names of projects, and then
-        ;; use follow mode to review the nitty-gritty details.
-        ("?" "Someday-maybe(?)" todo "PROJECT"
-         ((org-agenda-files `(,krista/someday-maybe-file))
-          (org-agenda-start-with-follow-mode t)))
-
-        ("i" "Sort (i)nbox" todo ""
-         ((org-agenda-overriding-header "Stuff in the Inbox")
-	  (org-agenda-files `(,krista/inbox-file))
-	  ))
-
-        ))
 #+END_SRC
 ** Super-agenda
 - https://github.com/alphapapa/org-super-agenda 
@@ -1014,37 +760,6 @@ CAL-endar F-rameW-ork
 
   (setq cfw:render-line-breaker 'cfw:render-line-breaker-none))
 
-#+END_SRC
-* org-gcal
-- https://github.com/myuhe/org-gcal.el
-- http://cestlaz.github.io/posts/using-emacs-26-gcal/
-- note regarding synchronization issues:
-  - https://github.com/myuhe/org-gcal.el/issues/82
-  - tl;dr
-    #+BEGIN_EXAMPLE 
-    # In the shell
-    rm -rf ~/.emacs.d/org-gcal/.org-gcal-token
-
-    # In emacs, eval this:
-    (org-gcal-request-token)
-    #+END_EXAMPLE
-#+BEGIN_SRC emacs-lisp
-(use-package org-gcal
-  :defer t
-  :ensure t
-  :config
-  (setq org-gcal-file-alist (list (cons "victorsenkrista@gmail.com" krista/gcal-file)))
-  (defun krista/org-gcal-pull ()
-    "Do both a `gcal-fetch' and a `gcal-sync' (akin to git `merge')."
-    (interactive)
-    (org-gcal-fetch)
-    (org-gcal-sync)))
-
-;; Sync org-gcal when loading agenda mode
-;; (add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
-;; Sync org-gcal after capturing. This is handy for recording events
-;; in org mode via capture, although I'm not using it at this time
-;; (add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
 #+END_SRC
 * toc-org
 #+BEGIN_SRC emacs-lisp

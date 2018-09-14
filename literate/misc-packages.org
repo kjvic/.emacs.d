@@ -1,0 +1,203 @@
+* Table of Contents                                                     :TOC:
+- [[#undo-tree][Undo tree]]
+- [[#which-key][Which-key]]
+- [[#emacs-achievements][Emacs achievements]]
+- [[#bookmark-bmkp][bookmark+ (bmkp)]]
+- [[#benchmark-init][Benchmark init]]
+- [[#paradox][paradox]]
+- [[#ace-window][Ace Window]]
+- [[#shackle][Shackle]]
+- [[#transpose-frame][Transpose-frame]]
+- [[#yasnippet][Yasnippet]]
+  - [[#github][Github]]
+  - [[#cup-full-of-code-tutorial-example-starter-snippets][Cup Full of Code tutorial (example starter snippets)]]
+  - [[#joatoavora-tutorial-better][Joatoavora tutorial (better)]]
+  - [[#configuration][Configuration]]
+- [[#hydra][Hydra]]
+
+* Undo tree
+Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
+#+BEGIN_SRC emacs-lisp
+(message "[krista] Loading undo-tree...")
+(require 'undo-tree)
+(setq undo-tree-auto-save-history t)
+(add-to-list 'undo-tree-history-directory-alist
+             '("." . "~/.emacs.d/cache/undo/"))
+
+;; WARNING!!! This line must appear /after/ setting variables to save undo-tree
+;; history!!!
+(global-undo-tree-mode)
+#+END_SRC
+* Which-key
+#+BEGIN_SRC emacs-lisp
+(message "[krista] loading which-key...")
+(use-package which-key              ;;; Display available keybindings in popup
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 1.5))
+(with-eval-after-load 'which-key
+  (which-key-mode))
+#+END_SRC
+* Emacs achievements
+- Unlock achievements to track your emacs journey
+- [[https://bitbucket.org/gvol/emacs-achievements/src/5b4b7b6816aaf105cd493f51b3860bd2f0c014a6/README.md?at=default&fileviewer=file-view-default][Bitbucket]]
+#+BEGIN_SRC emacs-lisp
+(use-package achievements
+  :diminish achievements-mode
+  :config (achievements-mode t))
+#+END_SRC
+* bookmark+ (bmkp)
+Note: use "P-F" to filter by file name
+#+BEGIN_SRC emacs-lisp
+(use-package bookmark+
+  :defer t
+  :config
+  (setq bmkp-incremental-filter-delay 0.05))
+#+END_SRC
+* Benchmark init
+- Figure out where you're burning time!!!
+- [[https://www.emacswiki.org/emacs/BenchmarkInit][docs]]
+- config
+  #+BEGIN_SRC emacs-lisp
+  (require 'benchmark-init)
+  #+END_SRC
+* paradox
+- Paradox is a better way to access your favorite package repository (e.g. MELPA)
+- Translation: paradox is like =package-list-packages= but better
+#+BEGIN_SRC emacs-lisp
+;; Speedy-open melpa
+(use-package paradox
+  ;; :bind (("H-P" . paradox-list-packages))
+  )
+;; Set to t => Don't ask me to integrate with github every time I want to look
+;; at melpa!
+(with-eval-after-load 'paradox (setq paradox-github-token t))
+#+END_SRC
+* Ace Window
+#+BEGIN_SRC emacs-lisp
+(use-package ace-window
+  :bind
+  ("M-P" . ace-window)
+  :config
+  (setq aw-dispatch-always t))
+#+END_SRC
+* Shackle
+https://github.com/wasamasa/shackle
+#+BEGIN_SRC emacs-lisp
+(use-package shackle 
+  :config
+  (setq shackle-default-alignment 'below)
+  (setq shackle-default-rule
+        '(:select t ; Select the popped-up window
+          :popup t ; Pop up a new window instead of displaying the buffer in the current one.
+          :same nil ; Display buffer in a NEW window.
+          ;; :size 0.4 ; occupy 40% of the old window
+          ))
+  (setq shackle-rules
+        '(("\\*Org Src.*"            :align right :select t   :popup t :same nil :regexp t :size 0.5)
+          (" *Org todo*"             :align below :select t   :popup t :same nil)
+          (" *Org tags*"             :align below :select t   :popup t :same nil)
+          (" *Agenda Commands*"      :align below :select t   :popup t :same nil)
+          ("*Org Note*"              :align below :select t   :popup t :same nil)
+          ("CAPTURE.*"               :align below :select t   :popup t :same nil :regexp t)
+          ("*Org Select*"            :align below :select t   :popup t :same nil)
+          ;; (" *Org Links*"            :align below             :popup t :same nil :size 0.1)
+          ;; ("*Select Link*"           :align below :select t   :popup t :same nil)
+          ("*Org Clock*"             :align below :select t   :popup t :same nil)
+          ("*Edit Formulas*"         :align below :select t   :popup t :same nil)
+          ("*Org Attach*"            :align below :select t   :popup t :same nil)
+          ("*Org Export Dispatcher*" :align below :select t   :popup t :same nil)
+          ))
+
+
+  ;; Make org-mode listen to shackle
+  ;; Source: https://emacs.stackexchange.com/a/31634
+  (setq org-src-window-setup 'other-window)
+  ;;
+  ;; Re-define org-switch-to-buffer-other-window to NOT use org-no-popups.
+  ;; Primarily for compatibility with shackle.
+  (defun org-switch-to-buffer-other-window (args)
+    "Switch to buffer in a second window on the current frame.
+    In particular, do not allow pop-up frames.
+    Returns the newly created buffer.
+    Redefined to allow pop-up windows."
+    ;;  (org-no-popups
+    ;;     (apply 'switch-to-buffer-other-window args)))
+    (switch-to-buffer-other-window args)
+
+
+    ;; Source: https://github.com/sk8ingdom/.emacs.d/blob/9d2f40c261864533df59be452117941a7f9b3e3f/general-config/general-plugins.el
+    ;; Function to suppress delete-other-windows in functions
+    (defun my/suppress-delete-other-windows (old-fun &rest args)
+      (cl-flet ((silence (&rest args) (ignore)))
+        (advice-add 'delete-other-windows :around #'silence)
+        (unwind-protect
+            (apply old-fun args)
+          (advice-remove 'delete-other-windows #'silence))))
+    ;;
+    ;; Adds my/suppress-delete-other-windows to org-mode functions for compatibility with shackle
+    (advice-add 'org-capture-place-template :around #'my/suppress-delete-other-windows)
+    (advice-add 'org-agenda :around #'my/suppress-delete-other-windows)
+    (advice-add 'org-add-log-note :around #'my/suppress-delete-other-windows)
+    (advice-add 'org-todo :around #'my/suppress-delete-other-windows)
+    (advice-add 'org-set-tags-command :around #'my/suppress-delete-other-windows)
+    ;; (advice-add 'org-insert-link :around #'my/suppress-delete-other-windows)
+    )
+
+  ;; Enable shackle-mode globally
+  (shackle-mode 1))
+#+END_SRC
+* Transpose-frame
+Provides 
+- flip-frame
+- transpose-frame
+- flop-frame
+#+BEGIN_SRC emacs-lisp
+(use-package transpose-frame   :defer t)
+#+END_SRC
+* Yasnippet
+** [[https://github.com/joaotavora/yasnippet/blob/master/README.mdown][Github]]
+** [[http://cupfullofcode.com/blog/2013/02/26/snippet-expansion-with-yasnippet/index.html][Cup Full of Code tutorial (example starter snippets)]]
+** [[https://joaotavora.github.io/yasnippet/snippet-organization.html#sec-1][Joatoavora tutorial (better)]]
+** Configuration
+#+BEGIN_SRC emacs-lisp
+;; (message "[krista] Loading yasnippet...")
+;; (use-package yasnippet
+;;   :diminish yas-minor-mode
+;;   :config
+;;   (yas-global-mode 1)
+;;   :bind
+;;   ("H-y" . yas-insert-snippet))
+#+END_SRC
+* Hydra
+Putting hydra after most config (for now) because I'm not sure how
+best to structure hydra config
+See also: https://github.com/abo-abo/hydra#the-one-with-the-least-amount-of-code
+#+BEGIN_SRC emacs-lisp
+(use-package hydra
+  :defer t
+  :bind ("C-c f" . hydra-flycheck/body))
+
+(defhydra hydra-flycheck (:color blue)
+  "
+  ^
+  ^Flycheck^          ^Errors^            ^Checker^
+  ^────────^──────────^──────^────────────^───────^─────
+  _q_ quit            _<_ previous        _?_ describe
+  _M_ manual          _>_ next            _d_ disable
+  _v_ verify setup    _f_ check           _m_ mode
+  ^^                  _l_ list            _s_ select
+  ^^                  ^^                  ^^
+  "
+  ("q" nil)
+  ("<" flycheck-previous-error :color pink)
+  (">" flycheck-next-error :color pink)
+  ("?" flycheck-describe-checker)
+  ("M" flycheck-manual)
+  ("d" flycheck-disable-checker)
+  ("f" flycheck-buffer)
+  ("l" flycheck-list-errors)
+  ("m" flycheck-mode)
+  ("s" flycheck-select-checker)
+  ("v" flycheck-verify-setup))
+#+END_SRC

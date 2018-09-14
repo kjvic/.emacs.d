@@ -29,8 +29,7 @@ This is where I put things that help me modify my emacs install more efficiently
 (defun krista/speedy-open-config ()
   "Quickly open my config file"
   (interactive)
-  (find-file (or "~/.emacs.d/config.org"
-                 user-init-file "")))
+  (find-file (or "~/.emacs.d/config.org" user-init-file "")))
 (bind-key "C-c e" #'krista/speedy-open-config)
 
 (defun krista/speedy-eval-config ()

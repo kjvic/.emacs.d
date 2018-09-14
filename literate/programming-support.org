@@ -365,6 +365,7 @@
 (add-hook 'after-init-hook #'global-flycheck-mode)
 (add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
 (add-hook 'c++-mode-hook (lambda () (setq flycheck-clang-language-standard "c++11")))
+(add-hook 'macrostep-mode-hook (lambda () (setq flycheck-disable-checkers t)))
 #+END_SRC
 *** Usage
 via http://www.flycheck.org/en/latest/user/quickstart.html#enable

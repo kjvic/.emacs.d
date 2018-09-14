@@ -1,0 +1,419 @@
+* Set GTD files
+** Sync directory
+- I use Dropbox to sync my GTD org-mode files to my phone
+- Placing my GTD org-mode files in krista/org-sync-dir will let
+  Dropbox take care of syncing -- then, I can view/edit on my phone
+  using [[https://beorgapp.com/][beorg]]
+  - NOTE: beorg is iOS-only, but don't despair!
+  - I have also used orgzly (android-only) with the same setup -- so
+    long as it supports Dropbox synchronization, it will Just Work
+#+BEGIN_SRC emacs-lisp
+(setq krista/org-sync-dir "~/Dropbox/orgzly/")
+#+END_SRC
+** Archive directory
+#+BEGIN_SRC emacs-lisp
+(setq krista/org-archives-dir "~/core/emacs-archives/")
+#+END_SRC
+** GTD files
+#+BEGIN_SRC emacs-lisp
+;; GTD files
+(setq krista/gtd-prefix "[gtd]-")
+(setq krista/media-prefix "[media]-")
+
+(setq-default krista/gtd-files nil)
+(setq-default krista/media-files nil)
+
+(defmacro krista/new-gtd-file (name reference-char)
+  (let ((full-file (make-symbol "full-filename")))
+    `(let ((,full-file (concat krista/org-sync-dir
+                               krista/gtd-prefix
+                               ,name
+                               ".org")))
+       (defvar ,(intern (concat "krista/" name "-file")) ,full-file)
+       (defvar ,(intern (concat "krista/" name "-char")) ,reference-char)
+       (add-to-list (quote krista/gtd-files) ,full-file)
+       ;; Set up a speedy-open keybinding
+       ;;
+       ;; e.g. for (krista/new-gtd-file "inbox" "i"), this will bind
+       ;; H-i so it opens krista/inbox-file
+       (global-set-key (kbd (concat "H-" ,reference-char))
+                       '(lambda () (interactive)
+                          (find-file ,(intern-soft (concat "krista/" name "-file")))))
+
+       )))
+
+(defmacro krista/new-media-file (name reference-char)
+  (let ((full-file (make-symbol "full-filename")))
+    `(let ((,full-file (concat krista/org-sync-dir
+                               krista/media-prefix
+                               ,name
+                               ".org")))
+       (defvar ,(intern (concat "krista/" name "-file")) ,full-file)
+       (defvar ,(intern (concat "krista/" name "-char")) ,reference-char)
+       (add-to-list (quote krista/media-files) ,full-file)
+       )))
+
+  (defun krista/sync (filename) (concat krista/org-sync-dir filename))
+;; (defun krista/gtd (filename)
+;;   (let ((gtd-file (krista/sync (concat krista/gtd-prefix filename))))
+;;     (add-to-list 'krista/gtd-files 'gtd-file)
+;;     gtd-file))
+;; (defun krista/media (filename)
+;;   (let ((media-file (krista/sync (concat krista/gtd-prefix filename))))
+;;     (add-to-list 'krista/media-files 'media-file)
+;;     media-file))
+
+;; (defun krista/speedy-open-binding (filename reference-char)
+;;   (bind-key (concat "H-" reference-char)
+;;          '(lambda () (interactive) (find-file filename))))
+
+(krista/new-gtd-file "inbox" "i")
+(krista/new-gtd-file "todo" "t")
+(krista/new-gtd-file "tickler" "T")
+(krista/new-gtd-file "projects" "p")
+(krista/new-gtd-file "inactive-projects" "P")
+(krista/new-gtd-file "someday-maybe" "?")
+
+;; Media files
+(krista/new-media-file "books" "b")
+(krista/new-media-file "reading" "r")
+(krista/new-media-file "music" "m")
+(krista/new-media-file "movies" "M")
+(krista/new-media-file "tv" "t")
+(krista/new-media-file "video-games" "v")
+
+;; Misc org files
+(setq krista/annoy-file (krista/sync "annoy.org"))
+(setq krista/random-ideas-file (krista/sync "random-ideas.org"))
+(setq krista/shopping-file (krista/sync "shopping.org"))
+#+END_SRC
+** Set krista/gcal-file
+#+BEGIN_SRC emacs-lisp
+(setq krista/gcal-file (concat krista/org-sync-dir "gcal.org"))
+#+END_SRC
+* Set up speedy-open keybindings -- entirely dependent on those files
+Because bookmarks aren't sufficiently frictionless when I'm trying to get to my todo list
+#+BEGIN_SRC emacs-lisp
+;; (bind-key "H-i" '(lambda () (interactive) (find-file krista/inbox-file)))
+;; (bind-key "H-t" '(lambda () (interactive) (find-file krista/todo-file)))
+;; (bind-key "H-T" '(lambda () (interactive) (find-file krista/tickler-file)))
+;; (bind-key "H-p" '(lambda () (interactive) (find-file krista/projects-file)))
+;; (bind-key "H-P" '(lambda () (interactive) (find-file krista/inactive-projects-file)))
+;; (bind-key "H-?" '(lambda () (interactive) (find-file krista/someday-maybe-file)))
+(bind-key "H-a" '(lambda () (interactive) (find-file krista/annoy-file)))
+(bind-key "H-g" '(lambda () (interactive) (find-file krista/gcal-file)))
+#+END_SRC
+
+* Set up the subset of my org config that's dependent on those files
+#+BEGIN_SRC emacs-lisp :noweb tangle
+(with-eval-after-load 'org-mode
+  (message "[krista] Setting agenda files...")
+  <<org-agenda-files>>
+
+  (message "[krista] Loading org-capture...")
+  <<org-capture>>
+
+  (message "[krista] Loading org-refile...")
+  <<org-refile>>
+
+  (message "[krista] Loading org-tag-alist...")
+  <<org-tag-alist>>
+
+  (message "[krista] Loading org agenda custom commands...")
+  <<org-agenda-custom>>
+
+  (message "[krista] Loading org gcal config...")
+  <<org-gcal-config>>
+)
+#+END_SRC
+** Set org agenda files
+#+BEGIN_SRC emacs-lisp :noweb-ref agenda-files :tangle no
+  ;; Places to sniff when compiling a list of TODO items
+  ;;
+  ;; NOTE: putting this piece of config here because a lot of
+  ;; org-agenda stuff relies on the variable org-agenda-files
+  (setq org-agenda-files
+  krista/gtd-files
+	(list
+	 ;; Active GTD files
+	 krista/todo-file ;; COUPLED
+	 krista/projects-file
+	 krista/tickler-file
+         ;; Other files w/daily info
+	 krista/gcal-file))
+#+END_SRC
+** Set org archive files
+#+BEGIN_SRC emacs-lisp
+;; Put archived todo items in a separate folder, rather than littering
+;; the current directory with hidden files
+(setq org-archive-location (concat krista/org-archives-dir "%s-archive::"))
+#+END_SRC
+** Org Capture
+#+BEGIN_SRC emacs-lisp :noweb-ref org-capture :tangle no
+;; Default file if a capture template doesn't specify otherwise
+(setq org-default-notes-file krista/inbox-file) ;; COUPLED
+
+;; The capture templates!
+;;
+;; Overview - Components of a capture template:
+;; https://orgmode.org/manual/Template-elements.html#Template-elements
+;;
+;; A quick starter example:
+;; https://orgmode.org/manual/Capture-templates.html#Capture-templates
+;;
+;; The gory details of what goes into an org-capture template:
+;; http://orgmode.org/manual/Template-expansion.html#Template-expansion
+(setq org-capture-templates
+      '(
+
+        ;; Prefix key. See https://lists.gnu.org/archive/html/emacs-orgmode/2015-10/msg00124.html
+        ;; ("g" "(G)TD...")
+
+        ;; The "%^g" = a prompt for tags
+        ;; Source: https://stackoverflow.com/a/31688974
+
+        ("i" "(i)nbox" entry
+         (file krista/inbox-file) ;; COUPLED
+         "* %i%?\n")
+
+        ("t" "(t)ODO item" entry
+         (file krista/todo-file) ;; COUPLED
+         "* NEXT %i%? %^g\n")
+
+        ("p" "Active (p)roject" entry
+         (file krista/projects-file) ;; COUPLED
+         "* PROJECT %i%?\n")
+
+        ("?" "Someday-maybe(?)" entry
+         (file krista/someday-maybe-file) ;; COUPLED
+         "* %i%?\n")
+
+        ("w" "(w)aiting list" entry
+         (file krista/tickler-file) ;; COUPLED
+         "* WAITING %i%?\n Date created: %U. Follow up on %^t\n")
+
+        ("T" "(T)ickler" entry
+         (file krista/tickler-file) ;; COUPLED
+         "* %i%?\n  Prompt on: %^t\n")
+
+        ;; m prefix key
+        ("m" "(m)edia...") ;; COUPLED
+        ("mb" "(b)ooks" entry
+         (file krista/books-file) "* %i%?\n")
+        ("mm" "(m)usic" entry
+         (file krista/music-file) "* %i%?\n")
+        ("mM" "(M)ovies" entry
+         (file krista/movies-file) "* %i%?\n")
+        ("mr" "(r)eading" entry
+         (file krista/reading-file) "* %i%?\n")
+        ("mt" "(t)elevision" entry
+         (file krista/tv-file) "* %i%?\n")
+        ("mv" "(v)ideo games" entry
+         (file krista/video-games-file) "* %i%?\n")
+
+        ("Q" "(Q)uotes" entry ;; COUPLED
+         (file+olp krista/quotes-file "quotes")
+         "* %i%?\n")
+
+        ("s" "(s)hopping" entry ;; COUPLED
+         (file+olp krista/shopping-file "Shopping")
+         "* %i%?\n")
+
+        ;; Shortcut key for the capture menu:
+        ("a"
+         ;; Description for the capture menu:
+         "(A)nnoy" ;; COUPLED
+         ;; Type -- Is it a headline ("entry"), checkbox, etc?
+         entry
+         ;; Target destination -- file + heading(s):
+         (file+olp krista/annoy-file "annoy" "refile")
+         ;; Pre-formatting:
+         ;; (Example: you can have the template automatically add the
+         ;; date, or you can specify certain properties,etc.)
+         "* %?\n%i\n")
+
+        ))
+
+;; If t: add a bookmark pointing to the last thing I captured
+;; (setq org-capture-bookmark nil)
+#+END_SRC
+** Org Refile
+#+BEGIN_SRC emacs-lisp :noweb-ref org-refile :tangle no
+(setq org-refile-use-outline-path 'file)
+(setq org-refile-allow-creating-parent-nodes (quote confirm)) ; allow refile to create parent tasks with confirmation
+
+;; Options for org-refile. limiting level to 2 for performance reasons.
+(setq org-refile-targets `((,(append org-agenda-files ;; COUPLED
+				     ;; krista/media-files
+                                     (list krista/someday-maybe-file
+                                           krista/annoy-file
+                                           krista/random-ideas-file
+                                           krista/shopping-file
+                                           krista/inactive-projects-file)))))
+#+END_SRC
+** Org tags alist
+#+BEGIN_SRC emacs-lisp :noweb-ref org-tag-alist :tangle no
+;; Docs for org-tag-alist and quick-selection: https://orgmode.org/manual/Setting-tags.html
+(setq org-tag-alist
+      '(("home" . ?h)
+        ("laptop" . ?l)
+        ("anywhere" . ?a)
+        ("phone" . ?p)
+        ("reading" . ?r)
+        ("errand" . ?e)
+        ("call" . ?c)
+        ("email" . ?m)
+        ("text" . ?t)))
+#+END_SRC
+** Org agenda config -- agenda-custom-commands
+#+BEGIN_SRC emacs-lisp :noweb-ref org-agenda-custom :tangle no
+(setq org-stuck-projects
+      ;; Tag/todo keyword/property(s) identifying GTD Projects
+      '("+PROJECT/-CANCELLED-DONE"
+
+        ;; todo keyword(s) identifying GTD Next Actions
+        ("NEXT")
+
+        ;; tags identifying non-stuck projects.
+        ("shopping")
+
+        ;; An arbitrary regular expression matching non-stuck projects.
+        ""))
+
+;; Custom agenda commands
+(setq org-agenda-custom-commands
+      '(
+
+        ("a" "Show (a)genda & high priority todo items"
+         ((agenda ""
+                  ((org-agenda-overriding-header "Agenda")))
+          (tags-todo "+PRIORITY=\"A\""
+                     ((org-agenda-overriding-header "High priority todo items")))
+          ))
+
+        ("n" "Show both agenda & todo items"
+         ((agenda ""
+                  ((org-agenda-overriding-header "Agenda")))
+          (todo ""
+                ((org-agenda-overriding-header "Global todo list")))
+          ))
+
+        ("g" "(g)roup actionable items by context"
+         ((tags-todo "home/NEXT"
+                     ((org-agenda-overriding-header "Home")))
+          (tags-todo "laptop/NEXT"
+                     ((org-agenda-overriding-header "Laptop")))
+          (tags-todo "anywhere/NEXT"
+                     ((org-agenda-overriding-header "Anywhere")))
+          (tags-todo "phone/NEXT"
+                     ((org-agenda-overriding-header "Phone")))
+          (tags-todo "reading/NEXT"
+                     ((org-agenda-overriding-header "Reading")))
+          (tags-todo "errand/NEXT"
+                     ((org-agenda-overriding-header "Errand")))
+          (tags-todo "call/NEXT"
+                     ((org-agenda-overriding-header "Call")))
+          (tags-todo "text/NEXT"
+                     ((org-agenda-overriding-header "Text")))
+          (tags-todo "1password/NEXT"
+                     ((org-agenda-overriding-header "1Password")))
+          ))
+
+        ;; Commands to only display one GTD context
+        ("c" . "Select GTD (c)ontext...")
+        ("ch" "(h)ome" tags-todo "home/NEXT" nil)
+        ("cl" "(l)aptop" tags-todo "laptop/NEXT" nil)
+        ("ca" "(a)nywhere" tags-todo "anywhere/NEXT" nil)
+        ("cp" "(p)hone" tags-todo "phone/NEXT" nil)
+        ("cr" "(r)eading" tags-todo "reading/NEXT" nil)
+        ("ce" "(e)rrand" tags-todo "errand/NEXT" nil)
+        ("cc" "(c)all" tags-todo "call/NEXT" nil)
+        ("ct" "(t)ext" tags-todo "text/NEXT" nil)
+        ("c1" "(1)Password" tags-todo "1password/NEXT" nil)
+
+        ;; Source: modified from
+        ;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#stage-3-reviewing
+        ("r" "GTD Weekly (r)eview"
+         (
+          (agenda ""
+                  ((org-agenda-overriding-header "Agenda")))
+          (tags-todo "+PRIORITY=\"A\""
+                     ((org-agenda-overriding-header "High priority todo items")))
+          (todo "NEXT"
+                ((org-agenda-overriding-header "Next (Ready to do)")))
+          (todo "TODO"
+                ((org-agenda-overriding-header "Todo queue (i.e. not ready to do yet)")
+                 (org-agenda-files (list krista/todo-file
+                                         krista/projects-file))
+                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'deadline
+                                                                      'scheduled))))
+          (todo "PROJECT"
+                ((org-agenda-overriding-header "List of Projects")
+                 (org-agenda-files (list krista/projects-file))))
+          (todo "BLOCKED"
+                ((org-agenda-overriding-header "Blocked")))
+          (todo "WAITING"
+                ((org-agenda-overriding-header "Waiting for input")))
+          (todo ""
+                ((org-agenda-overriding-header "To Refile")
+                 (org-agenda-files (list krista/inbox-file))))
+          ))
+
+        ;; NOTE: I only want to see the names of projects, and then
+        ;; use follow mode to review the nitty-gritty details.
+        ("?" "Someday-maybe(?)" todo "PROJECT"
+         ((org-agenda-files `(,krista/someday-maybe-file))
+          (org-agenda-start-with-follow-mode t)))
+
+        ("i" "Sort (i)nbox" todo ""
+         ((org-agenda-overriding-header "Stuff in the Inbox")
+          (org-agenda-files `(,krista/inbox-file))
+          ))
+
+        ))
+#+END_SRC
+** org-gcal
+- https://github.com/myuhe/org-gcal.el
+- http://cestlaz.github.io/posts/using-emacs-26-gcal/
+- NOTE: I'm setting the value for my gcal file above, so I can use krista/gcal-file in my agenda commands
+#+BEGIN_SRC emacs-lisp :noweb-ref org-gcal-config :tangle no
+(use-package org-gcal
+  :defer t
+  :ensure t
+  :config
+
+  ;; org-gcal needs a file to store stuff in
+  ;;
+  ;; I let org-gcal store stuff in my 'krista/gcal-file' (that's a
+  ;; variable I've set elsewhere)
+  ;;
+  ;; If you want to copy my org-gcal config into your .emacs, you'll
+  ;; need to replace krista/gcal-file with the path to your gcal storage file
+  ;;
+  ;; Example config: 
+  ;;   (setq org-gcal-file-alist (list (cons "YOUR_EMAIL@gmail.com" "PATH_TO_GCAL_STORAGE_FILE")))
+  (setq org-gcal-file-alist (list (cons "victorsenkrista@gmail.com" krista/gcal-file)))
+
+  (defun krista/org-gcal-pull ()
+    "Do both a `gcal-fetch' and a `gcal-sync' (akin to git `merge')."
+    (interactive)
+    (org-gcal-fetch)
+    (org-gcal-sync)))
+
+;; Sync org-gcal when loading agenda mode
+;; (add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
+;; Sync org-gcal after capturing. This is handy for recording events
+;; in org mode via capture, although I'm not using it at this time
+;; (add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
+#+END_SRC
+- note regarding synchronization issues:
+  - https://github.com/myuhe/org-gcal.el/issues/82
+  - tl;dr
+    #+BEGIN_EXAMPLE 
+    # In the shell
+    rm -rf ~/.emacs.d/org-gcal/.org-gcal-token
+
+    # In emacs, eval this:
+    (org-gcal-request-token)
+    #+END_EXAMPLE
+    
