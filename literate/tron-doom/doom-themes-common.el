@@ -783,7 +783,9 @@
     (markdown-inline-code-face :inherit '(markdown-code-face markdown-pre-face))
 
     ;; org-agenda
-    (org-agenda-structure :foreground modeline-fg)
+    (org-agenda-structure :foreground modeline-fg
+			  :box `(:line-width 10 :color bg)
+			  :height 1.2)
     (org-agenda-date      :foreground rust :height 1.3)
     (org-agenda-date-weekend      :inherit 'org-agenda-date)
     (org-agenda-date-today :inherit 'org-agenda-date
