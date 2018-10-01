@@ -18,7 +18,7 @@
 - [[#delimiters---parens-brackets-curly-braces-blocks-of-code][Delimiters - parens, brackets, curly braces, blocks of code]]
   - [[#rainbow-delimiters][Rainbow-delimiters]]
   - [[#smartparens][Smartparens]]
-  - [[#hide-show-mode][Hide-show mode]]
+  - [[#origami-mode][Origami mode]]
 
 * Whitespace preferences
 #+BEGIN_SRC emacs-lisp
@@ -472,30 +472,28 @@ ones match
 ;; Enable smartparens globally
 (smartparens-global-mode)
 #+END_SRC
-** Hide-show mode
-Hide-show mode lets you "hide/show" a block of code by collapsing it
-
-*Before*
-#+CAPTION: Before
-#+attr_org: :width="100px"
-#+NAME:   figure
-[[file:./screenshots/before-folding-with-hs-mode.png]]
-
-*After*
-#+CAPTION: After folding with 'hs-toggle-hiding'
-#+attr_org: :width="25px"
-#+NAME:   figure
-[[file:./screenshots/after-folding-with-hs-mode.png]]
-
-Intro: https://www.emacswiki.org/emacs/HideShow
-- Note: =hs= is a common abbreviation for hide-show
+** Origami mode
+Origami + org-super-agenda mode config:
+https://github.com/alphapapa/org-super-agenda/blob/master/examples.org#automatically-fold-certain-groups-with-origami
 #+BEGIN_SRC emacs-lisp
-(load-library "hideshow")
-(global-set-key (kbd "C--") 'hs-toggle-hiding)
-(global-set-key (kbd "C-M--") 'hs-hide-all)
-(global-set-key (kbd "C-M-=") 'hs-show-all)
-(add-hook 'prog-mode-hook 'hs-minor-mode)
-(add-hook 'c-mode-common-hook 'hs-minor-mode)
-(add-hook 'cc-mode-hook 'hs-minor-mode)
-(add-hook 'csharp-mode-hook 'hs-minor-mode)
+(use-package origami
+  :general (:keymaps 'org-super-agenda-header-map
+                     "TAB" #'origami-toggle-node)
+  :config
+
+  ;; (defvar krista/org-super-agenda-auto-show-groups '())
+  ;; (defun krista/org-super-agenda-origami-fold-default ()
+  ;;   "Fold certain groups by default in Org Super Agenda buffer."
+  ;;   (forward-line 3)
+  ;;   (cl-loop do (origami-forward-toggle-node (current-buffer) (point))
+  ;;            while (origami-forward-fold-same-level (current-buffer) (point)))
+  ;;   (--each krista/org-super-agenda-auto-show-groups
+  ;;     (goto-char (point-min))
+  ;;     (when (re-search-forward (rx-to-string `(seq bol " " ,it)) nil t)
+  ;;       (origami-show-node (current-buffer) (point)))))
+
+  :hook ((org-agenda-mode . origami-mode)
+         ;; (org-agenda-finalize . krista/org-super-agenda-origami-fold-default)
+	 )
+  )
 #+END_SRC
