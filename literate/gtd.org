@@ -20,9 +20,31 @@
 (setq krista/gtd-prefix "[gtd]-")
 (setq krista/media-prefix "[media]-")
 
+;; NOTE: The 3 lists below are expected to be disjoint from one
+;; another!!! (This is baked into the pattern of creating a file with
+;; the appropriate macro, and letting the macro manage list
+;; membership)
+;;
+;; Intended usage:
+;; gtd files: 
+;; - these are pure-GTD files for turning Stuff into Next Actions and Projects
+;; - example file: [gtd]-projects.org stores active GTD Projects
+;; 
+;; media files: 
+;; - these are files used to track various types of media (music, movies, books)
+;; - example file: [media]-books.org stores books I want to read
+;;
+;; sync files:
+;; - these are reference files that I use so often that I want them on my phone
+;; - example file: shopping.org stores my shopping list
 (setq-default krista/gtd-files nil)
 (setq-default krista/media-files nil)
+(setq-default krista/sync-files nil)
 
+;; This list is the union of gtd-files, media-files, and sync-files
+(setq-default krista/special-files nil)
+
+;; Here are the macros for creating new files in each category:
 (defmacro krista/new-gtd-file (name reference-char)
   (let ((full-file (make-symbol "full-filename")))
     `(let ((,full-file (concat krista/org-sync-dir
@@ -32,6 +54,7 @@
        (defvar ,(intern (concat "krista/" name "-file")) ,full-file)
        (defvar ,(intern (concat "krista/" name "-char")) ,reference-char)
        (add-to-list (quote krista/gtd-files) ,full-file)
+       (add-to-list (quote krista/special-files) ,full-file)
        ;; Set up a speedy-open keybinding
        ;;
        ;; e.g. for (krista/new-gtd-file "inbox" "i"), this will bind
@@ -51,9 +74,21 @@
        (defvar ,(intern (concat "krista/" name "-file")) ,full-file)
        (defvar ,(intern (concat "krista/" name "-char")) ,reference-char)
        (add-to-list (quote krista/media-files) ,full-file)
+       (add-to-list (quote krista/special-files) ,full-file)
        )))
 
-  (defun krista/sync (filename) (concat krista/org-sync-dir filename))
+(defmacro krista/new-sync-file (name reference-char)
+  (let ((full-file (make-symbol "full-filename")))
+    `(let ((,full-file (concat krista/org-sync-dir
+                               ,name
+                               ".org")))
+       (defvar ,(intern (concat "krista/" name "-file")) ,full-file)
+       (defvar ,(intern (concat "krista/" name "-char")) ,reference-char)
+       (add-to-list (quote krista/sync-files) ,full-file)
+       (add-to-list (quote krista/special-files) ,full-file)
+       )))
+
+;; (defun krista/sync (filename) (concat krista/org-sync-dir filename))
 ;; (defun krista/gtd (filename)
 ;;   (let ((gtd-file (krista/sync (concat krista/gtd-prefix filename))))
 ;;     (add-to-list 'krista/gtd-files 'gtd-file)
@@ -83,27 +118,22 @@
 (krista/new-media-file "video-games" "v")
 
 ;; Misc org files
-(setq krista/annoy-file (krista/sync "annoy.org"))
-(setq krista/random-ideas-file (krista/sync "random-ideas.org"))
-(setq krista/shopping-file (krista/sync "shopping.org"))
+(krista/new-sync-file "annoy" "a")
+(krista/new-sync-file "random-ideas" "I")
+(krista/new-sync-file "shopping" "s")
 #+END_SRC
 ** Set krista/gcal-file
+The gcal is sort of in its own category. I never edit it manually
+(unlike GTD/media/sync files), and I've even thought about removing it
+from my sync directory (because it clutters up my beorg view, and
+because beorg can figure out my google calendar events using iOS
+integration with the Apple Calendar app).
 #+BEGIN_SRC emacs-lisp
 (setq krista/gcal-file (concat krista/org-sync-dir "gcal.org"))
-#+END_SRC
-* Set up speedy-open keybindings -- entirely dependent on those files
-Because bookmarks aren't sufficiently frictionless when I'm trying to get to my todo list
-#+BEGIN_SRC emacs-lisp
-;; (bind-key "H-i" '(lambda () (interactive) (find-file krista/inbox-file)))
-;; (bind-key "H-t" '(lambda () (interactive) (find-file krista/todo-file)))
-;; (bind-key "H-T" '(lambda () (interactive) (find-file krista/tickler-file)))
-;; (bind-key "H-p" '(lambda () (interactive) (find-file krista/projects-file)))
-;; (bind-key "H-P" '(lambda () (interactive) (find-file krista/inactive-projects-file)))
-;; (bind-key "H-?" '(lambda () (interactive) (find-file krista/someday-maybe-file)))
-(bind-key "H-a" '(lambda () (interactive) (find-file krista/annoy-file)))
 (bind-key "H-g" '(lambda () (interactive) (find-file krista/gcal-file)))
+;; Note: the `t` argument here will append krista/gcal-file to the /end/ of the list
+(add-to-list 'krista/special-files krista/gcal-file t)
 #+END_SRC
-
 * Set up the subset of my org config that's dependent on those files
 #+BEGIN_SRC emacs-lisp :noweb tangle
 (with-eval-after-load 'org-mode
@@ -119,28 +149,27 @@ Because bookmarks aren't sufficiently frictionless when I'm trying to get to my 
   (message "[krista] Loading org-tag-alist...")
   <<org-tag-alist>>
 
-  (message "[krista] Loading org agenda custom commands...")
-  <<org-agenda-custom>>
-
   (message "[krista] Loading org gcal config...")
   <<org-gcal-config>>
+
+  (message "[krista] Loading org agenda custom commands...")
+  <<org-super-agenda>>
 )
 #+END_SRC
 ** Set org agenda files
-#+BEGIN_SRC emacs-lisp :noweb-ref agenda-files :tangle no
-  ;; Places to sniff when compiling a list of TODO items
-  ;;
-  ;; NOTE: putting this piece of config here because a lot of
-  ;; org-agenda stuff relies on the variable org-agenda-files
-  (setq org-agenda-files
-  krista/gtd-files
-	(list
-	 ;; Active GTD files
-	 krista/todo-file ;; COUPLED
-	 krista/projects-file
-	 krista/tickler-file
-         ;; Other files w/daily info
-	 krista/gcal-file))
+#+BEGIN_SRC emacs-lisp :noweb-ref agenda-files
+;; Places to sniff when compiling a list of TODO items
+;;
+;; NOTE: putting this piece of config here because a lot of
+;; org-agenda stuff relies on the variable org-agenda-files
+(setq org-agenda-files (list krista/todo-file
+                             krista/projects-file
+                             krista/tickler-file
+                             krista/gcal-file))
+
+;; If a file in org-agenda-files isn't available, just skip it instead
+;; of aborting
+(setq org-agenda-skip-unavailable-files t)
 #+END_SRC
 ** Set org archive files
 #+BEGIN_SRC emacs-lisp
@@ -149,7 +178,7 @@ Because bookmarks aren't sufficiently frictionless when I'm trying to get to my 
 (setq org-archive-location (concat krista/org-archives-dir "%s-archive::"))
 #+END_SRC
 ** Org Capture
-#+BEGIN_SRC emacs-lisp :noweb-ref org-capture :tangle no
+#+BEGIN_SRC emacs-lisp :noweb-ref org-capture
 ;; Default file if a capture template doesn't specify otherwise
 (setq org-default-notes-file krista/inbox-file) ;; COUPLED
 
@@ -178,7 +207,8 @@ Because bookmarks aren't sufficiently frictionless when I'm trying to get to my 
 
         ("t" "(t)ODO item" entry
          (file krista/todo-file) ;; COUPLED
-         "* NEXT %i%? %^g\n")
+         "* NEXT %i%?\n")
+         ;; "* NEXT %i%? %^g\n")
 
         ("p" "Active (p)roject" entry
          (file krista/projects-file) ;; COUPLED
@@ -222,11 +252,11 @@ Because bookmarks aren't sufficiently frictionless when I'm trying to get to my 
         ;; Shortcut key for the capture menu:
         ("a"
          ;; Description for the capture menu:
-         "(A)nnoy" ;; COUPLED
+         "(a)nnoy" ;; COUPLED
          ;; Type -- Is it a headline ("entry"), checkbox, etc?
          entry
          ;; Target destination -- file + heading(s):
-         (file+olp krista/annoy-file "annoy" "refile")
+         (file krista/annoy-file "annoy")
          ;; Pre-formatting:
          ;; (Example: you can have the template automatically add the
          ;; date, or you can specify certain properties,etc.)
@@ -238,18 +268,17 @@ Because bookmarks aren't sufficiently frictionless when I'm trying to get to my 
 ;; (setq org-capture-bookmark nil)
 #+END_SRC
 ** Org Refile
-#+BEGIN_SRC emacs-lisp :noweb-ref org-refile :tangle no
+#+BEGIN_SRC emacs-lisp :noweb-ref org-refile
 (setq org-refile-use-outline-path 'file)
 (setq org-refile-allow-creating-parent-nodes (quote confirm)) ; allow refile to create parent tasks with confirmation
 
-;; Options for org-refile. limiting level to 2 for performance reasons.
-(setq org-refile-targets `((,(append org-agenda-files ;; COUPLED
-				     ;; krista/media-files
-                                     (list krista/someday-maybe-file
-                                           krista/annoy-file
-                                           krista/random-ideas-file
-                                           krista/shopping-file
-                                           krista/inactive-projects-file)))))
+(setq org-refile-targets '(krista/special-files
+                           ;; Only suggest org headlines at level 1-n
+                           ;; (This is for better performance in
+                           ;; deeply nested files & because it's
+                           ;; overwhelming to choose a refile target
+                           ;; if there are too many options)
+                           :maxlevel 2))
 #+END_SRC
 ** Org tags alist
 #+BEGIN_SRC emacs-lisp :noweb-ref org-tag-alist :tangle no
