@@ -21,10 +21,22 @@
 * Org-mode proper
 #+BEGIN_SRC emacs-lisp :noweb tangle
 (message "[krista] Loading org-mode settings...")
-(setq org-modules '(org-bbdb org-bibtex org-docview org-gnus
-			     org-habit org-info org-irc org-mhe
-			     org-rmail org-w3m))
-
+(setq org-modules '(
+		    ;; Standard org mode modules -- enabled by default
+		    org-w3m
+		    org-bbdb
+		    org-bibtex
+		    org-docview
+		    org-gnus
+		    org-info
+		    org-irc
+		    org-mhe
+		    org-rmail
+		    ;; These modules are packaged with vanilla
+		    ;; org-mode, although they're disabled by default
+		    org-habit
+		    org-drill
+		    ))
 (use-package org
   :diminish org-indent-mode
   :config
