@@ -6,6 +6,7 @@
   - [[#load-path][Load-path]]
   - [[#profiling-uncomment-this][Profiling? Uncomment this]]
   - [[#use-package-package-management-management][use-package: package management management]]
+  - [[#general][general]]
   - [[#tangling-helpers--literate-programming-support][Tangling helpers / Literate programming support]]
 - [[#tangle-external-files][Tangle external files]]
   - [[#gtd--gtd-related-org-agenda-config][GTD / gtd-related org agenda config]]
@@ -68,6 +69,12 @@ Get emacs off the ground!
 (require 'use-package)
 ;; All packages in a use-package macro should be automagically installed
 (setq use-package-always-ensure t)
+#+END_SRC
+** general
+Provides the =:general= keyword for use-package
+https://github.com/noctuid/general.el
+#+BEGIN_SRC emacs-lisp
+(use-package general)
 #+END_SRC
 ** Tangling helpers / Literate programming support
 *** Tangling macros
