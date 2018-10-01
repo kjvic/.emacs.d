@@ -280,8 +280,8 @@ integration with the Apple Calendar app).
                            ;; if there are too many options)
                            :maxlevel 2))
 #+END_SRC
-** Org tags alist
-#+BEGIN_SRC emacs-lisp :noweb-ref org-tag-alist :tangle no
+** Org tags
+#+BEGIN_SRC emacs-lisp :noweb-ref org-tag-alist
 ;; Docs for org-tag-alist and quick-selection: https://orgmode.org/manual/Setting-tags.html
 (setq org-tag-alist
       '(("home" . ?h)
