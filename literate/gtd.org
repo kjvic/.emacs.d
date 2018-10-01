@@ -293,9 +293,6 @@ integration with the Apple Calendar app).
         ("call" . ?c)
         ("email" . ?m)
         ("text" . ?t)))
-#+END_SRC
-** Org agenda config -- agenda-custom-commands
-#+BEGIN_SRC emacs-lisp :noweb-ref org-agenda-custom :tangle no
 (setq org-stuck-projects
       ;; Tag/todo keyword/property(s) identifying GTD Projects
       '("+PROJECT/-CANCELLED-DONE"
@@ -308,104 +305,12 @@ integration with the Apple Calendar app).
 
         ;; An arbitrary regular expression matching non-stuck projects.
         ""))
-
-;; Custom agenda commands
-(setq org-agenda-custom-commands
-      '(
-
-        ("a" "Show (a)genda & high priority todo items"
-         ((agenda ""
-                  ((org-agenda-overriding-header "Agenda")))
-          (tags-todo "+PRIORITY=\"A\""
-                     ((org-agenda-overriding-header "High priority todo items")))
-          ))
-
-        ("n" "Show both agenda & todo items"
-         ((agenda ""
-                  ((org-agenda-overriding-header "Agenda")))
-          (todo ""
-                ((org-agenda-overriding-header "Global todo list")))
-          ))
-
-        ("g" "(g)roup actionable items by context"
-         ((tags-todo "home/NEXT"
-                     ((org-agenda-overriding-header "Home")))
-          (tags-todo "laptop/NEXT"
-                     ((org-agenda-overriding-header "Laptop")))
-          (tags-todo "anywhere/NEXT"
-                     ((org-agenda-overriding-header "Anywhere")))
-          (tags-todo "phone/NEXT"
-                     ((org-agenda-overriding-header "Phone")))
-          (tags-todo "reading/NEXT"
-                     ((org-agenda-overriding-header "Reading")))
-          (tags-todo "errand/NEXT"
-                     ((org-agenda-overriding-header "Errand")))
-          (tags-todo "call/NEXT"
-                     ((org-agenda-overriding-header "Call")))
-          (tags-todo "text/NEXT"
-                     ((org-agenda-overriding-header "Text")))
-          (tags-todo "1password/NEXT"
-                     ((org-agenda-overriding-header "1Password")))
-          ))
-
-        ;; Commands to only display one GTD context
-        ("c" . "Select GTD (c)ontext...")
-        ("ch" "(h)ome" tags-todo "home/NEXT" nil)
-        ("cl" "(l)aptop" tags-todo "laptop/NEXT" nil)
-        ("ca" "(a)nywhere" tags-todo "anywhere/NEXT" nil)
-        ("cp" "(p)hone" tags-todo "phone/NEXT" nil)
-        ("cr" "(r)eading" tags-todo "reading/NEXT" nil)
-        ("ce" "(e)rrand" tags-todo "errand/NEXT" nil)
-        ("cc" "(c)all" tags-todo "call/NEXT" nil)
-        ("ct" "(t)ext" tags-todo "text/NEXT" nil)
-        ("c1" "(1)Password" tags-todo "1password/NEXT" nil)
-
-        ;; Source: modified from
-        ;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#stage-3-reviewing
-        ("r" "GTD Weekly (r)eview"
-         (
-          (agenda ""
-                  ((org-agenda-overriding-header "Agenda")))
-          (tags-todo "+PRIORITY=\"A\""
-                     ((org-agenda-overriding-header "High priority todo items")))
-          (todo "NEXT"
-                ((org-agenda-overriding-header "Next (Ready to do)")))
-          (todo "TODO"
-                ((org-agenda-overriding-header "Todo queue (i.e. not ready to do yet)")
-                 (org-agenda-files (list krista/todo-file
-                                         krista/projects-file))
-                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'deadline
-                                                                      'scheduled))))
-          (todo "PROJECT"
-                ((org-agenda-overriding-header "List of Projects")
-                 (org-agenda-files (list krista/projects-file))))
-          (todo "BLOCKED"
-                ((org-agenda-overriding-header "Blocked")))
-          (todo "WAITING"
-                ((org-agenda-overriding-header "Waiting for input")))
-          (todo ""
-                ((org-agenda-overriding-header "To Refile")
-                 (org-agenda-files (list krista/inbox-file))))
-          ))
-
-        ;; NOTE: I only want to see the names of projects, and then
-        ;; use follow mode to review the nitty-gritty details.
-        ("?" "Someday-maybe(?)" todo "PROJECT"
-         ((org-agenda-files `(,krista/someday-maybe-file))
-          (org-agenda-start-with-follow-mode t)))
-
-        ("i" "Sort (i)nbox" todo ""
-         ((org-agenda-overriding-header "Stuff in the Inbox")
-          (org-agenda-files `(,krista/inbox-file))
-          ))
-
-        ))
 #+END_SRC
 ** org-gcal
 - https://github.com/myuhe/org-gcal.el
 - http://cestlaz.github.io/posts/using-emacs-26-gcal/
 - NOTE: I'm setting the value for my gcal file above, so I can use krista/gcal-file in my agenda commands
-#+BEGIN_SRC emacs-lisp :noweb-ref org-gcal-config :tangle no
+#+BEGIN_SRC emacs-lisp :noweb-ref org-gcal-config
 (use-package org-gcal
   :defer t
   :ensure t
@@ -446,3 +351,212 @@ integration with the Apple Calendar app).
     (org-gcal-request-token)
     #+END_EXAMPLE
     
+* (Super)-agenda
+- https://github.com/alphapapa/org-super-agenda 
+- Note: I love this package / it makes it wayyyy easier to define
+  custom agenda commands that actually look good. However, I want to
+  get the rest of my GTD workflow a bit more stable before I re-enable
+  super-agenda
+** config itself
+#+BEGIN_SRC emacs-lisp :noweb-ref org-super-agenda
+(use-package org-super-agenda
+  :config
+  (org-super-agenda-mode)
+  (setq org-super-agenda-fontify-whole-header-line t)
+
+  (setq org-agenda-custom-commands
+        '(
+
+          ("a" "Show (a)genda & high priority todo items"
+           ((agenda ""
+                    ((org-agenda-overriding-header "Agenda")))
+            (tags-todo "+PRIORITY=\"A\""
+                       ((org-agenda-overriding-header "High priority todo items")))
+            ))
+
+          ("n" "Show both agenda & todo items"
+           ((agenda ""
+                    ((org-agenda-overriding-header "Agenda")))
+            (todo ""
+                  ((org-agenda-overriding-header "Global todo list")))
+            ))
+
+          ("g" "(g)roup actionable items by context"
+           ((tags-todo "home/NEXT"
+                       ((org-agenda-overriding-header "Home")))
+            (tags-todo "laptop/NEXT"
+                       ((org-agenda-overriding-header "Laptop")))
+            (tags-todo "anywhere/NEXT"
+                       ((org-agenda-overriding-header "Anywhere")))
+            (tags-todo "phone/NEXT"
+                       ((org-agenda-overriding-header "Phone")))
+            (tags-todo "reading/NEXT"
+                       ((org-agenda-overriding-header "Reading")))
+            (tags-todo "errand/NEXT"
+                       ((org-agenda-overriding-header "Errand")))
+            (tags-todo "call/NEXT"
+                       ((org-agenda-overriding-header "Call")))
+            (tags-todo "text/NEXT"
+                       ((org-agenda-overriding-header "Text")))
+            (tags-todo "1password/NEXT"
+                       ((org-agenda-overriding-header "1Password")))
+            ))
+
+          ;; Commands to only display one GTD context
+          ("c" . "Select GTD (c)ontext...")
+          ("ch" "(h)ome" tags-todo "home/NEXT" nil)
+          ("cl" "(l)aptop" tags-todo "laptop/NEXT" nil)
+          ("ca" "(a)nywhere" tags-todo "anywhere/NEXT" nil)
+          ("cp" "(p)hone" tags-todo "phone/NEXT" nil)
+          ("cr" "(r)eading" tags-todo "reading/NEXT" nil)
+          ("ce" "(e)rrand" tags-todo "errand/NEXT" nil)
+          ("cc" "(c)all" tags-todo "call/NEXT" nil)
+          ("ct" "(t)ext" tags-todo "text/NEXT" nil)
+          ("c1" "(1)Password" tags-todo "1password/NEXT" nil)
+
+          ;; Source: modified from
+          ;; https://github.com/jethrokuan/.emacs.d/blob/master/config.org#stage-3-reviewing
+          ("r" "GTD Weekly (r)eview"
+           (
+            (agenda ""
+                    ((org-agenda-overriding-header "Agenda")))
+            (tags-todo "+PRIORITY=\"A\""
+                       ((org-agenda-overriding-header "High priority todo items")))
+            (todo "NEXT"
+                  ((org-agenda-overriding-header "Next (Ready to do)")))
+            (todo "TODO"
+                  ((org-agenda-overriding-header "Todo queue (i.e. not ready to do yet)")
+                   (org-agenda-files (list krista/todo-file
+                                           krista/projects-file))
+                   (org-agenda-skip-function '(org-agenda-skip-entry-if 'deadline
+                                                                        'scheduled))))
+            (todo ""
+                  ((org-agenda-overriding-header "To Refile")
+                   (org-agenda-files (list krista/inbox-file))))
+            (todo "PROJECT"
+                  ((org-agenda-overriding-header "List of Projects")
+                   (org-agenda-files (list krista/projects-file))))
+            (todo "BLOCKED"
+                  ((org-agenda-overriding-header "Blocked")))
+            (todo "WAITING"
+                  ((org-agenda-overriding-header "Waiting for input")))
+            ))
+
+          ;; NOTE: I only want to see the names of projects, and then
+          ;; use follow mode to review the nitty-gritty details.
+          ("?" "Someday-maybe(?)" todo "PROJECT"
+           ((org-agenda-files (list krista/someday-maybe-file))
+            (org-agenda-start-with-follow-mode t)))
+
+          ("i" "Sort (i)nbox" todo ""
+           ((org-agenda-overriding-header "Stuff in the Inbox")
+            (org-agenda-files (list krista/inbox-file))
+            ))
+
+          ))
+
+  )
+;; (setq
+;;  org-agenda-custom-commands
+;;  ;; Setting here instead of in custom-set-variables so I can preserve the comments
+;;  (list
+
+;;   ;; Copied from and inspired by https://github.com/fniessen/emacs-leuven/blob/master/org-custom-agenda-views.el
+;;   (quote ("A" "Today"
+;;          ;; Agenda
+;;          ((agenda ""
+;;                   ((org-agenda-entry-types '(:timestamp :sexp  :deadline* :scheduled*))
+;;                     (org-deadline-warning-days 0)
+;;                     (org-agenda-span 'day)))
+;;           ;; DEADLINE today
+;;           (agenda ""
+;;                   ((org-agenda-entry-types '(:deadline))
+;;                     (org-agenda-overriding-header "Deadline")
+;;                     (org-agenda-sorting-strategy '(priority-down time-down))
+;;                     (org-agenda-span 'day)
+;;                     (org-agenda-start-on-weekday nil)
+;;                     (org-deadline-warning-days 0)
+;;                     (org-agenda-time-grid nil)))
+;;           ;; TODAY todo items
+;;           (todo "TODAY")
+;;           ;; SCHEDULED for today
+;;           (agenda ""
+;;                   ((org-agenda-entry-types '(:scheduled))
+;;                     (org-agenda-overriding-header "Scheduled")
+;;                     (org-agenda-sorting-strategy '(priority-down time-down))
+;;                     (org-agenda-span 'day)
+;;                     (org-agenda-start-on-weekday nil)
+;;                     (org-deadline-warning-days 0)
+;;                     (org-agenda-time-grid nil)
+;;                     (org-agenda-skip-function (ap/org-agenda-skip-habits t)))))
+;;           (quote ("u" "SUPER Agenda"
+;;                   org-agenda-list ""
+;;                   ((org-agenda-span 'day)
+;;                     (org-super-agenda-groups
+;;                      '((:name "Top"
+;;                              :time t
+;;                              :todo "TODAY"
+;;                              :and (:priority "A" :not (:habit t)))
+;;                       (:habit t)
+;;                       (:todo "NEXT")
+;;                       (:name "Phone" :tag "phone")
+;;                       (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+;;                              :order 9)
+;;                       (:name "Friends/Family" :tag ("friends" "family"))
+;;                       (:name "Computer"
+;;                              :tag ("computer" "emacs" "org" "laptop"))
+;;                       (:todo "WAITING" :order 8)
+;;                       )))))
+;;           (quote
+;;             ("p" "By-Priority"
+;;              ;; Copied from and inspired by https://github.com/fniessen/emacs-leuven/blob/master/org-custom-agenda-views.el
+;;              (
+;;              ;; Agenda
+;;              (agenda ""
+;;                      ((org-agenda-entry-types '(:timestamp :sexp))
+
+;;                       (org-agenda-span 'day)))
+;;              ;; Priority A items
+;;              (tags-todo "+PRIORITY={A}"
+;;                         ((org-agenda-entry-types '(:deadline))
+;;                          (org-agenda-overriding-header "Priority A")
+;;                          (org-agenda-sorting-strategy '(deadline-up)))
+;;                         ;; ;;(org-agenda-span 'day)
+;;                         ;; (org-agenda-start-on-weekday nil)
+;;                         ;; (org-deadline-warning-days 0)
+;;                         ;; (org-agenda-time-grid nil)
+;;                         )
+;;              )))
+;;           (quote
+;;             ("h" "Hotlist"
+;;              ;; tags-todo "DEADLINE<=\"<+1w>\"|PRIORITY={A}|FLAGGED"
+;;              ((tags-todo "DEADLINE<\"<+0d>\""
+;;                         ((org-agenda-overriding-header "OVERDUE")))
+;;              (tags-todo "DEADLINE>=\"<+0d>\"+DEADLINE<=\"<+1w>\""
+;;                         ((org-agenda-overriding-header "DUE IN NEXT 7 DAYS")))
+;;              (tags-todo "DEADLINE=\"\"+PRIORITY={A}|DEADLINE>\"<+1w>\"+PRIORITY={A}"
+;;                         ((org-agenda-overriding-header "HIGH PRIORITY")))
+;;              ;; (tags-todo "DEADLINE=\"\"+PRIORITY<>{A}+FLAGGED|DEADLINE>\"<+1w>\"+PRIORITY<>{A}+FLAGGED"
+;;              ;;            ((org-agenda-overriding-header "...FLAGGED...")))
+;;              (tags-todo "DEADLINE=\"\"+FLAGGED|DEADLINE>\"<+1w>\"+FLAGGED"
+;;                         ((org-agenda-overriding-header "FLAGGED")
+;;                          (org-agenda-skip-function
+;;                           '(org-agenda-skip-entry-when-regexp-matches))
+;;                          (org-agenda-skip-regexp "\\[#A\\]"))))
+;;              ((org-agenda-todo-ignore-scheduled 'future)
+;;              (org-agenda-sorting-strategy '(deadline-up)))))
+;;           ))
+
+;;         ;; Source: https://stackoverflow.com/a/35905794
+        ;; (setq org-agenda-prefix-format
+        ;;    '((todo . "  %-14t%-32b")
+        ;;      (agenda . " %14t %12c %-15(concat \"[\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") ")))
+#+END_SRC
+* org agenda prefix format
+#+BEGIN_SRC emacs-lisp
+;; [gtd]-someday-maybe
+(setq org-agenda-prefix-format '((agenda . "  %-16:c%?-12t% s")
+                                 (todo . "  %-16:c%?-12t% s")
+                                 (tags . "  %-16:c")
+                                 (search . "  %-16:c")))
+#+END_SRC

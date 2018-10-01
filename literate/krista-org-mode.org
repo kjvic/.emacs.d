@@ -7,7 +7,6 @@
   - [[#org-ordered-tasks][Org ordered tasks]]
   - [[#exporting-to-latex][Exporting to LaTeX]]
   - [[#agenda][Agenda]]
-  - [[#super-agenda][Super-agenda]]
   - [[#inline-images][inline images]]
   - [[#tweaks-to-tree-behavior][Tweaks to tree behavior]]
   - [[#quickly-add-source-blocks][Quickly add source blocks]]
@@ -427,46 +426,6 @@ the entire subtree."
         end
       nil)))
 #+END_SRC
-** Super-agenda
-- https://github.com/alphapapa/org-super-agenda 
-- Note: I love this package / it makes it wayyyy easier to define
-  custom agenda commands that actually look good. However, I want to
-  get the rest of my GTD workflow a bit more stable before I re-enable
-  super-agenda
-*** config itself
-#+BEGIN_EXAMPLE 
-#+BEGIN_SRC emacs-lisp :noweb-ref org-super-agenda :tangle no
-(use-package org-super-agenda 
-  :config
-  (org-super-agenda-mode)
-  (setq org-super-agenda-fontify-whole-header-line t)
-
-  (setq org-super-agenda-groups
-  '((:name "Scheduled today"
-		 :time-grid t
-		 :scheduled today)
-	  (:name "Due today"
-		 :time-grid t
-           :deadline today)
-	  (:name "Due soon"
-		 :deadline future)
-	  (:name "Overdue"
-		 :deadline past)
-	  (:name "Backlog"
-		 :scheduled past)
-	  (:name "Blocked/Waiting"
-		 :todo "WAITING"
-		 :order 98)
-	  (:name "Back-burner"
-		 :todo ("MAYBE")
-		 :order 100)))
-
-  ;; Source: https://stackoverflow.com/a/35905794
-  (setq org-agenda-prefix-format 
-	'((todo . "  %-14t%-32b")
-	  (agenda . " %14t %12c %-15(concat \"[\" (org-format-outline-path (list (nth 0 (org-get-outline-path)))) \"]\") "))))
-#+END_SRC
-#+END_EXAMPLE
 ** inline images
 #+BEGIN_SRC emacs-lisp :noweb-ref org-inline-images :tangle no
 ;; Let me resize them plz!

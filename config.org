@@ -26,6 +26,7 @@
   - [[#troubleshooting-your-config-file][Troubleshooting your config file]]
   - [[#helpful-resources][Helpful resources]]
 - [[#further-plans][Further plans]]
+  - [[#next-migrate-to-org-super-agenda][NEXT Migrate to org super agenda]]
   - [[#replace-hideshow-mode-with-origami][Replace hideshow mode with origami]]
   - [[#add-submodules-for-repos-that-are-not-on-melpa][Add submodules for repos that are not on MELPA]]
   - [[#gtd-goals][Gtd goals]]
@@ -268,6 +269,8 @@ issue, then CHECK CONFIG.EL
 - http://ergoemacs.org/emacs/emacs.html
 - https://emacsdojo.github.io/
 * Further plans
+** NEXT Migrate to org super agenda
+See https://www.reddit.com/r/orgmode/comments/94q55z/combine_superagenda_with_undated_items/e3ptlkm
 ** Replace hideshow mode with origami
 See https://github.com/gregsexton/origami.el
 ** Add submodules for repos that are not on MELPA
