@@ -1,0 +1,34 @@
+### Executable or generated code ###
+*.elc
+literate/*.el
+config.el
+config.org_archive
+tramp
+.org-id-locations
+custom.el
+
+### Package artifacts (i.e. melpa downloads) ###
+elpa/*
+
+### System/temp files ###
+*.DS_Store
+*.~undo-tree~
+.cache/
+ac-comphist.dat
+
+# Stuff that depends on file structure
+recentf
+projectile-bookmarks.eld
+bookmarks
+projectile.cache
+
+### Secrets ###
+literate/gcal-secrets.org
+
+### Autosaves ###
+backup/*
+auto-save-list/*
+
+### Stuff that doesn't belong in a repo ###
+games/*
+snippets/*
