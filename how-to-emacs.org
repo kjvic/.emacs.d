@@ -1,0 +1,6 @@
+* LPT: how to ACTUALLY rm byte-compiled junk:
+find . -name "*.elc" -type f | xargs rm -f
+find literate -name "*.elc" -type f | xargs rm -f
+find literate -name "*.el" -type f | xargs rm -f
+* LPT: how to ACTUALLY recompile everything
+emacs --batch --eval '(byte-recompile-directory "~/.emacs.d" 0)'

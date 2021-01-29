@@ -222,7 +222,7 @@
 (set-face-attribute 'org-code nil
 		    :inherit 'shadow
 		    :foreground "dark sea green"
-		    :family "Courier")
+		    :family "Menlo")
 
 (set-face-attribute 'org-verbatim nil
 		    :inherit 'shadow

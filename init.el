@@ -1,41 +1,56 @@
-;; -*-no-byte-compile: t; -*-
-(when (version< emacs-version "24")
-  (unless (yes-or-no-p "This Emacs is old, config probably won't work. Kill? ")
-    (kill-emacs)))
-;; ^^ Don't bother loading if your emacs is too old
+;; From https://xvrdm.github.io/2017/05/29/a-minimal-emacs-setup-with-orgmode/
+(require 'package)
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/") t)
+(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+(package-refresh-contents)
+(package-initialize)
 
-;; Always load newest byte code
+;; Given the choice between a file and various suffixed versions,
+;; prefer to load the most recent version.
+;; (Note: This is important to set early on in init.el; otherwise, we might
+;; read stale config files later on!)
 (setq load-prefer-newer t)
 
-;; Increase the garbage collection threshold to 500 MB to ease startup
-(setq gc-cons-threshold (* 500 1024 1024))
+;; If not yet installed, install the package `use-package`
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+;; These variables are read by use-package at load-time
+(setq use-package-enable-imenu-support t)
+(setq use-package-verbose t)
+(setq use-package-minimum-reported-time 0.01)
+(setq use-package-compute-statistics t)
+;; Now that we know it's installed, actually load it!
+(require 'use-package)
+(require 'use-package-ensure)
+(setq use-package-always-ensure t)
 
-;; Packages
-(when (>= emacs-major-version 24)
-  (require 'package)
-  (setq package-archives
-        '(("gnu" . "https://elpa.gnu.org/packages/")
-          ("melpa" . "https://melpa.org/packages/")
-          ("org" . "http://orgmode.org/elpa/")))
-  (package-initialize)
-  ;; Add org to package path
-  (unless (package-installed-p 'org)
-    (package-refresh-contents)
-    (package-install 'org)))
+;; Configure packages with use-package integrations
+(use-package diminish
+  ;; `diminish` replaces the modeline text with something shorter
+  :ensure t
+  :demand t)
+(use-package delight
+  ;; `delight` shushes the modeline text for a given major/minor mode
+  ;; See https://elpa.gnu.org/packages/delight.html
+  :ensure t
+  :demand t
+  :config
+  ;; Shush emacs builtins right off the bat
+  (delight 'eldoc-mode nil t)
+  )
+(use-package bind-key
+  :ensure t
+  :demand t)
+
+;; Ensure that we have org mode
+(unless (package-installed-p 'org)
+  (package-install 'org))
 (require 'org)
 
-;; Source: https://stackoverflow.com/a/8902202
-(byte-recompile-directory (expand-file-name "~/.emacs.d") 0)
+;; Set bootstrapping file for literate config with org mode
+(defvar krista/emacs-config (expand-file-name (concat user-emacs-directory
+						      "emacs-config.org")))
 
-;; Tangle code and load from my config.org file
-(setq krista/bootstrap-org-file "config.org")
-(setq krista/bootstrap-org-path
-      (expand-file-name
-       (concat user-emacs-directory krista/bootstrap-org-file)))
-
-
-;; Tangle all of my source blocks together, and then load the result
-(org-babel-load-file krista/bootstrap-org-path)
-
-;; Decrease garbage collection threshold to 5 MB
-;; (add-hook 'after-init-hook (lambda () (setq gc-cons-threshold (* 5 1024 1024))))
+(org-babel-load-file krista/emacs-config)

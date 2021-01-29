@@ -8,56 +8,52 @@
 - [[#counsel-projectile][counsel projectile]]
 
 * Ivy/Swiper/Counsel
-- Comparison with helm
-  - Ivy
-    - Like Helm
-    - Standalone package
-  - Swiper
-    - Like Helm swoop
-    - Mini-package -- relies on & contained by Ivy
-  - Counsel
-    - Like Helm descbinds + Helm persistent action
-    - Mini-package -- relies on & contained by Ivy
+see https://writequit.org/denver-emacs/presentations/2017-04-11-ivy.html
 #+BEGIN_SRC emacs-lisp :noweb tangle
-(message "[krista] Loading ivy...")
-(use-package ivy :ensure t
-  :diminish (ivy-mode . "")
-  :config
+  (message "[krista] Loading ivy...")
+  (use-package counsel
+    :demand t
+    :delight
 
-  (ivy-mode 1)
+    :config
+    (ivy-mode 1)
 
-  
-  (message "[krista] Loading ivy settings...")
-  (setq ivy-use-virtual-buffers t ; if t: add ‘recentf-mode’,
-				  ; bookmarks to ‘ivy-switch-buffer’.
-	
-	ivy-height 20 ; number of result lines to display
-	enable-recursive-minibuffers t
-	ivy-display-style 'fancy
-	ivy-initial-inputs-alist nil ; if nil: no regexp by default
-				     ; (i.e. remove initial `^' input)
-      ivy-count-format "(%d/%d) "
-      counsel-grep-base-command "grep -Ei -n -e %s %s"
-      )
- 
-  ;; configure regexp engine.
-  (setq ivy-re-builders-alist '((t . ivy--regex-plus)
-                                (t . ivy--regex-fuzzy)
-                                (t   . ivy--regex-ignore-order)))
+    ;; also delight ivy (:delight above will only delight counsel)
+    (delight 'ivy-mode nil t)
 
-  (message "[krista] Loading helm-style-parent-directory...")
-  <<helm-style-parent-directory>>
+    (message "[krista] Loading ivy settings...")
+    (setq ivy-use-virtual-buffers t ; if t: add ‘recentf-mode’,
+					  ; bookmarks to ‘ivy-switch-buffer’.
 
-  (message "[krista] Loading ivy-bookmarks...")
-  <<ivy-bookmarks>>
+	  ivy-height 20 ; number of result lines to display
+	  enable-recursive-minibuffers t
+	  ivy-display-style 'fancy
+	  ivy-initial-inputs-alist nil ; if nil: no regexp by default
+					  ; (i.e. remove initial `^' input)
+	  ivy-count-format "(%d/%d) "
+	  counsel-grep-base-command "grep -Ei -n -e %s %s"
+	  )
 
-  )
+    ;; configure regexp engine.
+    (setq ivy-re-builders-alist '((t . ivy--regex-plus)
+				  (t . ivy--regex-fuzzy)
+				  (t   . ivy--regex-ignore-order)))
 
-(message "[krista] Setting ivy keybindings globally...")
-<<set-global-bindings>>
+    ;;(message "[krista] Loading helm-style-parent-directory...")
+    ;;<<helm-style-parent-directory>>
 
-(message "[krista] Configuring org for ivy completion...")
-<<configure-org-for-ivy-completion>>
+    ;;(message "[krista] Loading ivy-bookmarks...")
+    ;;<<ivy-bookmarks>>
+
+    (message "[krista] Setting ivy keybindings globally...")
+    <<set-global-bindings>>
+
+    )
+
+
+
+  ;; (message "[krista] Configuring org for ivy completion...")
+  ;; <<configure-org-for-ivy-completion>>
 
 #+END_SRC
 ** Globally override many default functions with Ivy versions
@@ -86,7 +82,7 @@
 
 (bind-key (kbd "C-r") #'counsel-minibuffer-history minibuffer-local-map)
  #+END_SRC
-** Helm-style "go up a directory" in Find-file
+** CANCELLED Helm-style "go up a directory" in Find-file
 #+BEGIN_SRC emacs-lisp :noweb-ref helm-style-parent-directory :tangle no
 ;; I used Helm before using Ivy, so I still have the muscle memory C-l to move
 ;; up a directory. This snippet allows me to bind C-l to interact helm-style
@@ -118,7 +114,7 @@
 
 (bind-key (kbd "C-l") #'ivy-backward-directory ivy-minibuffer-map)
 #+END_SRC
-** Ivy Bookmarks
+** CANCELLED Ivy Bookmarks
 #+BEGIN_SRC emacs-lisp :noweb-ref ivy-bookmarks :tangle no
 ;; Ivy interface for bookmarks
 ;; Source: http://blog.binchen.org/posts/hello-ivy-mode-bye-helm.html
@@ -165,9 +161,9 @@ Source: https://github.com/abo-abo/swiper/issues/986#issuecomment-300482804
 * counsel projectile
 Use ivy/counsel's interface for projectile
 #+BEGIN_SRC emacs-lisp :noweb-ref counsel-projectile :tangle no
-(with-eval-after-load 'projectile
   (use-package counsel-projectile
-    :diminish
+    :demand t
+    :requires (counsel projectile)
     :config
-    (counsel-projectile-mode)))
+    (counsel-projectile-mode))
 #+END_SRC

@@ -10,17 +10,17 @@
 * TODO [[https://gist.github.com/railwaycat/4043945][script]] to open the emacs gui from the command line
 * modifier keys
 #+BEGIN_SRC emacs-lisp
- (setq mac-command-modifier 'meta)
- (setq mac-control-modifier 'control)
+ (setq mac-command-modifier  'hyper)
+ (setq mac-option-modifier   'meta)
+ (setq mac-control-modifier  'control)
  (setq mac-function-modifier 'super)
- (setq mac-option-modifier 'hyper)
 #+END_SRC
 * Flycheck
 This stuff is required for flycheck to work
 #+BEGIN_SRC emacs-lisp
-(use-package exec-path-from-shell
-:diminish
-:config (exec-path-from-shell-initialize))
+  (use-package exec-path-from-shell
+    :diminish
+    :config (exec-path-from-shell-initialize))
 #+END_SRC
 * Ivy locate command
 #+BEGIN_SRC emacs-lisp
@@ -30,8 +30,8 @@ This stuff is required for flycheck to work
 #+END_SRC
 * Use macOS open command to choose an application
 #+BEGIN_SRC emacs-lisp
-;; https://superuser.com/a/568979
-(setq browse-url-mailto-function 'browse-url-generic)
-(setq browse-url-generic-program "open")
-(bind-key "H-o" #'reveal-in-osx-finder)
+  ;; https://superuser.com/a/568979
+  (setq browse-url-mailto-function 'browse-url-generic)
+  (setq browse-url-generic-program "open")
+  (bind-key "H-o" #'reveal-in-osx-finder)
 #+END_SRC

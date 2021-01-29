@@ -1,4 +1,4 @@
-* Table of Contents                                                     :TOC:
+>1;95;0c* Table of Contents                                                     :TOC:
 - [[#behavioral-tweaks][Behavioral tweaks]]
   - [[#remove-default-startup-message-text-at-the-top-of-scratch-buffers][Remove default startup message, text at the top of scratch buffers]]
   - [[#dont-warn-me-before-opening-large-files][Don't warn me before opening large files]]
@@ -150,23 +150,22 @@ out how to set it immediately, but this should suffice as startup config.
 (set-face-attribute 'fringe nil :background "#001519")
 ;;(set-face-attribute 'vertical-border nil :foreground "#cf7a00")
 #+END_SRC
-** Fonts
+** CANCELLED Fonts
 #+BEGIN_SRC emacs-lisp
-(set-face-attribute 'default nil :font "Fira Code-13" :weight 'light)
-(set-face-attribute 'bold nil :weight 'demibold)
-;; https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs
-;; for the railwaycat emacs port
-(mac-auto-operator-composition-mode)
+  ;; (set-face-attribute 'default nil :font "Fira Code-13" :weight 'light)
+  ;;(set-face-attribute 'bold nil :weight 'demibold)
+  ;; https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs
+  ;; for the railwaycat emacs port
+;;  (mac-auto-operator-composition-mode)
 
 
-(set-face-attribute 'bold-italic nil
-                    :slant 'oblique
-                    :weight 'bold)
+;;  (set-face-attribute 'bold-italic nil
+;;		      :slant 'oblique
+;;		      :weight 'bold)
 
-(set-face-attribute 'font-lock-doc-face nil
-                    :foreground "#58615a"
-                    :family "Fira Code")
+;;  (set-face-attribute 'font-lock-doc-face nil
+;;		      :foreground "#58615a")
 
-(set-face-attribute 'region nil :background "#032929")
+;;  (set-face-attribute 'region nil :background "#032929")
 
 #+END_SRC

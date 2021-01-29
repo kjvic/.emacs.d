@@ -233,11 +233,14 @@ I want to see:
 * Fonts and colors
 #+BEGIN_SRC emacs-lisp
   (set-face-attribute 'mode-line-highlight nil
-                      :background "#000d0f" 
-                      :foreground "#75dbb7"
-                      :inverse-video nil
-                      :box nil
-                      :family "Fira Code")
+		      :background "#000d0f" 
+		      :foreground "#75dbb7"
+		      :inverse-video nil
+		      :box nil
+		      :family (if (font-exists-p "Fira Code")
+				  "Fira Code"
+				"Menlo")
+		      )
 #+END_SRC
 * Diminish!
 Get the names of your minor-modes out of my mode line, dammit!

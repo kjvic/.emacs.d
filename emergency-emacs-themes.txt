@@ -1,0 +1,17 @@
+Oh no, tron doom won't install! What default-ish theme can I tolerate?!?!?
+A: doom-spacegrey
+
+How I arrived at that answer:
+* doom-city-lights (top pick)
+* doom-ephemeral (v. similar to city-lights, but “brightness turned up”)
+* doom-material (top)
+* doom-nord (top)
+* doom-nova
+* doom-moonlight
+* doom-oceanic-next (holy shit, way worse than opera)
+* doom-one (eh too purple)
+* doom-opera (white is a bit harsh)
+* doom-palenight (eh too macaroni colored)
+* doom-spacegrey. functions too quiet? <————
+* doom-vibrant (solid “vibrant” choice). “type” / “list” purple is distracting
+* doom-wilmersdorf (like doom-vibrant, but blue/purple themed). Eh, functions don’t stand out enough
