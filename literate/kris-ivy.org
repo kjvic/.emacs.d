@@ -5,7 +5,12 @@
   - [[#helm-style-go-up-a-directory-in-find-file][Helm-style "go up a directory" in Find-file]]
   - [[#ivy-bookmarks][Ivy Bookmarks]]
   - [[#fix-incremental-completion-behavior-in-org-mode][Fix incremental completion behavior in org mode]]
-- [[#counsel-projectile][counsel projectile]]
+  - [[#sort-find-file-results-by-last-modified-time][Sort find-file results by last modified time]]
+- [[#counsel-tramp][Counsel tramp]]
+- [[#projectile][Projectile]]
+  - [[#counsel-projectile][counsel projectile]]
+  - [[#ibuffer-projectile][ibuffer projectile]]
+- [[#ivy-rich][ivy-rich]]
 
 * Ivy/Swiper/Counsel
 - Comparison with helm
@@ -29,17 +34,17 @@
   
   (message "[krista] Loading ivy settings...")
   (setq ivy-use-virtual-buffers t ; if t: add ‘recentf-mode’,
-				  ; bookmarks to ‘ivy-switch-buffer’.
+                                        ; bookmarks to ‘ivy-switch-buffer’.
 	
 	ivy-height 20 ; number of result lines to display
 	enable-recursive-minibuffers t
 	ivy-display-style 'fancy
 	ivy-initial-inputs-alist nil ; if nil: no regexp by default
-				     ; (i.e. remove initial `^' input)
-      ivy-count-format "(%d/%d) "
-      counsel-grep-base-command "grep -Ei -n -e %s %s"
-      )
- 
+                                        ; (i.e. remove initial `^' input)
+        ivy-count-format "(%d/%d) "
+        counsel-grep-base-command "grep -Ei -n -e %s %s"
+        )
+  
   ;; configure regexp engine.
   (setq ivy-re-builders-alist '((t . ivy--regex-plus)
                                 (t . ivy--regex-fuzzy)
@@ -51,13 +56,14 @@
   (message "[krista] Loading ivy-bookmarks...")
   <<ivy-bookmarks>>
 
+  (message "[krista] Setting ivy keybindings globally...")
+  <<set-global-bindings>>
+
+  (message "[krista] Configuring org for ivy completion...")
+  <<configure-org-for-ivy-completion>>
+
+
   )
-
-(message "[krista] Setting ivy keybindings globally...")
-<<set-global-bindings>>
-
-(message "[krista] Configuring org for ivy completion...")
-<<configure-org-for-ivy-completion>>
 
 #+END_SRC
 ** Globally override many default functions with Ivy versions
@@ -75,9 +81,9 @@
 (global-set-key (kbd "<f1> l") 'counsel-find-library)
 (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
 (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-(global-set-key (kbd "C-c g") 'counsel-git)
+;; (global-set-key (kbd "C-c g") 'counsel-git)
 (global-set-key (kbd "C-c j") 'counsel-git-grep)
-(global-set-key (kbd "C-c k") 'counsel-ag)
+(global-set-key (kbd "C-c r") 'counsel-ag)
 (global-set-key (kbd "C-x l") 'counsel-locate)
 (global-set-key (kbd "C-S") 'counsel-grep-or-swiper)
 (global-set-key (kbd "C-x C-r") 'counsel-recentf)
@@ -117,43 +123,49 @@
          (funcall ivy-on-del-error-function))))))
 
 (bind-key (kbd "C-l") #'ivy-backward-directory ivy-minibuffer-map)
+
+;; Terminate narrowing search with current value
+;;
+;; Allows you to create a file called "stuf.el" even if there's already a file called "stuff.el"
+;; Source: https://github.com/abo-abo/swiper/wiki/ido-style-folder-navigation
+(define-key ivy-minibuffer-map (kbd "C-J") #'ivy-immediate-done)
 #+END_SRC
 ** Ivy Bookmarks
 #+BEGIN_SRC emacs-lisp :noweb-ref ivy-bookmarks :tangle no
-;; Ivy interface for bookmarks
-;; Source: http://blog.binchen.org/posts/hello-ivy-mode-bye-helm.html
-;; (defun ivy-bookmark-goto ()
-;;   "Open ANY bookmark"
-;;   (interactive)
-;;   (let (bookmarks filename)
-;;     ;; load bookmarks
-;;     (unless (featurep 'bookmark)
-;;       (require 'bookmark))
-;;     (bookmark-maybe-load-default-file)
-;;     (setq bookmarks (and (boundp 'bookmark-alist) bookmark-alist))
+  ;; Ivy interface for bookmarks
+  ;; Source: http://blog.binchen.org/posts/hello-ivy-mode-bye-helm.html
+  (defun ivy-bookmark-goto ()
+    "Open ANY bookmark"
+    (interactive)
+    (let (bookmarks filename)
+      ;; load bookmarks
+      (unless (featurep 'bookmark)
+	(require 'bookmark))
+      (bookmark-maybe-load-default-file)
+      (setq bookmarks (and (boundp 'bookmark-alist) bookmark-alist))
 
-;;     ;; do the real thing
-;;     (ivy-read "bookmarks:"
-;;               (delq nil (mapcar (lambda (bookmark)
-;;                                   (let (key)
-;;                                     ;; build key which will be displayed
-;;                                     (cond
-;;                                      ((and (assoc 'filename bookmark) (cdr (assoc 'filename bookmark)))
-;;                                       (setq key (format "%s (%s)" (car bookmark) (cdr (assoc 'filename bookmark)))))
-;;                                      ((and (assoc 'location bookmark) (cdr (assoc 'location bookmark)))
-;;                                       ;; bmkp-jump-w3m is from bookmark+
-;;                                       (unless (featurep 'bookmark+)
-;;                                         (require 'bookmark+))
-;;                                       (setq key (format "%s (%s)" (car bookmark) (cdr (assoc 'location bookmark)))))
-;;                                      (t
-;;                                       (setq key (car bookmark))))
-;;                                     ;; re-shape the data so full bookmark be passed to ivy-read:action
-;;                                     (cons key bookmark)))
-;;                                 bookmarks))
-;;               :action (lambda (bookmark)
-;;                         (bookmark-jump bookmark)))
-;;     ))
-;; (bind-key "C-x r l" #'ivy-bookmark-goto)
+      ;; do the real thing
+      (ivy-read "bookmarks:"
+		(delq nil (mapcar (lambda (bookmark)
+				    (let (key)
+				      ;; build key which will be displayed
+				      (cond
+				       ((and (assoc 'filename bookmark) (cdr (assoc 'filename bookmark)))
+					(setq key (format "%s (%s)" (car bookmark) (cdr (assoc 'filename bookmark)))))
+				       ((and (assoc 'location bookmark) (cdr (assoc 'location bookmark)))
+					;; bmkp-jump-w3m is from bookmark+
+					(unless (featurep 'bookmark+)
+					  (require 'bookmark+))
+					(setq key (format "%s (%s)" (car bookmark) (cdr (assoc 'location bookmark)))))
+				       (t
+					(setq key (car bookmark))))
+				      ;; re-shape the data so full bookmark be passed to ivy-read:action
+				      (cons key bookmark)))
+				  bookmarks))
+		:action (lambda (bookmark)
+			  (bookmark-jump bookmark)))
+      ))
+  (bind-key "C-x r l" #'ivy-bookmark-goto)
 #+END_SRC
 ** Fix incremental completion behavior in org mode
 Make ivy play nice with "C-c C-w" (org-refile)
@@ -162,12 +174,92 @@ Source: https://github.com/abo-abo/swiper/issues/986#issuecomment-300482804
 (setq org-goto-interface 'outline-path-completion
       org-outline-path-complete-in-steps nil)
 #+END_SRC
-* counsel projectile
-Use ivy/counsel's interface for projectile
+** Sort find-file results by last modified time
+Source: https://github.com/abo-abo/swiper/wiki/Sort-files-by-mtime
+#+BEGIN_SRC emacs-lisp :tangle no
+;; (defun kris/ivy-sort-file-by-mtime (xy)
+;;   (let* ((x (concat ivy--directory x))
+;; 	 (y (concat ivy--directory y))
+;; 	 (x-mtime (nth 5 (file-attributes x)))
+;; 	 (y-mtime (nth 5 (file-attributes y))))
+;;     (if (file-directory-p x)
+;; 	(if (file-directory-p y)
+;; 	    (time-less-p y-mtime x-mtime)
+;; 	  t)
+;;       (if (file-directory-p y)
+;; 	  nil
+;; 	(time-less-p y-mtime x-mtime)))))
+
+;; (add-to-list 'ivy-sort-functions-alist
+;; 	     '(read-file-name-internal . kris/ivy-sort-file-by-mtime))
+#+END_SRC
+* Counsel tramp
+#+BEGIN_SRC emacs-lisp
+  (use-package counsel-tramp
+    :custom
+    (add-hook 'counsel-tramp-pre-command-hook
+	      '(lambda ()
+		 (global-aggressive-indent-mode 0)
+		 (projectile-mode 0)
+		 (editorconfig-mode 0)
+		 ))
+    (add-hook 'counsel-tramp-quit-hook
+	      '(lambda ()
+		 (global-aggressive-indent-mode 1)
+		 (projectile-mode 1)
+		 (editorconfig-mode 1)
+		 ))
+    (setq make-backup-files nil)
+    (setq create-lockfiles nil)
+    :bind ("C-c s" . counsel-tramp)
+    )
+#+END_SRC
+* Projectile
+#+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[kris] Loading projectile...")
+  (use-package projectile
+    :diminish
+    :config
+    (setq projectile-keymap-prefix (kbd "C-c p s"))
+    (with-eval-after-load 'ivy
+      (setq projectile-completion-system 'ivy))
+    (projectile-mode)
+    <<counsel-projectile>>
+    <<ibuffer-projectile>>
+    )
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+#+END_SRC
+** counsel projectile
 #+BEGIN_SRC emacs-lisp :noweb-ref counsel-projectile :tangle no
-(with-eval-after-load 'projectile
   (use-package counsel-projectile
     :diminish
     :config
-    (counsel-projectile-mode)))
+    (counsel-projectile-mode))  
+#+END_SRC
+** ibuffer projectile
+#+BEGIN_SRC emacs-lisp :noweb-ref ibuffer-projectile :tangle no
+  (use-package ibuffer-projectile
+    :diminish
+    :config
+    (add-hook 'ibuffer-hook
+	      (lambda ()
+		(ibuffer-projectile-set-filter-groups)
+		(unless (eq ibuffer-sorting-mode 'alphabetic)
+		  (ibuffer-do-sort-by-alphabetic))))
+    ;; (setq ibuffer-formats
+    ;; 	'((mark modified read-only " "
+    ;; 		(name 18 18 :left :elide)
+    ;; 		" "
+    ;; 		(size 9 -1 :right)
+    ;; 		" "
+    ;; 		(mode 16 16 :left :elide)
+    ;; 		" "
+    ;; 		projectile-relative-file)))
+    )
+#+END_SRC
+* ivy-rich
+#+BEGIN_SRC emacs-lisp
+  (use-package ivy-rich
+    :diminish)
+  (ivy-rich-mode 1)
 #+END_SRC

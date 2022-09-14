@@ -18,19 +18,21 @@
 * Undo tree
 Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 #+BEGIN_SRC emacs-lisp
-(message "[krista] Loading undo-tree...")
-(require 'undo-tree)
-(setq undo-tree-auto-save-history t)
-(add-to-list 'undo-tree-history-directory-alist
-             '("." . "~/.emacs.d/cache/undo/"))
+  (message "[kris] Loading undo-tree...")
+  (use-package undo-tree
+    :diminish undo-tree-mode
+    :config
+    (setq undo-tree-auto-save-history t)
+    (add-to-list 'undo-tree-history-directory-alist
+		 '("." . "~/.emacs.d/cache/undo/"))
 
-;; WARNING!!! This line must appear /after/ setting variables to save undo-tree
-;; history!!!
-(global-undo-tree-mode)
+    ;; WARNING!!! This line must appear /after/ setting variables to save undo-tree
+    ;; history!!!
+    (global-undo-tree-mode))
 #+END_SRC
 * Which-key
 #+BEGIN_SRC emacs-lisp
-(message "[krista] loading which-key...")
+(message "[kris] loading which-key...")
 (use-package which-key              ;;; Display available keybindings in popup
   :diminish which-key-mode
   :config
@@ -42,9 +44,9 @@ Docs: <http://www.dr-qubit.org/undo-tree/undo-tree-0.6.4.el>
 - Unlock achievements to track your emacs journey
 - [[https://bitbucket.org/gvol/emacs-achievements/src/5b4b7b6816aaf105cd493f51b3860bd2f0c014a6/README.md?at=default&fileviewer=file-view-default][Bitbucket]]
 #+BEGIN_SRC emacs-lisp
-(use-package achievements
-  :diminish achievements-mode
-  :config (achievements-mode t))
+;;(use-package achievements
+;;  :diminish achievements-mode
+;;  :config (achievements-mode t))
 #+END_SRC
 * bookmark+ (bmkp)
 Note: use "P-F" to filter by file name
@@ -59,19 +61,19 @@ Note: use "P-F" to filter by file name
 - [[https://www.emacswiki.org/emacs/BenchmarkInit][docs]]
 - config
   #+BEGIN_SRC emacs-lisp
-  (require 'benchmark-init)
+  ;;(require 'benchmark-init)
   #+END_SRC
 * paradox
 - Paradox is a better way to access your favorite package repository (e.g. MELPA)
 - Translation: paradox is like =package-list-packages= but better
 #+BEGIN_SRC emacs-lisp
 ;; Speedy-open melpa
-(use-package paradox
+;;(use-package paradox
   ;; :bind (("H-P" . paradox-list-packages))
-  )
+;;  )
 ;; Set to t => Don't ask me to integrate with github every time I want to look
 ;; at melpa!
-(with-eval-after-load 'paradox (setq paradox-github-token t))
+;;(with-eval-after-load 'paradox (setq paradox-github-token t))
 #+END_SRC
 * Ace Window
 #+BEGIN_SRC emacs-lisp
@@ -161,7 +163,7 @@ Provides
 ** [[https://joaotavora.github.io/yasnippet/snippet-organization.html#sec-1][Joatoavora tutorial (better)]]
 ** Configuration
 #+BEGIN_SRC emacs-lisp
-;; (message "[krista] Loading yasnippet...")
+;; (message "[kris] Loading yasnippet...")
 ;; (use-package yasnippet
 ;;   :diminish yas-minor-mode
 ;;   :config

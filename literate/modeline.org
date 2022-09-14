@@ -1,4 +1,4 @@
-#+TITLE: Krista's mode-line config
+#+TITLE: Kris's mode-line config
 * Table of Contents                                                     :TOC:
 - [[#mode-line-format][Mode line format]]
   - [[#how-to-display-the-battery][How to display the battery]]
@@ -8,16 +8,16 @@
 - [[#fancy-battery-mode][Fancy battery mode]]
   - [[#switch-from-fancy-battery-mode-to-an-indicator][switch from fancy-battery-mode to an indicator]]
   - [[#current-config][Current config]]
-- [[#fonts-and-colors][Fonts and colors]]
+- [[#modeline-fonts-and-colors][Modeline fonts and colors]]
 - [[#diminish][Diminish!]]
   - [[#do-not-display-the-following-modes][Do not display the following modes]]
-- [[#helpful-unicode-symbols-to-possibly-use-in-modeline][Helpful: unicode symbols to possibly use in modeline]]
+- [[#for-reference-unicode-symbols-to-possibly-use-in-modeline][For reference: unicode symbols to possibly use in modeline]]
   - [[#git-status][Git status]]
   - [[#for-the-git-logo][for the git logo:]]
   - [[#to-replace-top--bot-in-the-position-string][To replace "TOP / BOT" in the position string]]
   - [[#for-the-battery][For the battery]]
   - [[#line-endings-indicator][Line endings indicator]]
-- [[#echo-area][Echo area]]
+- [[#change-face-for-the-echo-area][Change face for the echo area]]
 - [[#make-everything-take-effect][Make everything take effect]]
 
 * Mode line format
@@ -64,38 +64,38 @@ See docs for the symbol battery-mode-line-format
 ;;              won't jump when you modify its contents!
 
 ;; See also: https://gist.github.com/lateau/4511988
-;; (setq krista-buffer-modified-string "Δ △")
-(setq krista-buffer-modified-string "≠") ; ≇ ≠
-(setq krista-buffer-readonly-string "≝") ; ≝, ↯, ≔, ⟂, ∅, , ※
-(setq krista-buffer-unchanged-string "=") ; ≅ =
+;; (setq kris-buffer-modified-string "Δ △")
+(setq kris-buffer-modified-string "≠") ; ≇ ≠
+(setq kris-buffer-readonly-string "≝") ; ≝, ↯, ≔, ⟂, ∅, , ※
+(setq kris-buffer-unchanged-string "=") ; ≅ =
 
-(defun krista-get-buffer-modified-status() 
+(defun kris-get-buffer-modified-status() 
   ;; What to display if the buffer is read-only
   '(:eval
     (if buffer-read-only
-        '((:eval (propertize krista-buffer-readonly-string
+        '((:eval (propertize kris-buffer-readonly-string
                              'face 'font-lock-keyword-face)))
       ;; What to display if the buffer has been modified since the
       ;; last save
       (if (buffer-modified-p)
-          '((:eval (propertize krista-buffer-modified-string
+          '((:eval (propertize kris-buffer-modified-string
                                'face 'font-lock-warning-face)
-                   (set-face-attribute 'krista-buffer-modified-string nil
+                   (set-face-attribute 'kris-buffer-modified-string nil
                                        :width "expanded")))
         ;; What to display if the buffer is not read-only, but also
         ;; hasn't been modified
-        '(:eval (propertize krista-buffer-unchanged-string
+        '(:eval (propertize kris-buffer-unchanged-string
                             'face 'font-lock-comment-face))))))
 
-(setq krista/buffer-modified-status-help-echo
+(setq kris/buffer-modified-status-help-echo
       (concat "Buffer modified status:\n"
-	      "Readonly: " krista-buffer-readonly-string "\n"
-	      "Modified: " krista-buffer-modified-string "\n"
-	      "Unchanged: " krista-buffer-unchanged-string))
+	      "Readonly: " kris-buffer-readonly-string "\n"
+	      "Modified: " kris-buffer-modified-string "\n"
+	      "Unchanged: " kris-buffer-unchanged-string))
 ;; To customize the mode line, make a list of all of the things that
 ;; should be displayed (listed in order from left to right)
 ;; See also: https://www.gnu.org/software/emacs/manual/html_node/elisp/Mode-Line-Format.html#Mode-Line-Format
-(defvar krista-modeline-format
+(defvar kris-modeline-format
   (list
 
    ;; Leading space so you don't run into the end of the mode line
@@ -104,24 +104,24 @@ See docs for the symbol battery-mode-line-format
    ;; Display buffer's local modified status
    ;; --------------------------------
    '(:eval
-      (if buffer-read-only
-          '((:eval (propertize krista-buffer-readonly-string
-                               'face 'font-lock-doc-face
-			       'mouse-face 'mode-line-highlight
-			       'help-echo 'krista/buffer-modified-status-help-echo)))
-	;; What to display if the buffer has been modified since the
-	;; last save
-	(if (buffer-modified-p)
-            '((:eval (propertize krista-buffer-modified-string
-                                 'face 'font-lock-warning-face
-				 'mouse-face 'mode-line-highlight
-				 'help-echo 'krista/buffer-modified-status-help-echo)))
-          ;; What to display if the buffer is not read-only, but also
-          ;; hasn't been modified
-          '(:eval (propertize krista-buffer-unchanged-string
-                              'face 'font-lock-comment-face
-			      'mouse-face 'mode-line-highlight
-			      'help-echo 'krista/buffer-modified-status-help-echo)))))
+     (if buffer-read-only
+         '((:eval (propertize kris-buffer-readonly-string
+                              'face 'font-lock-doc-face
+                              'mouse-face 'mode-line-highlight
+                              'help-echo 'kris/buffer-modified-status-help-echo)))
+       ;; What to display if the buffer has been modified since the
+       ;; last save
+       (if (buffer-modified-p)
+           '((:eval (propertize kris-buffer-modified-string
+                                'face 'font-lock-warning-face
+                                'mouse-face 'mode-line-highlight
+                                'help-echo 'kris/buffer-modified-status-help-echo)))
+         ;; What to display if the buffer is not read-only, but also
+         ;; hasn't been modified
+         '(:eval (propertize kris-buffer-unchanged-string
+                             'face 'font-lock-comment-face
+                             'mouse-face 'mode-line-highlight
+                             'help-echo 'kris/buffer-modified-status-help-echo)))))
 
    ;; Padding
    " "
@@ -169,20 +169,24 @@ See docs for the symbol battery-mode-line-format
    ;; mode-line-end-spaces
    ))
 
-(setq-default mode-line-format '(:eval krista-modeline-format))
+(setq-default mode-line-format '(:eval kris-modeline-format))
 #+END_SRC
 ** Remove the word "Git" from my version-control string
 #+BEGIN_SRC emacs-lisp
-  (defadvice vc-mode-line (after krista-strip-backend () activate)
+(with-eval-after-load 'projectile
+  (defadvice vc-mode-line (after kris-strip-backend () activate)
     (when (stringp vc-mode)
-        (let ((vc-no-backend
-               ;; NOTE: these 2 formatting strings should be changed together
-               ;; TODO: assign ^^^ to a variable, for a single point of maintenance
-               ;; The %12s formatter makes the field 12 chars wide
-               ;; Adding the `-' to make `%-12s' makes it so you pad on the right (i.e. left-justify)
-               ;; See also: https://ftp.gnu.org/pub/old-gnu/Manuals/elisp-manual-20-2.5/html_chapter/elisp_5.html
-               (format "%-12s" (replace-regexp-in-string "^ Git." ":" vc-mode))))
-               (setq vc-mode vc-no-backend))))
+	(let ((vc-no-backend
+	       ;; NOTE: these 2 formatting strings should be changed together
+	       ;; TODO: assign ^^^ to a variable, for a single point of maintenance
+	       ;; The %12s formatter makes the field 12 chars wide
+	       ;; Adding the `-' to make `%-12s' makes it so you pad on the right (i.e. left-justify)
+	       ;; See also: https://ftp.gnu.org/pub/old-gnu/Manuals/elisp-manual-20-2.5/html_chapter/elisp_5.html
+	       (format "%-12s" (concat
+				(projectile-project-name)
+				(replace-regexp-in-string "^ Git." ":" vc-mode)))
+	       ))
+	       (setq vc-mode vc-no-backend)))))
 #+END_SRC
 * Time in the mode line(?)
 #+BEGIN_SRC emacs-lisp
@@ -197,6 +201,7 @@ See docs for the symbol battery-mode-line-format
 
 ;; Do show the date
 (setq display-time-day-and-date t)
+;; See `format-time-string` from docs
 ;; %l == hour, in 12-hour time
 ;; %M == minute
 ;; %p == AM/PM; %#p == am/pm
@@ -204,8 +209,9 @@ See docs for the symbol battery-mode-line-format
 ;; %b == abbreviated name of the month (e.g. Aug for August)
 ;; %e == day of month (1-31)
 ;; %Z == name of time zone
+;; %F == ISO 8601 timestamp
 ;; (setq display-time-format " %l:%M%#p %a, %b.%e (%Z) ")
-(setq display-time-format "%l:%M%#p %a, %b %e")
+(setq display-time-format "%l:%M%#p %a, %b %e [%F]")
 #+END_SRC
 * Fancy battery mode
 ** TODO switch from fancy-battery-mode to an indicator
@@ -217,6 +223,7 @@ I want to see:
   - yellow when level is != 100%
   - green when level is == 100%
 - fancy-battery-critical
+  - 
 ** Current config
 #+BEGIN_SRC emacs-lisp
 (use-package fancy-battery
@@ -230,14 +237,15 @@ I want to see:
 ;; nil => Do not display load average in mode line
 (setq display-time-default-load-average nil)
 #+END_SRC
-* Fonts and colors
+* Modeline fonts and colors
 #+BEGIN_SRC emacs-lisp
   (set-face-attribute 'mode-line-highlight nil
                       :background "#000d0f" 
                       :foreground "#75dbb7"
                       :inverse-video nil
                       :box nil
-                      :family "Fira Code")
+                      ;; :family "Fira Code"
+		      )
 #+END_SRC
 * Diminish!
 Get the names of your minor-modes out of my mode line, dammit!
@@ -260,7 +268,8 @@ Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
     (diminish 'c++-mode "C++")
     )
 #+END_SRC
-* Helpful: unicode symbols to possibly use in modeline 
+* For reference: unicode symbols to possibly use in modeline
+See also: fontawesome
 ** Git status
   ;; TODO: color the Git logo based on the value of vc-state
   ;; Settings that I want:
@@ -314,7 +323,7 @@ Source: http://emacs-fu.blogspot.com/2010/05/cleaning-up-mode-line.html
   - ₩
   - Ｗ - Fullwidth Latin Capital Letter W - U+FF37
   - 𝕎 - Unicode number U+1D54E
-* Echo area
+* Change face for the echo area
 Source: https://www.reddit.com/r/emacs/comments/67npjq/change_the_face_for_the_echo_area/
 #+BEGIN_SRC emacs-lisp
 (with-current-buffer " *Echo Area 0*" (face-remap-add-relative 'default '(:foreground "#77A4DE" :background "#23272e")))

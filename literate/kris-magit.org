@@ -1,0 +1,69 @@
+* Table of Contents :TOC:
+- [[#magit-tutorial][Magit tutorial]]
+- [[#config][Config]]
+- [[#color-scheme][Color scheme]]
+- [[#git-time-machine][git time machine]]
+- [[#git-link][Git link]]
+
+* [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
+* Config
+#+BEGIN_SRC emacs-lisp :noweb tangle
+  (message "[kris] Loading magit...")
+  (use-package magit
+    :config
+    <<magit-color-scheme>>
+    ;; Default arguments to magit log
+    (setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
+    ;; Sort branches (roughly) by recency
+    ;; Source: https://github.com/magit/magit/issues/2872#issuecomment-291011191
+    (setq magit-list-refs-sortby "-creatordate")
+    :bind
+    (("C-c g" . magit-status)))
+#+END_SRC
+* Color scheme
+Note: "vc" stands for *V*-ersion *C*-ontrol
+#+BEGIN_SRC emacs-lisp :noweb-ref magit-color-scheme :tangle no
+  (setq vc-annotate-background nil)
+  (setq vc-annotate-color-map
+	(quote
+	 (
+	  ;; NB: this is repeating the same 7 colors in a loop
+	  (20 . "#f2777a")
+	  (40 . "#f99157")
+	  (60 . "#ffcc66")
+	  (80 . "#99cc99")
+	  (100 . "#66cccc")
+	  (120 . "#6699cc")
+	  (140 . "#cc99cc")
+	  ;;
+	  (160 . "#f2777a")
+	  (180 . "#f99157")
+	  (200 . "#ffcc66")
+	  (220 . "#99cc99")
+	  (240 . "#66cccc")
+	  (260 . "#6699cc")
+	  (280 . "#cc99cc")
+	  ;;
+	  (300 . "#f2777a")
+	  (320 . "#f99157")
+	  (340 . "#ffcc66")
+	  (360 . "#99cc99")
+	  )))
+  (setq vc-annotate-very-old-color nil)
+#+END_SRC
+* git time machine
+#+BEGIN_SRC emacs-lisp
+  (use-package git-timemachine
+    :bind
+    (("C-c M-t" . git-timemachine-blame)))
+#+END_SRC
+* Git link
+#+BEGIN_SRC emacs-lisp
+  (message "[kris] Loading git-link...")
+  (use-package git-link
+    :config
+    (setq git-link-open-in-browser t)
+    :bind
+    ("C-c G" . git-link)
+    )
+#+END_SRC

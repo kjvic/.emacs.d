@@ -1,24 +1,24 @@
-#+TITLE: Krista Victorsen's Emacs configuration
-#+AUTHOR: Krista Victorsen
+#+TITLE: Kris Victorsen's Emacs configuration
+#+AUTHOR: Kris Victorsen
 #+PROPERTY: header-args :tangle yes
 * Table of Contents                                                     :TOC:
 - [[#bootstrap][Bootstrap]]
   - [[#load-path][Load-path]]
+  - [[#special-files-gtdagenda-media-etc][Special files: gtd/agenda, media etc.]]
   - [[#profiling-uncomment-this][Profiling? Uncomment this]]
   - [[#use-package-package-management-management][use-package: package management management]]
-  - [[#general][general]]
   - [[#tangling-helpers--literate-programming-support][Tangling helpers / Literate programming support]]
 - [[#tangle-external-files][Tangle external files]]
-  - [[#gtd--gtd-related-org-agenda-config][GTD / gtd-related org agenda config]]
-  - [[#gcal-secrets-for-org-gcal][Gcal secrets for org-gcal]]
   - [[#os-specific-config][OS-specific config]]
   - [[#better-defaults][Better defaults]]
   - [[#global-settings][Global settings]]
-  - [[#ivy][Ivy]]
-  - [[#org-mode][Org-mode]]
+  - [[#minor-packages][Minor packages]]
   - [[#modeline][Modeline]]
+  - [[#magit][Magit]]
+  - [[#ivy][Ivy]]
+  - [[#company][Company]]
+  - [[#org-mode][Org-mode]]
   - [[#programming-support][Programming support]]
-  - [[#misc-packages][Misc. packages]]
   - [[#latex][LaTeX]]
 - [[#tron-doom-theme][Tron doom theme]]
 - [[#getting-help][Getting help]]
@@ -46,9 +46,31 @@
 Get emacs off the ground!
 ** Load-path
 #+BEGIN_SRC emacs-lisp
-(message "[krista] Setting load path")
+(message "[kris] Setting load path")
 (add-to-list 'load-path "~/.emacs.d/elisp/")
 (add-to-list 'load-path (concat user-emacs-directory "literate/tron-doom/"))
+#+END_SRC
+** Special files: gtd/agenda, media etc.
+#+BEGIN_SRC emacs-lisp
+(setq kris/orgzly-dir "~/org/")
+(setq kris/home-dir "~/")
+;; GTD files
+(setq kris/inbox-file (concat kris/orgzly-dir "inbox.org"))
+(setq kris/todo-file (concat kris/orgzly-dir "todo.org"))
+(setq kris/projects-file (concat kris/orgzly-dir "projects.org"))
+(setq kris/inactive-projects-file (concat kris/orgzly-dir "inactive-projects.org"))
+(setq kris/tickler-file (concat kris/orgzly-dir "tickler.org"))
+(setq kris/someday-maybe-file (concat kris/orgzly-dir "someday-maybe.org"))
+
+(setq kris/annoy-file (concat kris/orgzly-dir "annoy.org"))
+
+(bind-key "H-a" '(lambda () (interactive) (find-file kris/annoy-file)))
+(bind-key "H-t" '(lambda () (interactive) (find-file kris/todo-file)))
+(bind-key "H-p" '(lambda () (interactive) (find-file kris/projects-file)))
+(bind-key "H-P" '(lambda () (interactive) (find-file kris/inactive-projects-file)))
+(bind-key "H-T" '(lambda () (interactive) (find-file kris/tickler-file)))
+(bind-key "H-i" '(lambda () (interactive) (find-file kris/inbox-file)))
+(bind-key "H-?" '(lambda () (interactive) (find-file kris/someday-maybe-file)))
 #+END_SRC
 ** Profiling? Uncomment this
 - To profile accurately, I need to reload all of my packages
@@ -61,24 +83,20 @@ Get emacs off the ground!
 ** use-package: package management management
 [[https://github.com/jwiegley/use-package][use-package github]]
 #+BEGIN_SRC emacs-lisp
-(message "[krista] use-package setup")
-(unless (package-installed-p 'use-package)
-  ;; Update the package if it needs updating.
-  ;; NOTE: This contacts melpa every time you reload your config. Overhead!
-  ;; (package-refresh-contents)
-  (package-install 'use-package))
-(require 'use-package)
-;; All packages in a use-package macro should be automagically installed
-(setq use-package-always-ensure t)
-#+END_SRC
-** general
-Provides the =:general= keyword for use-package
-https://github.com/noctuid/general.el
-#+BEGIN_SRC emacs-lisp
-(use-package general)
+    ;;(message "[kris] use-package setup")
+  ;;; probably actually rm this
+    ;;(unless (package-installed-p 'use-package)
+      ;; Update the package if it needs updating.
+      ;; NOTE: This contacts melpa every time you reload your config. Overhead!
+      ;; (package-refresh-contents)
+    ;;  (package-install 'use-package))
+    ;;(require 'use-package)
+
+
+  ;; All packages in a use-package macro should be automagically installed
+    ;; (setq use-package-always-ensure t)
 #+END_SRC
 ** Tangling helpers / Literate programming support
-*** Tangling macros
 - NOTE: you /must/ have each tangle block on a new line in order for it
   to be tangled correctly!!!!
 - NOTE: It is important that use-package has been loaded before this
@@ -86,136 +104,98 @@ https://github.com/noctuid/general.el
 - This is because my external files have "use-package" statements,
   which won't work if use-package hasn't been loaded yet!
 #+BEGIN_SRC emacs-lisp
-(message "[krista] Defining helper macros for tangling")
-(setq-default krista/org-config-directory "literate")
-(setq-default krista/org-config-dirpath
+(message "[kris] Defining helper macros for tangling")
+(setq-default kris/org-config-directory "literate")
+(setq-default kris/org-config-dirpath
               (expand-file-name (concat user-emacs-directory
-                                        krista/org-config-directory)))
-(add-to-list 'load-path krista/org-config-dirpath)
-(setq-default krista/config-org-files nil)
+                                        kris/org-config-directory)))
+(add-to-list 'load-path kris/org-config-dirpath)
+(setq-default kris/config-org-files nil)
 
-;; transforms the given name to "krista/name-config-file" and sets it
+;; transforms the given name to "kris/name-config-file" and sets it
 ;; to the given org filename
-(defmacro krista/new-config-file (name filename)
+(defmacro kris/new-config-file (name filename)
   (let ((full-file (make-symbol "full-filename")))
     `(let ((,full-file
-            (concat (file-name-as-directory krista/org-config-dirpath)  ,filename ".org")))
-       (defvar ,(intern (concat "krista/" (symbol-name name) "-config-file"))
+            (concat (file-name-as-directory kris/org-config-dirpath)  ,filename ".org")))
+       (defvar ,(intern (concat "kris/" (symbol-name name) "-config-file"))
          ,full-file)
        (add-to-list
-        (quote krista/config-org-files) (quote (,name . ,filename)) t))))
-#+END_SRC
-*** Macrostep
-The macrostep package makes it much, much easier to debug macro issues
-#+BEGIN_SRC emacs-lisp
-(use-package macrostep
-  :config
-  (define-key emacs-lisp-mode-map (kbd "C-c E") 'macrostep-expand))
+        (quote kris/config-org-files) (quote (,name . ,filename)) t))))
 #+END_SRC
 * Tangle external files
 - NOTE: It is important that use-package has been loaded before this
   block is executed
 - This is because my external files have "use-package" statements,
   which won't work if use-package hasn't been loaded yet!
-** GTD / gtd-related org agenda config
-Sourcing [[file:literate/gtd.org][gtd.org]]
-- I use [[https://en.wikipedia.org/wiki/Getting_Things_Done][GTD]] for managing my todo lists & open projects
-- GTD requires maintaining a few different lists. The location of
-  those lists may change (depending on the system that I'm on).
-- Separating files out like this allows me to decouple my GTD files
-  from the rest of my config
-#+BEGIN_SRC emacs-lisp
-(krista/new-config-file gtd "gtd")
-(org-babel-load-file krista/gtd-config-file)
-#+END_SRC
-** Gcal secrets for org-gcal
-- *Problem:* I use org-gcal to sync my google calendar with my org-mode
-  calendar.
-  - But that requires using an API token that I don't want to
-    publish on the internet!
-  - How can I share my org-gcal config without giving the internet a
-    key to my email?
-- *Solution:*
-  - I have gcal-secrets.org in my .gitignore so it's not on github
-  - I have the rest of my org-gcal config in my [[file:literate/krista-org-mode.org][org-mode config file]]
-- If you want to clone my config and set up org-gcal, you need to
-  1. Follow the [[https://github.com/myuhe/org-gcal.el][org-gcal instructions]] to get an API key for Gmail
-  2. Copy-paste my [[file:literate/krista-org-mode.org::*org-gcal][org-gcal config]] into your .emacs
-  3. Also copy-paste this into your .emacs (fill in the secrets from step 1)
-     #+BEGIN_SRC emacs-lisp :tangle no
-     (with-eval-after-load 'org-gcal
-       (setq org-gcal-client-id "PUT YOUR CLIENT ID HERE!")
-       (setq org-gcal-client-secret "PUT YOUR CLIENT SECRET HERE!"))
-     #+END_SRC
-
-- Now for my actual config: Sourcing hidden/.gitignored file gcal-secrets.org
-- *WARNING:* Do not copy-paste this next code snippet unless you know what
-  you're doing!
-  - It will error unless you have a gcal-secrets.org file in the
-    'literate' folder!!!
-  - Note that gcal-secrets.org is NOT included in this repo!
-#+BEGIN_SRC emacs-lisp
-(krista/new-config-file gcal-secrets "gcal-secrets")
-(org-babel-load-file krista/gcal-secrets-config-file)
-#+END_SRC
 ** OS-specific config
 Sourcing [[file:literate/macOS.org][macOS.org]], [[file:literate/windows.org][windows.org]]
 #+BEGIN_SRC emacs-lisp
-(message "[krista] OS-specific config")
-(krista/new-config-file macOS "macOS")
-(krista/new-config-file windows "windows")
+(message "[kris] OS-specific config")
+(kris/new-config-file macOS "macOS")
+(kris/new-config-file windows "windows")
 (cond ((eq system-type 'darwin)
-       (org-babel-load-file krista/macOS-config-file))
+       (org-babel-load-file kris/macOS-config-file))
       ((member system-type '(ms-dos windows-nt cygwin))
-       (org-babel-load-file krista/windows-config-file)))
+       (org-babel-load-file kris/windows-config-file)))
 #+END_SRC
 ** Better defaults
 Sourcing [[file:literate/better-defaults.org][better-defaults.org]]
 #+BEGIN_SRC emacs-lisp
-(krista/new-config-file better-defaults "better-defaults")
-(org-babel-load-file krista/better-defaults-config-file)
+(kris/new-config-file better-defaults "better-defaults")
+(org-babel-load-file kris/better-defaults-config-file)
 #+END_SRC
 ** Global settings
 Sourcing [[file:literate/global-settings.org][global-settings.org]]
 #+BEGIN_SRC emacs-lisp
-(krista/new-config-file global-settings "global-settings")
-(org-babel-load-file krista/global-settings-config-file)
+(kris/new-config-file global-settings "global-settings")
+(org-babel-load-file kris/global-settings-config-file)
 #+END_SRC
-** Ivy
-Sourcing [[file:literate/krista-ivy.org][krista-ivy.org]]
+** Minor packages
 #+BEGIN_SRC emacs-lisp
-(krista/new-config-file krista-ivy "krista-ivy")
-(org-babel-load-file krista/krista-ivy-config-file)
-#+END_SRC
-** Org-mode
-Sourcing [[file:literate/krista-org-mode.org][krista-org-mode.org]]
-#+BEGIN_SRC emacs-lisp
-(krista/new-config-file krista-org-mode "krista-org-mode")
-(org-babel-load-file krista/krista-org-mode-config-file)
+(kris/new-config-file minor-packages "minor-packages")
+(org-babel-load-file kris/minor-packages-config-file)
 #+END_SRC
 ** Modeline
-Sourcing [[file:literate/krista-modeline.org][krista-modeline.org]]
+Sourcing [[file:literate/kris-modeline.org][kris-modeline.org]]
 #+BEGIN_SRC emacs-lisp
-(krista/new-config-file modeline "modeline")
-(org-babel-load-file krista/modeline-config-file)
+(kris/new-config-file modeline "modeline")
+(org-babel-load-file kris/modeline-config-file)
+#+END_SRC
+** Magit
+Sourcing [[file:literate/kris-magit.org][kris-magit.org]]
+#+BEGIN_SRC emacs-lisp
+(kris/new-config-file kris-magit "kris-magit")
+(org-babel-load-file kris/kris-magit-config-file)
+#+END_SRC
+** Ivy
+Sourcing [[file:literate/kris-ivy.org][kris-ivy.org]]
+#+BEGIN_SRC emacs-lisp
+(kris/new-config-file kris-ivy "kris-ivy")
+(org-babel-load-file kris/kris-ivy-config-file)
+#+END_SRC
+** Company
+Sourcing [[file:literate/kris-company.org][kris-company.org]]
+#+BEGIN_SRC emacs-lisp
+(kris/new-config-file kris-company "kris-company")
+(org-babel-load-file kris/kris-company-config-file)
+#+END_SRC
+** Org-mode
+Sourcing [[file:literate/kris-org-mode.org][kris-org-mode.org]]
+#+BEGIN_SRC emacs-lisp
+(kris/new-config-file kris-org-mode "kris-org-mode")
+(org-babel-load-file kris/kris-org-mode-config-file)
 #+END_SRC
 ** Programming support
 Sourcing [[file:literate/programming-support.org][programming-support.org]]
 #+BEGIN_SRC emacs-lisp
-(krista/new-config-file programming-support "programming-support")
-(org-babel-load-file krista/programming-support-config-file)
-#+END_SRC
-** Misc. packages
-Sourcing [[file:literate/misc-packages.org][misc-packages.org]]
-#+BEGIN_SRC emacs-lisp
-(krista/new-config-file misc-packages "misc-packages")
-(org-babel-load-file krista/misc-packages-config-file)
+(kris/new-config-file programming-support "programming-support")
+(org-babel-load-file kris/programming-support-config-file)
 #+END_SRC
 ** LaTeX
-Sourcing [[file:literate/krista-latex.org][krista-latex.org]]
 #+BEGIN_SRC emacs-lisp
-(krista/new-config-file krista-latex "krista-latex")
-(org-babel-load-file krista/krista-latex-config-file)
+;;(kris/new-config-file kris-latex "kris-latex")
+;;(org-babel-load-file kris/kris-latex-config-file)
 #+END_SRC
 * Tron doom theme
 #+BEGIN_SRC emacs-lisp
@@ -241,10 +221,10 @@ for getting help with various parts of emacs
   - New elisp block: <el [TAB]
 - Edit code block: C-c'
 *** Embed an image in an org document
-#+BEGIN_EXAMPLE
-#+CAPTION: This is the caption for the next figure link (or table)
+,#+BEGIN_EXAMPLE
+,#+CAPTION: This is the caption for the next figure link (or table)
 #+attr_org: :width="50px"
-#+NAME:   figure
+,#+NAME:   figure
 [[file:./my_image.png]]
 #+END_EXAMPLE
 *** Select all: C-x h
@@ -252,9 +232,9 @@ for getting help with various parts of emacs
 Suppose you made a file called =new-thing=
 #+BEGIN_EXAMPLE 
 ;; Macro to define a new external tangling file:
-(krista/new-config-file new-thing "new-thing")
+(kris/new-config-file new-thing "new-thing")
 ;; Actually load the external file:
-'(org-babel-load-file krista/my-new-config-file)
+'(org-babel-load-file kris/my-new-config-file)
 #+END_EXAMPLE
 ** Troubleshooting your config file
 If you don't know why your emacs is breaking, but suspect a tangling

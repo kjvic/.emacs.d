@@ -19,7 +19,6 @@
   - [[#set-cursor-appearance][Set cursor appearance]]
   - [[#change-the-fringe-wrap-indicators][Change the fringe wrap indicators]]
   - [[#hide-the-fringe][Hide the fringe]]
-  - [[#fonts][Fonts]]
 
 * Behavioral tweaks
 ** Remove default startup message, text at the top of scratch buffers
@@ -149,24 +148,4 @@ out how to set it immediately, but this should suffice as startup config.
 #+BEGIN_SRC emacs-lisp
 (set-face-attribute 'fringe nil :background "#001519")
 ;;(set-face-attribute 'vertical-border nil :foreground "#cf7a00")
-#+END_SRC
-** Fonts
-#+BEGIN_SRC emacs-lisp
-(set-face-attribute 'default nil :font "Fira Code-13" :weight 'light)
-(set-face-attribute 'bold nil :weight 'demibold)
-;; https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs
-;; for the railwaycat emacs port
-(mac-auto-operator-composition-mode)
-
-
-(set-face-attribute 'bold-italic nil
-                    :slant 'oblique
-                    :weight 'bold)
-
-(set-face-attribute 'font-lock-doc-face nil
-                    :foreground "#58615a"
-                    :family "Fira Code")
-
-(set-face-attribute 'region nil :background "#032929")
-
 #+END_SRC

@@ -1,0 +1,34 @@
+* Table of Contents :TOC:
+- [[#company][Company]]
+
+  * Company
+    =company= is short for COM-plete ANY-thing
+    #+BEGIN_SRC emacs-lisp
+      (message "[kris] Loading company...")
+      (use-package company
+	:defer t
+	:diminish
+	:config
+	(global-company-mode)
+	;; Trigger suggestions faster (default value: 0.5 (seconds))
+	(setq company-idle-delay 0.1)
+	(setq company-tooltip-align-annotations t)
+	:bind (("C-;" . company-complete-selection)))
+
+      ;; Backends
+      (use-package company-irony :defer t)
+      (use-package company-c-headers :defer t)
+      (use-package company-quickhelp
+	:defer t
+	:config (company-quickhelp-mode 1))
+
+      (with-eval-after-load 'company
+	(add-to-list 'company-backends 'company-irony)
+	(add-to-list 'company-backends 'company-c-headers)
+	;; Scroll through completion options with C-n and C-p (instsead of M-n and M-p)
+	;; Source: https://emacs.stackexchange.com/a/2990
+	(define-key company-active-map (kbp "M-n") nil)
+	(define-key company-active-map (kbp "M-p") nil)
+	(define-key company-active-map (kbp "C-n") #'company-select-next)
+	(define-key company-active-map (kbp "C-p") #'company-select-previous))
+    #+END_SRC

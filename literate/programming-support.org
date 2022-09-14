@@ -1,4 +1,3 @@
-#+PROPERTY: header-args :tangle yes
 * Table of Contents                                                     :TOC:
 - [[#whitespace-preferences][Whitespace preferences]]
 - [[#programming-languages][Programming languages]]
@@ -7,25 +6,42 @@
   - [[#slime-lisp][Slime (lisp)]]
   - [[#haskell][haskell]]
   - [[#c][C#]]
-  - [[#multi-web-mode][Multi-web mode]]
-- [[#global-programming-tools][Global programming tools]]
-  - [[#company][Company]]
-  - [[#tramp][Tramp]]
-  - [[#magit][Magit]]
-  - [[#projectile][Projectile]]
-  - [[#flycheck][Flycheck]]
-  - [[#dumb-jump][Dumb-jump]]
-- [[#delimiters---parens-brackets-curly-braces-blocks-of-code][Delimiters - parens, brackets, curly braces, blocks of code]]
-  - [[#rainbow-delimiters][Rainbow-delimiters]]
-  - [[#smartparens][Smartparens]]
-  - [[#origami-mode][Origami mode]]
+  - [[#javascript][Javascript]]
+  - [[#xml][XML]]
+  - [[#golang][golang]]
+- [[#dev-tools--containerization--friends][Dev tools / containerization & friends]]
+  - [[#kubernetes][Kubernetes]]
+  - [[#docker][Docker]]
+  - [[#hashicorp--packer--terraform][Hashicorp / Packer / Terraform]]
+  - [[#jenkins][Jenkins]]
+- [[#ansible][Ansible]]
+- [[#yaml][Yaml]]
+- [[#spellcheck-comments][Spellcheck comments]]
+- [[#line-numbers----prog-mode-only][Line numbers -- prog-mode only]]
+- [[#interactive-highlighting][Interactive highlighting]]
+  - [[#highlight-indentation][highlight indentation]]
+  - [[#highlight-symbol][Highlight symbol]]
+  - [[#highlight-surrounding-paren][Highlight surrounding paren]]
+  - [[#highlight-symbol-1][+highlight-symbol+]]
+- [[#treemacs][treemacs]]
+- [[#google-this-mode][google-this mode]]
+- [[#cycle-inflection-snake_case-camelcase-kebob-case][cycle inflection (snake_case, camelCase, kebob-case)]]
+- [[#behave-bdd-tests][Behave (BDD tests)]]
+- [[#dotenv-mode][Dotenv mode]]
+- [[#markdown][Markdown]]
+- [[#jsonnet][jsonnet]]
 
 * Whitespace preferences
 #+BEGIN_SRC emacs-lisp
-(message "[krista] Loading whitespace preferences...")
+(message "[kris] Loading whitespace preferences...")
 (setq tab-width 4)
+;; (setq-default tab-width 4)
+(setq indent-tabs-mode nil)
 
 (use-package whitespace)
+
+;; Show trailing whitespace by default
+(setq-default show-trailing-whitespace t)
 
 ;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
 ;; ... but don't show trailing whitespace if I'm in
@@ -33,16 +49,14 @@
 ;; - help mode
 ;; - in a makefile
 (defun hide-trailing-whitespace () (setq show-trailing-whitespace nil))
-(add-hook 'minibuffer-setup-hook
-          'hide-trailing-whitespace)
-(add-hook 'help-mode-hook
-          'hide-trailing-whitespace)
-(add-hook 'compilation-mode-hook
-          'hide-trailing-whitespace)
-(add-hook 'makefile-mode-hook
-          'hide-trailing-whitespace)
-(add-hook 'text-mode-hook
-          'hide-trailing-whitespace)
+(add-hook 'minibuffer-setup-hook 'hide-trailing-whitespace)
+(add-hook 'help-mode-hook 'hide-trailing-whitespace)
+(add-hook 'compilation-mode-hook 'hide-trailing-whitespace)
+;; (add-hook 'makefile-mode-hook 'hide-trailing-whitespace)
+(add-hook 'text-mode-hook 'hide-trailing-whitespace)
+(add-hook 'org-mode-hook 'hide-trailing-whitespace)
+(add-hook 'shell-mode-hook 'hide-trailing-whitespace)
+(add-hook 'fundamental-mode-hook 'hide-trailing-whitespace)
 ;; Function hide-trailing-whitespace is adapted from
 ;; the function no-trailing-whitespace, available:
 ;; https://ogbe.net/emacsconfig.html
@@ -51,20 +65,19 @@
 ;; This can be a pain when collaborating with other people, so I have it disabled by default
 ;; TODO: set up to auto-enable or disable based on number of collaborators
 
-;; Don't show whitespace in non-programming modes
-(setq-default show-trailing-whitespace nil)
-
 (setq whitespace-style '(trailing space-before-tab indentation empty space-after-tab lines))
-(add-hook 'prog-mode-hook
-	  (lambda ()
-	    (whitespace-mode)
-	    ;; Show trailing whitespace
-	    (setq show-trailing-whitespace t)))
+(add-hook 'prog-mode-hook 'whitespace-mode)
+(add-hook 'prog-mode-hook '(lambda () (setq indent-tabs-mode nil)))
+;; (setq whitespace-action '(auto-cleanup))
 #+END_SRC
+
+#+RESULTS:
+| turn-on-diff-hl-mode | hs-minor-mode | highlight-indent-guides-mode | (lambda nil (setq indent-tabs-mode nil)) | whitespace-mode | flyspell-prog-mode | linum-mode |
+
 * Programming languages
 ** C / C++
 #+BEGIN_SRC emacs-lisp
-(message "[krista] Loading cc-mode...")
+(message "[kris] Loading cc-mode...")
 (use-package cc-mode
   :defer t
   :config
@@ -87,12 +100,12 @@
                   (cppcm-reload-all)))))
 
 
-(c-add-style "krista-style"             ; title
+(c-add-style "kris-style"             ; title
              '("python"                 ; inherit from the python style
                (indent-tabs-mode . nil) ; indents: use spaces, not tabs
                (c-basic-offset . 4)     ; indents: 4 chars wide
                (fill-column . 80)))     ; when to wrap line? (In chars)
-(setq c-default-style "krista-style")
+(setq c-default-style "kris-style")
 
 (use-package modern-cpp-font-lock   :defer t)
 (add-hook 'c++-mode-hook #'modern-c++-font-lock-mode)
@@ -111,12 +124,11 @@
 ;;   '(("\\(~:^&\|!<>:=,.?\\+*/%-]\\)" 0 'font-lock-operator-face)))
 #+END_SRC
 ** Python
-*** Pylint minor mode
+*** Blacken
 #+BEGIN_SRC emacs-lisp
-(message "[krista] Loading python config...")
-(autoload 'pylint "pylint")
-(add-hook 'python-mode-hook 'pylint-add-menu-items)
-(add-hook 'python-mode-hook 'pylint-add-key-bindings)
+(message "[kris] Loading python config...")
+(use-package blacken)
+;; (add-hook 'python-mode-hook 'blacken-mode)
 #+END_SRC
 *** Python shell interpreter
 - Problem: When I ran =run-python=, I got the following error message:
@@ -137,17 +149,32 @@
          (get-buffer-process (current-buffer))
          nil "_"))))
   #+END_SRC
-*** Press <tab> to indent with 2 spaces
+*** Press <tab> to indent with n spaces
 #+BEGIN_SRC emacs-lisp
-(setq python-indent 2)
+(setq python-indent 4)
 (add-hook 'python-mode-hook
           (lambda ()
             (setq indent-tabs-mode nil)
-            (setq tab-width 2)
-            (setq python-indent 2)))
+            (setq tab-width 4)
+            (setq python-indent 4)))
+#+END_SRC
+*** company-jedi
+#+BEGIN_SRC emacs-lisp
+;; (use-package company-jedi
+;;   :config
+;;   (autoload 'jedi:setup "jedi" nil t)
+;;   (add-hook 'python-mode-hook 'jedi:setup)
+;;   (add-to-list 'company-backends 'company-jedi)
+;;   )
+#+END_SRC
+*** flycheck config with pyenv for python
+#+BEGIN_SRC emacs-lisp
+;; (setq flycheck-python-pylint-executable "/Users/kvictorsen/.pyenv/shims/python")
+(setq flycheck-python-pylint-executable "/usr/local/bin/python3")
+(setq flycheck-python-pycompile-executable "/usr/local/bin/python3")
 #+END_SRC
 ** Slime (lisp)
-#+BEGIN_SRC emacs-lisp
+ #+BEGIN_SRC emacs-lisp
 ;; Quicklisp install and this config from https://gist.github.com/jteneycke/7947353
 ;; (load (expand-file-name "~/quicklisp/slime-helper.el"))
 ;; Replace "sbcl" with the path to your implementation
@@ -174,13 +201,13 @@
   ("C-c C-c" . recompile))
 
 ;; Csharp mode Whitespace preferences
-(c-add-style "krista-csharp-style"      ; title
+(c-add-style "kris-csharp-style"      ; title
              '("python"                 ; inherit from the python style
                (indent-tabs-mode . nil) ; indents: use spaces, not tabs
                (c-basic-offset . 4)     ; indents: 4 chars wide
                (fill-column . 80)))     ; when to wrap line? (In chars)
 
-(add-hook 'csharp-mode-hook (lambda () (c-set-style "krista-csharp-style")))
+(add-hook 'csharp-mode-hook (lambda () (c-set-style "kris-csharp-style")))
 ;; TODO: Set default csharp style
 ;; (add-hook  'csharp-mode-hook 'my-csharp-mode t)
 
@@ -188,312 +215,476 @@
 (eval-after-load 'company
   '(add-to-list 'company-backends 'company-omnisharp))
 #+END_SRC
-** Multi-web mode
-- It's not just one programming language, but a few.
-- Multi-web mode gives you syntax highlighting for web-related
-  programming languages, even if they're /nested/!
-  - /Example/:
-    - you have html with embedded javascript
-    - Multi-web mode will do syntax highlighting for both the html and
-      the javascript
+*** Scala
+    #+BEGIN_SRC emacs-lisp
+      ;; (use-package scala-mode
+      ;;   :interpreter
+      ;;   ("scala" . scala-mode))
+      ;; (use-package ensime
+      ;;   :config
+      ;;   ;; (add-hook 'scala-mode-hook 'ensime-scala-mode-hook
+      ;;   ;;           (lambda () (ensime-mode)))
+      ;;   )
+    #+END_SRC
+** Javascript
+*** Plan
+**** see https://github.com/eastwood/config/blob/master/emacs.d/init.el
+**** figure out
+typescript (executable: tsc)
+eslint
+tslint
+yarn
+npm global vs. project packages
+***** node: installed by visiting https://nodejs.org/en/
+TIDE requires: "Install node.js v0.12.0 or greater."
+*** config
 #+BEGIN_SRC emacs-lisp
-(use-package multi-web-mode
-  :defer t
+;; js2-mode
+(use-package js2-mode
   :config
-  (setq mweb-default-major-mode 'html-mode)
-  (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
-                    (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
-                    (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
-  (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
-  (multi-web-global-mode 1))
-#+END_SRC
-* Global programming tools
-** Company
-- =company= is a syntax-aware auto-completion tool for coding, shell
-  commands, or just plain writing
-=- company= is short for COM-plete ANY-thing
-#+BEGIN_SRC emacs-lisp
-(message "[krista] Loading company...")
-(use-package company 
-  :defer t
-  :diminish
-  :config
-  (global-company-mode)
-  ;; Trigger suggestions faster (default value: 0.5 (seconds))
-  (setq company-idle-delay 0.1)
-  :bind (("C-;" . company-complete-selection)))
+  (setq-default js2-basic-offset 2)
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+
+  ;; Better imenu
+  (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
+  )
+
+;; js2-refactor
+(use-package js2-refactor)
 
 
-;; Backends -- company provides a unified interface for
-;; autocompletion, but these are the engines which actually make the
-;; completions "smart"
-(use-package company-irony   :defer t)
-(use-package company-c-headers   :defer t)
-(with-eval-after-load 'company
-  (add-to-list 'company-backends 'company-irony)
-  (add-to-list 'company-backends 'company-c-headers)
-  ;; Scroll through completion options with C-n and C-p (instead of M-n
-  ;; and M-p)
-  ;; Source: https://emacs.stackexchange.com/a/2990
-  (define-key company-active-map (kbd "M-n") nil)
-  (define-key company-active-map (kbd "M-p") nil)
-  (define-key company-active-map (kbd "C-n") #'company-select-next)
-  (define-key company-active-map (kbd "C-p") #'company-select-previous))
-#+END_SRC
-** Tramp
-- SSH / networking tool
-- Allows you to "tramp around a network like it's all local"
-- Lets you access other machines via ssh, just by "finding" them through find-file
-#+BEGIN_SRC emacs-lisp
-(use-package tramp
-  :config
-  (setq tramp-default-method "ssh")
+;; xref-js2
+(use-package xref-js2)
 
-  ;; Make tramp actually read my PATH variable
-  ;; NOTE: needed to restart emacs and rm ~/.emacs.d/tramp on my local to get
-  ;; this config to take effect
-  (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
-  
-  ;; Use SSH ControlMasters to try to keep any connections alive as long as
-  ;; possible. This gets rid of a lot of time spent reconnecting and
-  ;; re-inputting credentials
-  (setq tramp-ssh-controlmaster-options
-        "-o ControlMaster=auto -o ControlPersist=yes"))
-#+END_SRC
-** Magit
-- Layer on top of git that makes life way easier
-- Seriously, this tool is the best git tutorial I have ever seen
-- [[https://magit.vc/][Magit homepage]]
-- [[https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git][Magit tutorial]]
-- It runs git commands for you, but you interact with...
-  - a graphical depiction of your "index".
-    - translation: it's easy to tell what's included in your commit or
-      not!
-  - built-in explanations and prompts
-  - a graphical depiction of the commit tree.
-    - example: you can check out a specific commit by looking at your
-      tree of commits, moving your mouse to the right commit, and
-      pressing ENTER. Easy peasy!
-#+BEGIN_SRC emacs-lisp :noweb tangle
-(message "[krista] Loading magit...")
-(use-package magit
+(use-package typescript-mode
   :config
-  <<magit-color-scheme>>
-  ;; Default arguments to magit log
-  (setq magit-log-arguments '("-n150" "--graph" "--decorate" "--color"))
+  (setq auto-mode-alist
+        (append '(("\\.ts$" . typescript-mode)
+                  ("\\.tsx$" . typescript-mode)) auto-mode-alist)))
+
+;; Source: https://github.com/eastwood/config/blob/master/emacs.d/init.el
+(defun setup-tide-mode ()
+  "Set up tide mode."
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  (company-mode +1))
+
+;; (use-package eglot
+;;   :config
+;;   (add-hook 'js2-mode-hook 'eglot-ensure)
+;;   (add-hook 'typescript-mode-hook 'eglot-ensure))
+
+;; Specifically for typescript as lsp mode isn't working well
+(use-package tide
+  :hook (typescript-mode . setup-tide-mode))
+
+
+(defun kris/js-common ()
+  (setq indent-tabs-mode nil)
+  (setq tab-width 4)
+  (setq js-indent-level 4))
+(add-hook 'javascript-mode-hook 'kris/js-common)
+(add-hook 'typescript-mode-hook 'kris/js-common)
+(add-hook 'js2-mode-hook 'kris/js-common)
+
+
+;; Set compile command to "node"
+
+(defun kris/set-js-compile-command ()
+  (set (make-local-variable 'compile-command)
+       (concat "node "
+	       (if buffer-file-name
+		   (shell-quote-argument
+		    (file-name-sans-extension buffer-file-name))))))
+(add-hook 'javascript-mode-hook 'kris/set-js-compile-command)
+
+#+END_SRC
+
+#+RESULTS:
+| kris/set-js-compile-command | kris/js-common |
+** XML
+#+BEGIN_SRC emacs-lisp
+  (setq auto-mode-alist
+        (append '(("\\.bml$" . xml-mode)) auto-mode-alist))
+#+END_SRC
+** golang
+Suggested go imports:
+#+BEGIN_SRC bash 
+go get golang.org/x/tools/cmd/godoc
+go get github.com/rogpeppe/godef
+go get golang.org/x/tools/cmd/goimports
+#+END_SRC
+Emacs config
+#+BEGIN_SRC emacs-lisp
+(use-package exec-path-from-shell
+  :config
+  (defun set-exec-path-from-shell-PATH ()
+    (let ((path-from-shell (replace-regexp-in-string
+                            "[ \t\n]*$"
+                            ""
+                            (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
+      (setenv "PATH" path-from-shell)
+      (setq eshell-path-env path-from-shell) ; for eshell users
+      (setq exec-path (split-string path-from-shell path-separator))))
+
+  (when window-system (set-exec-path-from-shell-PATH)))
+
+(use-package go-mode
+  :config
+  ;; (add-hook 'before-save-hook 'gofmt-before-save)
+  ;; Prefer goimports to gofmt if installed
+  (let ((goimports (executable-find "goimports")))
+    (when goimports
+      (setq gofmt-command goimports)))
+
+  ;; gofmt on save
+  ;; (add-hook 'go-mode-hook 'gofmt-before-save)
+  (add-hook 'go-mode-hook '(lambda () (setq indent-tabs-mode t)))
+
+  ;; CamelCase aware editing operations
+  (subword-mode +1)
+
+  ;; Set tab-width to 4
+  (setq default-tab-width 4)
+  (setq tab-width 4)
+  (setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76 80))
+  (setq indent-tabs-mode t)
+
+  ;; Source: https://jamiecollinson.com/blog/my-emacs-config/#golang
+  (defun jc/go-guru-set-current-package-as-main ()
+    "GoGuru requires the scope to be set to a go package which
+     contains a main, this function will make the current package the
+     active go guru scope, assuming it contains a main"
+    (interactive)
+    (let* ((filename (buffer-file-name))
+           (gopath-src-path (concat (file-name-as-directory (go-guess-gopath)) "src"))
+           (relative-package-path (directory-file-name (file-name-directory (file-relative-name filename gopath-src-path)))))
+      (setq go-guru-scope relative-package-path)))
+
+  ;; Workaround for this error:
+  ;; Suspicious state from syntax checker go-vet: Flycheck checker
+  ;; go-vet returned non-zero exit code 1, but its output contained no
+  ;; errors: package command-line-arguments (test)
+  ;; 	imports gotest.tools/assert: cannot find package "gotest.tools/assert" in any of:
+  ;; 	/usr/local/opt/go/libexec/src/gotest.tools/assert (from $GOROOT)
+  ;; 	/Users/kvictorsen/go/src/src/gotest.tools/assert (from $GOPATH)
+  ;; Try installing a more recent version of go-vet, and please open a
+  ;; bug report if the issue persists in the latest release. Thanks!
+  ;;
+  ;; Source: https://github.com/flycheck/flycheck/issues/1523#issuecomment-469402280
+  (let ((govet (flycheck-checker-get 'go-vet 'command)))
+    (when (equal (cadr govet) "tool")
+      (setf (cdr govet) (cddr govet))))
   :bind
-  (("C-c g" . magit-status)))
-#+END_SRC
-- This piece of code makes magit match the rest of my theme
-- Note: "vc" stands for *V*-ersion *C*-ontrol -- this config would also
-  edit other git [[https://stackoverflow.com/a/6976506][porcelains]]
-#+BEGIN_SRC emacs-lisp :noweb-ref magit-color-scheme :tangle no
-(setq vc-annotate-background nil)
-(setq vc-annotate-color-map
-      (quote
-       ((20 . "#f2777a")
-        (40 . "#f99157")
-        (60 . "#ffcc66")
-        (80 . "#99cc99")
-        (100 . "#66cccc")
-        (120 . "#6699cc")
-        (140 . "#cc99cc")
-        (160 . "#f2777a")
-        (180 . "#f99157")
-        (200 . "#ffcc66")
-        (220 . "#99cc99")
-        (240 . "#66cccc")
-        (260 . "#6699cc")
-        (280 . "#cc99cc")
-        (300 . "#f2777a")
-        (320 . "#f99157")
-        (340 . "#ffcc66")
-        (360 . "#99cc99"))))
-(setq vc-annotate-very-old-color nil)
-#+END_SRC
-** Projectile
-- Projectile lets you do project-wide actions
-- *How it works:*
-  - when projectile sees that there's a .git directory, it defines a
-    "project" for the repo
-  - You can edit
-- *What you can do with projectile:*
-  - Easily find-replace across every file in your repo
-  - Easily search throughout your entire repo
-  - Easily switch to "related" files
-    - /Example:/
-      - You're in a file hello.cpp
-      - Projectile will notice that hello.h is "related"
-      - Calling =projectile-find-other-file= (keybinding "C-c p s a")
-        will switch you to hello.h
-      - Calling =projectile-find-other-file= again will switch back to
-        hello.cpp
-    - Note: you don't have to set anything up when you enter a new
-      project! Projectile will automatically figure out which files
-      are related
-  - Easily save every file you've modified
-#+BEGIN_SRC emacs-lisp
-(message "[krista] Loading projectile...")
-(use-package projectile
-  :diminish
+  ("C-c M-d" . godoc-at-point)
+  )
+
+(setenv "GOROOT" "/usr/local/opt/go/libexec")
+(setenv "GOPATH" "/Users/kvictorsen/go/src")
+(add-to-list 'exec-path "/Users/kvictorsen/go/src")
+
+(use-package company-go
   :config
-  (setq projectile-keymap-prefix (kbd "C-c p s"))
-
-  ;; DEPENDENCY: I use ivy for my search/filtering/popup interface.
-  ;; You can replace "ivy" with "helm" or another framework if
-  ;; desired. If you don't use any of these packages, you should just
-  ;; remove this snippet
-  (with-eval-after-load 'ivy
-    (setq projectile-completion-system 'ivy))
-  ;; END_DEPENDENCY
-
-  (projectile-mode))
-#+END_SRC
-** Flycheck
-- flycheck provides on-the-fly syntax checking
-- flycheck gives you
-  - Red squigglies under your code if it's causing an error
-  - White squigglies under your code if you're using bad style
-  - Helpful popups which explain why there are squigglies
-#+BEGIN_SRC emacs-lisp
-(use-package flycheck
-  :diminish
-  :init (global-flycheck-mode)
-  :custom
-  (flycheck-display-errors-delay .75))
-;; Permanently enable syntax checking
-(add-hook 'after-init-hook #'global-flycheck-mode)
-(add-hook 'c++-mode-hook (lambda () (setq flycheck-gcc-language-standard "c++11")))
-(add-hook 'c++-mode-hook (lambda () (setq flycheck-clang-language-standard "c++11")))
-(add-hook 'macrostep-mode-hook (lambda () (setq flycheck-disable-checkers t)))
-#+END_SRC
-*** Usage
-via http://www.flycheck.org/en/latest/user/quickstart.html#enable
-- =C-c ! n=: go forward to next error
-- =C-c ! p=: go backward to prev. error
-- =C-c ! l=: show a popup list of errors
-** Dumb-jump
-- Visual studio has a "Go to definition" option in the context menu.
-- Dumb-jump lets you have that in emacs
-- Keybindings: 
-  - C-M-g : =dumb-jump-go= 
-    - go to the place where [thing under cursor] is defined
-  - C-M-p : =dumb-jump-prev= 
-    - go back to where you were when you called =dumb-jump-go=
-  - C-M-q : =dumb-jump-quick-look= 
-    - "peek" at a definition without actually moving
-    - =dumb-jump-go= requires a mental context switch -- don't put
-      yourself through that if you just want to peek at the function &
-      then get back to what you're doing
-#+BEGIN_SRC emacs-lisp
-(use-package dumb-jump
-  :defer t
+  (eval-after-load 'company
+    '(add-to-list 'company-backends 'company-go)))
+(use-package go-imenu
   :config
-  (dumb-jump-mode 1)
-  ;; Use ripgrep (rg) for searching -- much faster than grep or ag
-  (setq dumb-jump-prefer-searcher 'rg))
-#+END_SRC
-* Delimiters - parens, brackets, curly braces, blocks of code
-** Rainbow-delimiters
-If you have many nested parens/brackets/grouping symbols,
-rainbow-delimiters will color-code them so it's easier to tell which
-ones match
-#+BEGIN_SRC emacs-lisp
-(use-package rainbow-delimiters)
-#+END_SRC
-** Smartparens
-- *Smartparens lets you...*
-  - Highlight some text and then press " to wrap it in quotes
-    - (Same goes for parentheses, brackets, or anything else that
-      comes in pairs)
-  - Easily see if you've missed a delimiter
-    - Suppose you type =(some stuff=
-    - When you mouse over the unmatched =(=, smartparens will make it
-      bold & bright red
-  - Easily see which delimiters match
-    - When you mouse over a paren that /does/ have a match, both parens
-      in the pair will turn bright white & bold
-  - Easily navigate from one paren to its match
-  - (optional) Automatically escape quotes if you type them in a string
-  - (optional) 
-- Credits: This config is adapted from Spruce Bondera's .emacs.d
-#+BEGIN_SRC emacs-lisp
-(use-package smartparens
-  :defer t
+  (go-imenu-setup))
+(use-package go-gopath)
+(use-package golint
+  :config (add-to-list 'load-path (concat (getenv "GOPATH")  "/src/github.com/golang/lint/misc/emacs")))
+
+(use-package go-projectile)
+
+;; org babel functions for go
+(use-package ob-go)
+
+(use-package go-imports ;; add import statement for the package at point
+  :bind
+  ("C-c I" . go-imports-insert-import)
+  ("C-c R" . go-imports-reload-packages-list)
+  )
+
+;; Keybinding to auto-add `json:' tags to go structs
+(use-package go-add-tags)
+(use-package go-guru
   :config
-  ;; Enable the default config
-  (require 'smartparens-config)
+  (add-hook 'go-mode-hook #'go-guru-hl-identifier-mode))
 
-  ;; There's several modes in which I usually prefer strings to be treated
-  ;; similar to s-expressions. In others its less relevant/string literals are
-  ;; less common.
-  ;;(setq sp-navigate-consider-stringlike-sexp
-  ;;      (append sp-navigate-consider-stringlike-sexp (list 'python-mode
-  ;;                                                         'org-mode
-  ;;                                                         'coffeescript-mode)))
-
-  ;; This overlay ended up being on basically all the time and overriding my
-  ;; syntax highlighting. More distracting than helpful.
-
-  ;; From the docs:
-  ;; If non-nil, autoinserted pairs are highlighted while point is inside the pair.
-  (setq sp-highlight-pair-overlay nil)
-
-  ;; smartparens will automatically escape quotes, so if you type this:
-  ;;     The expression of the day is My Expression!
-  ;;
-  ;; and then try to highlight and quote My Expression!, you'll get this:
-  ;;     "The expression of the day is \"My Expression!\""
-  ;;
-  ;; I don't like that. This line turns it off.
-  (setq sp-escape-quotes-after-insert nil)
-
-  ;; https://smartparens.readthedocs.io/en/latest/pair-management.html
-  ;; (sp-pair "$" "$")   ;; latex inline math mode. Pairs can have same opening and closing string
-
-  :bind (("C-M-f" . sp-forward-sexp)
-         ("C-M-b" . sp-backward-sexp)
-         ("C-M-u" . sp-backward-up-sexp)
-         ("C-M-d" . sp-down-sexp)
-         ("C-M-a" . sp-backward-down-sexp)
-         ("C-M-e" . sp-forward-up-sexp)
-         ("C-M-n" . sp-beginning-of-next-sexp)
-         ("C-M-p" . sp-beginning-of-previous-sexp)
-
-         ;; Unwrap, or remove the parens/outer pair from the current s-exp
-         ;;
-         ;; Unwrap the pair moving forwards. 
-         ;; (Binding is similar to "M-d" to delete a /word/ forwards)
-         ("C-M-d" . sp-unwrap-sexp)
-         ;; Unwrap the pair moving backwards 
-         ;; (Binding is similar to "M-<backspace>" to delete a /word/ backwards)
-         ("C-M-<backspace>" . sp-backward-unwrap-sexp))) ;; Unwrap the pair moving backwards
-
-;; Enable smartparens globally
-(smartparens-global-mode)
-#+END_SRC
-** Origami mode
-Origami + org-super-agenda mode config:
-https://github.com/alphapapa/org-super-agenda/blob/master/examples.org#automatically-fold-certain-groups-with-origami
-#+BEGIN_SRC emacs-lisp
-(use-package origami
-  :general (:keymaps 'org-super-agenda-header-map
-                     "TAB" #'origami-toggle-node)
+(use-package go-eldoc
   :config
+  (add-hook 'go-mode-hook 'go-eldoc-setup))
+#+END_SRC
+* Dev tools / containerization & friends
+** Kubernetes
+https://github.com/chrisbarrett/kubernetes-el
+#+BEGIN_SRC emacs-lisp
+(use-package kubernetes
+  :ensure t
+  :commands 
+  (kubernetes-overview)
+  :bind
+  ("C-c k" . kubernetes-overview))
+(use-package k8s-mode
+ :ensure t
+ :config
+ (setq k8s-search-documentation-browser-function 'browse-url-firefox)
+ :hook (k8s-mode . yas-minor-mode)
+)
+#+END_SRC
+** Docker
+https://github.com/Silex/docker.el
+#+BEGIN_SRC emacs-lisp
+;; (use-package docker-tramp :ensure t)
 
-  ;; (defvar krista/org-super-agenda-auto-show-groups '())
-  ;; (defun krista/org-super-agenda-origami-fold-default ()
-  ;;   "Fold certain groups by default in Org Super Agenda buffer."
-  ;;   (forward-line 3)
-  ;;   (cl-loop do (origami-forward-toggle-node (current-buffer) (point))
-  ;;            while (origami-forward-fold-same-level (current-buffer) (point)))
-  ;;   (--each krista/org-super-agenda-auto-show-groups
-  ;;     (goto-char (point-min))
-  ;;     (when (re-search-forward (rx-to-string `(seq bol " " ,it)) nil t)
-  ;;       (origami-show-node (current-buffer) (point)))))
+(use-package docker
+  :ensure t
+  :bind ("C-c d" . docker)
+  :custom (docker-image-run-arguments '("-i" "-t" "--rm")))
 
-  :hook ((org-agenda-mode . origami-mode)
-         ;; (org-agenda-finalize . krista/org-super-agenda-origami-fold-default)
-	 )
+(use-package dockerfile-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode))
+  (setq tab-width 4)
+  ;; (put 'dockerfile-image-name 'safe-local-variable #'stringp)
+  )
+
+;; (use-package docker-compose-mode :ensure t)
+#+END_SRC
+** Hashicorp / Packer / Terraform
+#+BEGIN_SRC emacs-lisp
+(use-package terraform-mode
+  :config
+  ;; (when (executable-find "terraform")
+  ;;   ;; (add-hook
+  ;;   ;;  'terraform-mode-hook
+  ;;   ;;  #'terraform-format-on-save-mode)
+  ;;   )
+
+  (use-package company-terraform
+    :config
+    (add-to-list 'company-backends 'company-terraform)
+    )
+
+  ;; Treat .tpl as .sh
+  (setq auto-mode-alist
+        (append '(("\\.tpl$" . sh-mode)) auto-mode-alist))
   )
 #+END_SRC
+** Jenkins
+#+BEGIN_SRC emacs-lisp
+(use-package groovy-mode
+  :config
+  (add-to-list 'auto-mode-alist '("Jenkinsfile\\'" . groovy-mode))
+  (setq groovy-indent-offset 2)
+  (setq indent-tabs-mode nil)
+  ;; This function matches any existing whitespace style that can be found
+  ;; Source: Spruce Bondera's config
+  ;; (with-eval-after-load 'dtrt-indent
+  ;;   (add-hook 'groovy-mode-hook
+  ;;             (lambda () (dtrt-indent-mode t))))
+  ;; (c-add-style "groovy-style"             ; title
+  ;;              '("python"                 ; inherit from the python style
+  ;; 		 (indent-tabs-mode . nil) ; indents: use spaces, not tabs
+  ;; 		 (c-basic-offset . 2)     ; indents: 4 chars wide
+  ;; 		 (fill-column . 80)))     ; when to wrap line? (In chars)
+  ;; (setq c-default-style "groovy-style")
+  )
+(use-package jenkinsfile-mode)
+#+END_SRC
+
+* Ansible
+#+BEGIN_SRC emacs-lisp
+(use-package ansible
+  :ensure t
+  :defer t)
+(use-package company-ansible
+  :ensure t
+  :defer t
+  :config
+  (eval-after-load 'company
+    '(add-to-list 'company-backends 'company-ansible)))
+
+;; ansible-doc adds the kbd: C-c ?  ansible-doc
+(use-package ansible-doc
+  :ensure t
+  :defer t)
+(defun kris/ansible ()
+  "Set everything up for ansible development"
+  (interactive)
+  (ansible 1)
+  (ansible-doc-mode 1)
+  )
+;; (add-hook 'yaml-mode-hook #'ansible-doc-mode)
+#+END_SRC
+* Yaml
+#+BEGIN_SRC emacs-lisp
+;; (bind-key "C-c $" #'fold-dwim-toggle-selective-display)
+(setq auto-mode-alist
+  (append '(("\\.template$" . yaml-mode)) auto-mode-alist))
+;; Requires yamllint to be installed locally!
+(use-package flycheck-yamllint
+  :ensure t
+  :defer t
+  :init
+  (progn
+    (eval-after-load 'flycheck
+      '(add-hook 'flycheck-mode-hook 'flycheck-yamllint-setup))))
+
+(use-package yaml-mode
+  :ensure t
+  :mode (".yaml$")
+  :hook
+  (yaml-mode . yaml-mode-outline-hook)
+
+  :init
+  (defun yaml-outline-level ()
+    "Return the outline level based on the indentation, hardcoded at 2 spaces."
+    (s-count-matches "[ ]\\{2\\}" (match-string 0)))
+
+  (defun yaml-mode-outline-hook ()
+    (outline-minor-mode)
+    (highlight-indent-guides-mode)
+    (setq outline-regexp "^\\([ ]\\{2\\}\\)*\\([-] \\)?\\([\"][^\"]*[\"]\\|[a-zA-Z0-9_-]*\\): *\\([>|]\\|&[a-zA-Z0-9_-]*\\)?$")
+    (setq outline-level 'yaml-outline-level))
+
+  )
+;; Code folding that works with yaml:
+;; C-<return> to toggle element
+(use-package yafolding)
+(add-hook 'yaml-mode-hook
+          (lambda () (yafolding-mode)))
+#+END_SRC
+* Spellcheck comments
+#+BEGIN_SRC emacs-lisp
+(add-hook 'prog-mode-hook 'flyspell-prog-mode 1)
+#+END_SRC
+* Line numbers -- prog-mode only
+#+BEGIN_SRC emacs-lisp
+(add-hook 'prog-mode-hook 'linum-mode 1)
+(setq fill-column 100)
+#+END_SRC
+* Interactive highlighting
+** highlight indentation
+#+BEGIN_SRC emacs-lisp
+(use-package highlight-indent-guides
+  :config
+  (setq highlight-indent-guides-method 'character)
+  (setq highlight-indent-guides-character ?\|)
+  (setq highlight-indent-guides-responsive 'stack)
+  (setq higlight-indent-guides-delay 0))
+(add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
+#+END_SRC
+** Highlight symbol
+Reccomendation from: https://emacs.stackexchange.com/a/19864
+#+BEGIN_EXAMPLE 
+Another way is to use library Highlight (highlight.el), commands hlt-highlight-symbol-at-point and hlt-unhighlight-symbol-at-point.
+They are bound default to C-x X h s and C-x X u s, respectively. All of the highlighting and unhighlighting commands are bound on prefix key C-x X by default.
+#+END_EXAMPLE
+
+#+BEGIN_SRC emacs-lisp
+(use-package highlight
+  :config
+  ;; highlight.el
+  (setq hlt-auto-face-backgrounds
+        '("#370E45" "#10184F" "#0E3738" "#104F16" "#474711" "#5C110E" "#52300C"))
+  )
+#+END_SRC
+** Highlight surrounding paren
+https://github.com/tsdh/highlight-parentheses.el
+#+BEGIN_SRC emacs-lisp
+(use-package highlight-parentheses)
+#+END_SRC
+** +highlight-symbol+
+#+BEGIN_SRC emacs-lisp
+;; (use-package highlight-symbol
+;;   :bind
+;;   ;; See https://stackoverflow.com/a/22440455
+;;   ("<f8>" . highlight-symbol-nav-mode)
+;;   ;; ("<f8> n" . highlight-symbol-next)
+;;   ;; ("<f8> p" . highlight-symbol-prev)
+;;   )
+;; (add-hook 'prog-mode-hook #'highlight-symbol-mode)
+;; ;; (global-set-key [(control f3)] 'highlight-symbol)
+;; ;; (global-set-key [f3] 'highlight-symbol-next)
+;; ;; (global-set-key [(shift f3)] 'highlight-symbol-prev)
+
+;; (use-package auto-highlight-symbol
+;;   :config
+;;   (global-auto-highlight-symbol-mode t))
+#+END_SRC
+* treemacs
+#+BEGIN_SRC emacs-lisp
+(use-package treemacs
+  :config 
+  (treemacs-resize-icons 18)
+  :bind
+  ("C-c T" . treemacs)
+  ("C-c t" . treemacs-select-window))
+(use-package treemacs-magit)
+(use-package treemacs-projectile)
+#+END_SRC
+* google-this mode
+https://github.com/Malabarba/emacs-google-this
+{Prefix} + ?? does ??:
+- e :: error from compilation buffer
+- r :: cppreference
+- w :: word
+- s :: symbol
+- l :: line
+- <SPACE> :: region
+#+BEGIN_SRC emacs-lisp
+(use-package google-this
+  :config
+  (google-this-mode 1))
+#+END_SRC
+* cycle inflection (snake_case, camelCase, kebob-case)
+#+BEGIN_SRC emacs-lisp
+(use-package string-inflection
+  :ensure t
+  :bind (
+         ("C-c q" . string-inflection-cycle)
+         ("C-c C-q <SPC>" . string-inflection-underscore)
+         ("C-c C-q -" . string-inflection-kebab-case)
+         ("C-c C-q _" . string-inflection-upcase)
+         ("C-c C-q c" . string-inflection-camelcase)
+         ("C-c C-q p" . string-inflection-pascal-case)
+         ))
+#+END_SRC
+* Behave (BDD tests)
+Behave IDE
+#+BEGIN_SRC emacs-lisp
+(use-package feature-mode)
+#+END_SRC
+
+Syntax highlighting
+#+BEGIN_SRC emacs-lisp
+(use-package pickle)
+#+END_SRC
+* Dotenv mode
+#+BEGIN_SRC emacs-lisp
+(use-package dotenv-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.env\\..*\\'" . dotenv-mode)))
+#+END_SRC
+* Markdown
+#+BEGIN_SRC emacs-lisp
+(setq-default markdown-hide-markup nil)
+
+;; (use-package markdown-mode :ensure t
+;;   :init
+;;   (setq-default markdown-hide-markup t))
+
+(use-package markdown-toc
+  :hook markdown-mode)
+#+END_SRC
+* jsonnet
+https://github.com/google/jsonnet
+#+begin_src emacs-lisp
+(use-package jsonnet-mode)
+#+end_src

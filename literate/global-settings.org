@@ -12,35 +12,41 @@
   - [[#toggle-fullscreen][Toggle fullscreen]]
   - [[#createdelete-frames][Create/delete frames]]
   - [[#save-recent-files][Save recent files]]
+  - [[#make-find-file-follow-symlinks][make find-file follow symlinks]]
+  - [[#uniquify-buffer-names]["Uniquify" buffer names]]
 - [[#editing][Editing]]
   - [[#backwards-kill-line][Backwards kill-line]]
   - [[#transpose-line-up-or-down][Transpose line up or down]]
+  - [[#zap-up-to-chart-ie-zap-to-char-but-not-including-char][Zap up-to-char (i.e. zap-to-char but not including char)]]
 - [[#global-keybindings][Global keybindings]]
 - [[#shell--filesystem][Shell / filesystem]]
   - [[#file-interactions-delete-rename-etc][File interactions (delete, rename, etc.)]]
   - [[#copy-file-path-to-clipboard][Copy file path to clipboard]]
   - [[#immediate-todo-buffer]["Immediate todo" buffer]]
-  - [[#revert-buffer-without-prompting][Revert buffer without prompting]]
 
 * Tools for configuring emacs
 This is where I put things that help me modify my emacs install more efficiently
 ** Quickly open, evaluate my config file
 #+BEGIN_SRC emacs-lisp
-(defun krista/speedy-open-config ()
+(defun kris/speedy-open-config ()
   "Quickly open my config file"
   (interactive)
   (find-file (or "~/.emacs.d/config.org" user-init-file "")))
-(bind-key "C-c e" #'krista/speedy-open-config)
+(bind-key "C-c e" #'kris/speedy-open-config)
 
-(defun krista/speedy-eval-config ()
+(defun kris/speedy-eval-config ()
   "Quickly evaluate my config file"
   (interactive)
   (load-file user-init-file)
   ;; Restart org mode
   (org-mode-restart)
+  ;; Restart ivy-rich
+  (ivy-rich-mode -1)
+  (ivy-rich-mode 1)
   ;; Update modeline
   (force-mode-line-update t))
-(bind-key "C-c C-h" #'krista/speedy-eval-config)
+
+(bind-key "C-c C-h" #'kris/speedy-eval-config)
 #+END_SRC
 ** Evaluate a region, or the buffer (whatever's appropriate)
 #+BEGIN_SRC emacs-lisp
@@ -71,6 +77,7 @@ This is where I put things that help me modify my emacs install more efficiently
 ** Record keyboard macros
 #+BEGIN_SRC emacs-lisp
 ;; Start & end recording new keyboard macro
+;; See https://emacs.stackexchange.com/a/28864 to handle issues on a "dumb terminal"
 (bind-key "M-[" #'kmacro-start-macro)
 (bind-key "M-]" #'kmacro-end-macro)
 ;; Call the last keyboard macro that was recorded
@@ -143,6 +150,24 @@ Recent files are saved/managed by recentf mode (short for _recent_ _f_ iles)
 (add-to-list 'recentf-exclude "autoloads")
 (add-to-list 'recentf-exclude "org-archive")
 #+END_SRC
+** make find-file follow symlinks
+#+BEGIN_SRC emacs-lisp
+(setq find-file-visit-truename t)
+#+END_SRC
+** "Uniquify" buffer names
+From https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html
+
+When several buffers visit identically-named files, Emacs must give
+the buffers distinct names. The default method adds a suffix based on
+the names of the directories that contain the files. For example, if
+you visit files =/foo/bar/mumble/name= and =/baz/quux/mumble/name= at the
+same time, their buffers will be named ~name<bar/mumble>~ and
+~name<quux/mumble>~, respectively. Emacs adds as many directory parts
+as are needed to make a unique name.
+
+#+BEGIN_SRC emacs-lisp
+(setq uniquify-buffer-name-style 'forward)
+#+END_SRC
 * Editing
 - This section contains variable settings and functions.
 - Rebind preexisting commands in [[*Global%20keybindings][*Global keybindings]]
@@ -190,14 +215,22 @@ Source: https://www.emacswiki.org/emacs/CommentingCode
     (comment-dwim arg)))
 (bind-key "M-;" #'comment-dwim-line)
 #+END_SRC
+** Zap up-to-char (i.e. zap-to-char but not including char)
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "M-Z") 'zap-up-to-char)
+#+END_SRC
 * Global keybindings
 #+BEGIN_SRC emacs-lisp
 ;; Eval buffer
 (bind-key "C-c b" #'eval-buffer)
 
 ;; Count words in selected region
-
 (bind-key "C-c w" #'count-words)
+
+;; Toggle line wrapping for a buffer
+;; keybinding is reminiscent of "M-q" to fill column
+(bind-key "C-c M-q" #'toggle-truncate-lines)
+
 ;; 23 Mar 2016 - binds "M-j" to "M-x-join-line", as per
 ;; <http://stackoverflow.com/questions/1072662/by-emacs-how-to-join-two-lines-into-one>
 (bind-key "M-j" #'join-line)
@@ -206,6 +239,16 @@ Source: https://www.emacswiki.org/emacs/CommentingCode
 ;;bring a window to a new desktop
 (global-unset-key (kbd "C-M-<left>"))
 (global-unset-key (kbd "C-M-<right>"))
+(global-set-key (kbd "C-x ,") 'previous-buffer)
+(global-set-key (kbd "C-x .") 'next-buffer)
+(global-set-key (kbd "M-G") 'goto-line)
+
+(bind-key "H-=" #'text-scale-increase)
+(bind-key "H--" #'text-scale-decrease)
+
+;; Reminders for default keybindings that I like / tend to forget about:
+;; C-M-<SPC>: mark s-exp
+;; C-M-k: kill s-exp
 #+END_SRC
 * Shell / filesystem
 ** File interactions (delete, rename, etc.)
@@ -213,14 +256,14 @@ Source: https://www.emacswiki.org/emacs/CommentingCode
 - However, some OS-agnostic settings can still live here to reduce code duplication
 #+BEGIN_SRC emacs-lisp
 (bind-key "H-d" #'delete-file)
-(bind-key "H-R" #'rename-file)
+(bind-key "H-r" #'rename-file)
 
-;; I don't want a prompt, but I /do/ want some verification when a revert happens
-(defun krista/revert-buffer-no-prompt-yes-message ()
-  "Revert buffer without a yes/no prompt, and then show a message"
-  (revert-buffer-no-prompt)
+(defun kris/revert-buffer-dont-confirm-do-notify ()
+  "Revert buffer. Don't prompt me for confirmation, but do ping that the action occurred."
+  (interactive)
+  (revert-buffer t t)
   (message "Buffer reverted"))
-(bind-key "H-C-r" #'krista/revert-buffer-no-prompt-yes-message)
+(bind-key "H-R" #'kris/revert-buffer-dont-confirm-do-notify)
 #+END_SRC
 ** Copy file path to clipboard
 #+BEGIN_SRC emacs-lisp
@@ -249,19 +292,11 @@ This function lets me do just that!
 ;; Sources: 
 ;; https://stackoverflow.com/questions/25791605/emacs-how-do-i-create-a-new-empty-buffer-whenever-creating-a-new-frame
 ;; https://stackoverflow.com/questions/26419164/programmatically-setting-major-mode-of-buffer-with-emacs-lisp
-(defun krista/immediate-todo ()
+(defun kris/immediate-todo ()
   "Create a new temp buffer in org mode."
   (interactive)
-  (let ((buffer (generate-new-buffer "*Krista* Immediate Todo")))
+  (let ((buffer (generate-new-buffer "*Kris* Immediate Todo")))
     (switch-to-buffer buffer)
     (with-current-buffer buffer (org-mode))))
-(bind-key "C-c i" #'krista/immediate-todo)
-#+END_SRC
-** Revert buffer without prompting
-#+BEGIN_SRC emacs-lisp
-(defun revert-buffer-no-prompt ()
-  "Revert buffer without confirm prompt"
-  (interactive)
-  (revert-buffer t t))
-(bind-key "H-R" #'revert-buffer-no-prompt)
+(bind-key "C-c i" #'kris/immediate-todo)
 #+END_SRC

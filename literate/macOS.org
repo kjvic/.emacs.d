@@ -5,15 +5,20 @@
 - [[#flycheck][Flycheck]]
 - [[#ivy-locate-command][Ivy locate command]]
 - [[#use-macos-open-command-to-choose-an-application][Use macOS open command to choose an application]]
+- [[#railwaycat-font-support][Railwaycat font support]
+- [[#use-menlo-if-fira-code-isnt-available][Use menlo if Fira Code isn't available]
+- [[#open-in-iterm2][Open in iTerm2]
+- [[#dont-open-in-new-frame-when-double-clicking-something][Don't open in new frame when double-clicking something]
 
+  
 * Railwaycat's [[https://github.com/railwaycat/homebrew-emacsmacport][macport]] of the emacs gui
 * TODO [[https://gist.github.com/railwaycat/4043945][script]] to open the emacs gui from the command line
 * modifier keys
 #+BEGIN_SRC emacs-lisp
- (setq mac-command-modifier 'meta)
+ (setq mac-command-modifier 'hyper)
+ (setq mac-option-modifier 'meta)  
  (setq mac-control-modifier 'control)
  (setq mac-function-modifier 'super)
- (setq mac-option-modifier 'hyper)
 #+END_SRC
 * Flycheck
 This stuff is required for flycheck to work
@@ -34,4 +39,49 @@ This stuff is required for flycheck to work
 (setq browse-url-mailto-function 'browse-url-generic)
 (setq browse-url-generic-program "open")
 (bind-key "H-o" #'reveal-in-osx-finder)
+#+END_SRC
+* Railwaycat font support
+#+BEGIN_SRC emacs-lisp
+  ;; https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs
+  (mac-auto-operator-composition-mode)
+#+END_SRC
+* Use menlo if Fira Code isn't available
+#+BEGIN_SRC emacs-lisp
+  (custom-set-faces
+
+   '(default ((t (:inherit nil
+			   :stipple nil
+			   :background "#001519"
+			   :foreground "#57b3b3"
+			   :inverse-video nil
+			   :box nil
+			   :strike-through nil
+			   :overline nil
+			   :underline nil
+			   :slant normal
+			   :weight normal
+			   :height 120
+			   :width normal
+			   :foundry "nil"
+			   :family "Menlo"
+			   :weight light
+			   ))))
+ 
+   '(bold ((t (:weight extra-bold
+		       ))))
+
+   )
+#+END_SRC
+* Open in iTerm2
+#+BEGIN_SRC emacs-lisp
+  (define-key global-map (kbd "C-0") 'iterm-here)
+
+  (defun iterm-here ()
+    (interactive)
+    (shell command "open -a iTerm $PWD" nil nil))
+#+END_SRC
+* Don't open in new frame when double-clicking something
+Source: https://stackoverflow.com/a/9151048
+#+BEGIN_SRC emacs-lisp
+(setq ns-pop-up-frames nil)
 #+END_SRC

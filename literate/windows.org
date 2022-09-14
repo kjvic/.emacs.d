@@ -1,4 +1,5 @@
 * Table of Contents                                                     :TOC:
+- [[#how-to-install-emacs-on-windows][How to install emacs on windows?]]
 - [[#windows-is-ahem-_overzealous_-about-garbage-collection][Windows is... \*ahem* _overzealous_ about garbage collection]]
   - [[#dont-gc-when-im-in-the-minibuffer][Don't gc when I'm in the minibuffer!]]
 - [[#open-a-windows-explorer-window-from-emacs-at-the-path-of-the-current-buffer][Open a windows explorer window from emacs at the path of the current buffer]]
@@ -15,6 +16,8 @@
 - [[#powershell][Powershell]]
 - [[#cygwin][Cygwin]]
 
+* How to install emacs on windows?
+https://sachachua.com/blog/2012/06/making-gnu-emacs-play-well-on-microsoft-windows-7/
 * Windows is... \*ahem* _overzealous_ about garbage collection
 Make sure that that's not the case
 #+BEGIN_SRC emacs-lisp
